@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vibe Dev v5.1 — Stuck Watcher (Background Daemon)
+# Vibe Dev — Stuck Watcher (Background Daemon)
 #
 # Запускается в фоне init.sh при /new-project и при каждом /resume.
 # Мониторит: время без commit и без test-pass.

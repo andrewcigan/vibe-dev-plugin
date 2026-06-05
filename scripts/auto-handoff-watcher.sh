@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vibe Dev v5.1 — Auto-Handoff Watcher
+# Vibe Dev — Auto-Handoff Watcher
 #
 # Реагирует на tmux session-end signal или 4 часа неактивности.
 # Запускает /handoff автоматически.

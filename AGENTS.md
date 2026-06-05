@@ -4,7 +4,7 @@
 
 ## Идентичность плагина
 
-Vibe Dev v6 — harness-first pipeline для разработки продуктов от бизнес-идеи. Главный принцип: **«Harness is enforcement, not documentation.»** (id плагина — `vibe-dev-v5`, внутренний идентификатор; версия — 6.1.0.)
+Vibe Dev v6 — harness-first pipeline для разработки продуктов от бизнес-идеи. Главный принцип: **«Harness is enforcement, not documentation.»** (id плагина — `vibe-dev`, версия — 6.1.0.)
 
 ## Структура
 
@@ -104,11 +104,11 @@ Vibe dev plugin v5/
 claude --plugin-dir "/path/to/vibe-dev-plugin"
 
 # Или зарегистрировать
-echo '{"name":"vibe-dev-v5","source":"directory","path":"/path/to/vibe-dev-plugin"}' \
+echo '{"name":"vibe-dev","source":"directory","path":"/path/to/vibe-dev-plugin"}' \
   >> ~/.claude/plugins/known_marketplaces.json
 
 # Включить
-claude plugin enable vibe-dev-v5@vibe-dev-v5
+claude plugin enable vibe-dev@vibe-dev
 ```
 
 ## Verification команды

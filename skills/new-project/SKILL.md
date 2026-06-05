@@ -1,12 +1,12 @@
 ---
 name: new-project
-description: Старт нового проекта в Vibe Dev v5.1 — бизнес-интервью + harness bootstrap (4 файла) + выбор FAST/FULL режима. Триггеры — "новый проект", "начнём новый", "стартуем", "/new-project".
+description: Старт нового проекта в Vibe Dev — бизнес-интервью + harness bootstrap (4 файла) + выбор FAST/FULL режима. Триггеры — "новый проект", "начнём новый", "стартуем", "/new-project".
 when_to_use: Когда пользователь начинает новую разработку с нуля. Создаёт папку проекта с 4 harness-файлами и проводит первичное бизнес-интервью.
 ---
 
 # /new-project
 
-Запускает старт нового проекта по Vibe Dev v5.1 архитектуре.
+Запускает старт нового проекта по Vibe Dev архитектуре.
 
 ## Что происходит
 
@@ -67,7 +67,7 @@ EOF
 # Init git
 git init -q
 git add .
-git commit -q -m "init: vibe-dev-v5.1 harness bootstrap"
+git commit -q -m "init: vibe-dev harness bootstrap"
 ```
 
 ### Шаг 3: Бизнес-интервью (заполнение AGENTS.md + domain-rules.yaml)

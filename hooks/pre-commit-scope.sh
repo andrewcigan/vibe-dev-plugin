@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vibe Dev v5.1 — Pre-Commit Scope Hook
+# Vibe Dev — Pre-Commit Scope Hook
 #
 # Устанавливается как .git/hooks/pre-commit в проекте.
 # Проверяет: diff ⊆ active feature.affected_files

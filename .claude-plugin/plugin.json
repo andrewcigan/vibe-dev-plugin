@@ -1,5 +1,5 @@
 {
-  "name": "vibe-dev-v5",
+  "name": "vibe-dev",
   "version": "6.1.0",
   "description": "Harness-first pipeline для Claude Code: бизнес-идея → работающий продукт. v6.1: enforcement из текста в механизм — 20 проверяемых механизмов (hooks из коробки) + онбординг под пользователя (/setup), state-machine с физической валидацией, dual critique, анти-залипание, язык-ловец, таблица трассировки + self-check на плагин.",
   "author": {

@@ -106,7 +106,7 @@ git commit -m "handoff: session $(date +%Y-%m-%d)
 - Errors logged: <count>
 - Lessons promoted: <count>
 
-Co-Authored-By: Vibe Dev v5.1"
+Co-Authored-By: Vibe Dev"
 ```
 
 ## Cold-start prep

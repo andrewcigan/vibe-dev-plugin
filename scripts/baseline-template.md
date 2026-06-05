@@ -1,4 +1,4 @@
-# Baseline Measurement Template — Vibe Dev v5.1 Validation
+# Baseline Measurement Template — Vibe Dev Validation
 
 > Этот файл используется для замеров на ТЕСТОВОМ проекте перед / в процессе работы.
 > Цель: получить цифры, по которым решать — пошло ли лучше с v5.1 vs без неё.

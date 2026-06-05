@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-# Vibe Dev v5.1 — Bootstrap Contract
+# Vibe Dev — Bootstrap Contract
 # Этот скрипт ГАРАНТИРУЕТ что окружение проекта здорово и готов к работе.
 # Запускается на /new-project, на /resume, и в начале каждой сессии.
 # Если что-то падает — следующая сессия не должна продолжать пока не починено.
 
 echo "==================================================================="
-echo "  Vibe Dev v5.1 — Harness Bootstrap"
+echo "  Vibe Dev — Harness Bootstrap"
 echo "==================================================================="
 
 # === Stage 1: Environment Constraints (из domain-rules.yaml) ===

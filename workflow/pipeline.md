@@ -1,4 +1,4 @@
-# Vibe Dev v5.1 Pipeline
+# Vibe Dev Pipeline
 
 Два режима: FAST (5 этапов) и FULL (10 этапов).
 

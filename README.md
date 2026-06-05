@@ -133,7 +133,7 @@ concurrent-lock, secrets-scope).
 # 1. Добавить marketplace из GitHub
 claude plugin marketplace add andrewcigan/vibe-dev-plugin
 # 2. Установить и включить плагин
-claude plugin install vibe-dev-v5@vibe-dev-v5
+claude plugin install vibe-dev@vibe-dev
 ```
 
 Или локально (для разработки самого плагина):
@@ -141,7 +141,7 @@ claude plugin install vibe-dev-v5@vibe-dev-v5
 claude --plugin-dir "/path/to/vibe-dev-plugin"
 ```
 
-> Технический id плагина — `vibe-dev-v5` (от него зависят имена команд и установка). Версия — **6.1.0**.
+> Технический id плагина — `vibe-dev` (от него зависят имена команд и установка). Версия — **6.1.0**.
 
 ---
 

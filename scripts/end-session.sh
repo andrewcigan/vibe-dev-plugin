@@ -1,5 +1,5 @@
 #!/bin/bash
-# Vibe Dev v5.2 — End Session script
+# Vibe Dev — End Session script
 #
 # Запускается из skill /end-session. Делает полный handoff:
 # 1. Все проверки 5-dim clean-exit (build / tests / progress / artifacts / startup)
@@ -21,7 +21,7 @@ TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 cd "$PROJECT_PATH"
 
 echo "==================================================================="
-echo "  /end-session — Vibe Dev v5.2 Clean Exit"
+echo "  /end-session — Vibe Dev Clean Exit"
 echo "  Project: $PROJECT_NAME"
 echo "  Path: $PROJECT_PATH"
 echo "  Time: $TIMESTAMP"

@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+.env
+.env.*
+*.pem
+*.key
+.harness/cost-log.json
+.harness/tools-audit.jsonl
+.harness/locks/

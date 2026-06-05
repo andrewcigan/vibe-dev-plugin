@@ -1,0 +1,130 @@
+# Pre-Launch Checklist for Bulk External-API Jobs
+# Триггерится из tools-allowlist.yaml bulk_api section.
+# Hook hooks/pre-bash-bulk-api.sh БЛОКИРУЕТ выполнение пока все галки не зелёные.
+#
+# Эта механика напрямую закрывает реальный кейс: $25 + 48h бан Gemini при массовом вызове без проверки квот.
+
+# ============================================================
+# Заполняется агентом ПЕРЕД запуском bulk-job.
+# Любое поле "false" / "unknown" = block execution.
+# ============================================================
+
+job_metadata:
+  description: ""                # что делаем
+  provider: ""                   # openai / anthropic / gemini / voyage / ...
+  model: ""                      # gemini-embedding-001 / claude-opus-4-7 / gpt-4-turbo
+  estimated_total_calls: 0       # сколько вызовов планируется
+  estimated_total_tokens_in: 0
+  estimated_total_tokens_out: 0
+  estimated_duration_minutes: 0
+
+# ============================================================
+# CHECKLIST — все должны быть TRUE
+# ============================================================
+checklist:
+  # === COST ESTIMATION ===
+  cost_estimated:
+    required: true
+    answer: false
+    estimate_usd: 0.00
+    proof: ""                    # ссылка на расчёт или скриншот провайдер pricing
+
+  cost_under_per_feature_cap:
+    required: true               # cap из domain-rules.yaml cost_policy
+    answer: false
+
+  user_confirmed_if_over_2usd:
+    required_when: "estimate_usd > 2"
+    answer: false
+    confirm_quote: ""             # цитата подтверждения от пользователя
+
+  # === BATCH API ===
+  batch_api_checked:
+    required: true
+    answer: false
+    decision: ""                  # "yes_using" / "no_realtime_required" / "not_available"
+    reason: ""                    # если no — почему не используем (Batch обычно -50% стоимости)
+
+  # === RATE LIMITS / QUOTAS ===
+  daily_quota_known:
+    required: true
+    answer: false
+    quota_rpd: 0                  # requests per day
+    quota_tpm: 0                  # tokens per minute
+    quota_rpm: 0                  # requests per minute
+    will_we_fit: false
+    paid_tier: false              # paid vs free
+
+  rate_limit_handling:
+    required: true
+    answer: false
+    strategy: ""                  # "exponential_backoff_with_jitter" / "queue_at_RPM_limit" / ...
+
+  # === TASK-SPECIFIC PARAMS ===
+  task_type_set:
+    required_when: "provider in [gemini, openai] AND task_type_supported"
+    answer: false
+    value: ""                     # "RETRIEVAL_DOCUMENT" / "RETRIEVAL_QUERY" / ...
+    reason: "task_type улучшает retrieval quality на 5-15pp"
+
+  thinking_budget_set:
+    required_when: "model matches gemini-2.5-* OR claude-*-thinking"
+    answer: false
+    value: 0                      # для extraction/OCR обычно 0
+    reason: "Иначе модель тратит токены на reasoning вместо output"
+
+  output_dimensionality_set:
+    required_when: "model is embedding"
+    answer: false
+    value: 0                      # 768 для gemini-embedding-001 (Matryoshka)
+    reason: "Меньше размерность = меньше storage, минимальная потеря качества"
+
+  # === DATA HYGIENE ===
+  dedup_by_content_hash:
+    required: true
+    answer: false
+    strategy: ""                  # "hash_before_call" / "not_applicable_unique_items"
+    estimated_savings_pct: 0
+
+  # === RESILIENCE ===
+  checkpoint_path:
+    required: true
+    answer: false
+    path: ""                      # ./.harness/bulk-jobs/<job-id>/checkpoint.jsonl
+    can_resume_from_crash: false
+
+  output_separate_files:
+    required: true
+    answer: false                 # реальный кейс: параллельные процессы → потеря данных при общем файле
+    rule: "Параллельные процессы пишут в РАЗНЫЕ файлы"
+
+  # === PROVIDER-SPECIFIC GOTCHAS ===
+  provider_gotchas_reviewed:
+    required: true
+    answer: false
+    source: "domain-rules.yaml → model_gotchas + memory/feedback_*.md"
+    reviewed_items: []            # список проверенных gotchas
+
+# ============================================================
+# DECISION RECORD — после прохождения checklist
+# ============================================================
+decision:
+  status: "blocked"               # blocked / approved / approved_with_user_confirm
+  approved_at: ""
+  approved_by: ""                 # "system_auto" / "user_explicit"
+  expected_cost_usd: 0.00
+  expected_duration: ""
+
+# ============================================================
+# POST-JOB COMPARISON (заполняется после)
+# ============================================================
+actual_results:
+  actual_cost_usd: 0.00
+  actual_duration_minutes: 0
+  successful_calls: 0
+  failed_calls: 0
+  retries_total: 0
+  variance_from_estimate_pct: 0
+
+  # Если variance > 30% — добавить в error-journal.md как "estimation_blind_spot"
+  lesson_for_journal: ""

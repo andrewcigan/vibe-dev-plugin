@@ -1,0 +1,90 @@
+{
+  "$schema": "./feature_list.schema.json",
+  "version": "5.2.0",
+  "wip_limit": 1,
+  "active": null,
+  "features": {
+    "captured": [
+      {
+        "id": "feat-001",
+        "name": "Пример: Загрузка документов",
+        "description": "Пользователь загружает PDF/TXT с локального диска",
+        "captured_at": "YYYY-MM-DD",
+        "category": "api",
+        "size_estimate": "M",
+        "business_invariant": "ref: domain-rules.invariants[0]"
+      }
+    ],
+    "up_next": [],
+    "active_list": [],
+    "done": [],
+    "rejected": [],
+    "superseded": [],
+    "awaiting_research": [],
+    "awaiting_reviewer": [],
+    "awaiting_demo_milestone": [],
+    "awaiting_user_acceptance": []
+  },
+  "_schema_notes": {
+    "states_authority": "schemas/feature-state-transitions.yaml (в плагине) — единственный источник истины. Этот объект только для документации.",
+    "states": [
+      "captured",
+      "awaiting_research",
+      "up_next",
+      "awaiting_reviewer",
+      "awaiting_demo_milestone",
+      "active",
+      "awaiting_user_acceptance",
+      "blocked",
+      "paused",
+      "rollback",
+      "passing",
+      "rejected",
+      "superseded"
+    ],
+    "promotion_gate": "Только успешная verification_command может перевести state → passing. Для UI-фич (category=ui) — обязателен переход через awaiting_user_acceptance после Layer 1-4 и явное подтверждение пользователя для перехода в passing. Hook hooks/checks/state-transition.sh (через dispatch-pre-tool-use.sh) enforces это, проверяя вносимое содержимое feature_list.json.",
+    "feature_fields": {
+      "id": "feat-NNN, уникален",
+      "name": "Короткое название бизнес-языком",
+      "description": "Что пользователь сможет делать",
+      "category": "infra|data|api|ui|workflow|integration — обязательно. Определяет path-selection в /feature и evidence требования при passing.",
+      "dependencies": ["feat-XXX", "..."],
+      "size_estimate": "S (<1h work, light path) / M / L (heavy path with dual critique)",
+      "affected_files": ["src/...", "tests/..."],
+      "verification": {
+        "layer_1_syntax": ["npm run check", "npm run lint"],
+        "layer_2_runtime": ["npm test -- --filter=<feature>"],
+        "layer_3_integration_smoke": [
+          "npm test -- --filter=smoke-<feature>"
+        ],
+        "layer_4_e2e": [
+          "./e2e/test-<feature>-hot.sh",
+          "./e2e/test-<feature>-recovery.sh"
+        ],
+        "layer_5_user": "Описание поведенческой проверки от пользователя (что должен увидеть в DOM / экране / боте / файле). Обязательно для category=ui."
+      },
+      "integration_boundaries": [
+        "AdapterA → ServiceB",
+        "ServiceB → WorkerC"
+      ],
+      "verification_self_check": {
+        "negative_test_at": "ISO timestamp когда negative-test прошёл (искусственный bug → тест упал → bug убран → тест прошёл)",
+        "leak_check_at": "ISO timestamp когда leak-check прошёл (expected не в одном файле с input)"
+      },
+      "evidence": {
+        "layer_1_syntax_at": "ISO",
+        "layer_2_runtime_at": "ISO",
+        "layer_3_integration_smoke_at": "ISO",
+        "layer_4_e2e_at": "ISO",
+        "layer_5_user_at": "ISO (обязательно для category=ui)",
+        "verification_command_hash": "abc123",
+        "commit_hash": "abc123",
+        "data_model_review_at": "ISO (обязательно для category=data — см. agents/data-model-reviewer.md когда внедрено)",
+        "vendor_research_at": "ISO (обязательно для category=integration с external vendor)"
+      },
+      "business_invariant": "ref: domain-rules.invariants[i]",
+      "budget_usd": 5.00,
+      "state": "captured | awaiting_research | up_next | awaiting_reviewer | awaiting_demo_milestone | active | awaiting_user_acceptance | blocked | paused | rollback | passing | rejected | superseded"
+    }
+  }
+}

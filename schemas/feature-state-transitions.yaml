@@ -1,0 +1,151 @@
+# Vibe Dev v5.2 — Feature State Machine
+# Источник правды для allowed transitions. Hook hooks/checks/state-transition.sh читает этот файл.
+
+version: "5.2.0"
+
+states:
+  - captured              # есть в backlog
+  - awaiting_research     # нужна research-фаза (vendor / approach)
+  - up_next               # готова к работе
+  - awaiting_reviewer     # data/api/integration ждёт reviewer-Opus
+  - awaiting_demo_milestone  # для контрактной разработки — ждёт демо-точки
+  - active                # в работе (WIP=1)
+  - awaiting_user_acceptance  # layers 1-4 прошли, ждёт user_reported
+  - blocked               # технический блокер
+  - paused                # пользователь приостановил
+  - rollback              # verification fail, нужен откат
+  - passing               # все layers + evidence ✓
+  - rejected              # отменена
+  - superseded            # заменена другой фичей
+
+allowed_transitions:
+  captured:
+    - up_next
+    - awaiting_research
+    - rejected
+  awaiting_research:
+    - up_next            # research завершён
+    - rejected
+    - captured           # вернуть в backlog
+  up_next:
+    - active             # начали работу (WIP=1 enforced separately)
+    - awaiting_reviewer  # для data — ждём reviewer-Opus
+    - awaiting_demo_milestone  # контрактная разработка
+    - captured           # вернуть в backlog
+    - rejected
+  awaiting_reviewer:
+    - active             # reviewer прошёл
+    - up_next            # reviewer вернул на доработку scope
+    - rejected
+  awaiting_demo_milestone:
+    - active             # время демо настало
+    - rejected
+  active:
+    - awaiting_user_acceptance  # для UI — Layer 1-4 passed, ждём user
+    - passing            # для non-UI — все layers passed (без user_reported)
+    - blocked
+    - paused
+    - rollback           # verification fail
+    - superseded         # заменили
+  awaiting_user_acceptance:
+    - passing            # user сказал «работает»
+    - active             # user сказал «не так — переделаем»
+    - rollback           # user сказал «сломано — откати»
+  blocked:
+    - active             # разблокировали
+    - rejected
+  paused:
+    - active             # возобновили
+    - rejected
+  rollback:
+    - active             # повторная попытка
+    - rejected
+  passing:
+    - superseded         # заменена новой версией
+  rejected: []           # terminal
+  superseded: []         # terminal
+
+# Evidence requirements per transition
+evidence_required:
+  to_passing:
+    common:
+      - layer_1_syntax_at  # timestamp когда syntax check прошёл
+      - layer_2_runtime_at
+      - layer_3_e2e_at
+      - verification_command_hash
+      - commit_hash
+    if_category_is_ui:
+      - layer_4_user_at    # user-reported acceptance (см. rules/ui-feature-visible-outcome.md)
+    if_category_is_data:
+      - data_model_review_at  # docs/data-model-review.md существует
+    if_category_is_integration:
+      - vendor_research_at    # feat-research-X completed
+  to_active:
+    - test_strategy_at     # docs/test-strategy.md существует с валидным frontmatter
+    - affected_files_specified  # feature.affected_files не пустой
+  to_awaiting_user_acceptance:
+    - layer_1_syntax_at
+    - layer_2_runtime_at
+    - layer_3_e2e_at
+    - user_test_scenario   # явное описание что пользователь должен проверить
+
+# Категории фичи (для path selection и evidence requirements)
+categories:
+  - infra      # Dockerfile, init.sh, k8s — нет UI / нет data model
+  - data       # БД schema, migrations, models
+  - api        # API endpoints, handlers, routes
+  - ui         # components, pages, UI flows
+  - workflow   # background jobs, cron, queues, workers
+  - integration  # external APIs, adapters, clients
+
+# Auto-detect категории по affected_files patterns (fallback если dev-planner не проставил)
+category_patterns:
+  ui:
+    - "**/components/**"
+    - "**/pages/**"
+    - "**/app/**/*.tsx"
+    - "**/app/**/*.jsx"
+    - "*.vue"
+    - "*.svelte"
+  data:
+    - "**/schema/**"
+    - "**/schema.ts"
+    - "**/schema.prisma"
+    - "**/migrations/**"
+    - "**/models/**"
+    - "prisma/**"
+    - "drizzle/**"
+    - "supabase/migrations/**"
+  api:
+    - "**/api/**"
+    - "**/routes/**"
+    - "**/handlers/**"
+    - "**/server.ts"
+  workflow:
+    - "**/jobs/**"
+    - "**/cron/**"
+    - "**/queues/**"
+    - "**/workers/**"
+  integration:
+    - "**/clients/**"
+    - "**/adapters/**"
+    - "**/integrations/**"
+    - "**/providers/**"
+  infra:
+    - "Dockerfile"
+    - "**/docker-compose*.yml"
+    - "**/init.sh"
+    - "**/k8s/**"
+    - "**/.github/workflows/**"
+
+# Hook flags
+hook_modes:
+  strict:
+    description: "Production mode — block invalid transitions"
+    block_on_invalid: true
+    block_on_missing_evidence: true
+  learn:
+    description: "Migration mode for v5.1 → v5.2 — warn, don't block"
+    block_on_invalid: false
+    block_on_missing_evidence: false
+    log_warnings_to: ".harness/state-transition-warnings.log"

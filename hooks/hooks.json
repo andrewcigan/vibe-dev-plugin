@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-pre-tool-use.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: единый PreToolUse-диспетчер. Write/Edit/MultiEdit — state-machine gate на feature_list.json (UI->passing без user-evidence = block) + concurrent-write warn. Bash — bulk-API gate (массовый внешний API без pre-launch-checklist = block). Профили minimal/standard/strict через .harness/profile.",
+        "id": "vibe:pre-tool-use"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-post-tool-use.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: PostToolUse анти-залипание №2. Bash — счётчик подряд падающих однотипных команд (≥3 без структурных изменений) -> inject подсказки про субагент-диагностику. Edit/Write/MultiEdit -> сброс счётчика (структурное изменение = прогресс). warn/inject, не block (инструмент уже выполнен). standard/strict.",
+        "id": "vibe:post-tool-use"
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-stop.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: Stop-хук H19. Завершение хода маркером-намерением действия БЕЗ единого tool_use -> decision:block (продолжить ход). Активен standard/strict, cap 8 не зациклит. Защита от false-positive: чистый ответ/вопрос/результат/прошлый ход — проход.",
+        "id": "vibe:stop"
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-user-prompt.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: UserPromptSubmit-хук H6. Сигнал завершения сессии в промпте (закрываем / на сегодня всё / стартуй новую сессию) -> inject mental cold-start чеклиста (план уходит в файлы, не в чат). Уровень inject/warn (промпт не блокируется), standard/strict.",
+        "id": "vibe:user-prompt"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-session-start.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: SessionStart-хук H6 (loop-замыкание). Прошлая сессия сигналила завершение (маркер handoff-pending), но SESSION.md не обновлялся после -> inject warn о возможном пропуске handoff. Маркер одноразовый. standard/strict.",
+        "id": "vibe:session-start"
+      }
+    ],
+    "MessageDisplay": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/dispatch-message-display.sh\"",
+            "timeout": 15
+          }
+        ],
+        "description": "Vibe Dev: язык-ловец. Сообщение агента с жаргоном / развилкой без «что теряешь» / человеко-днями -> запись в .harness/clarity-violations.log (метрика) + флаг на экране пользователя (displayContent). ЧЕСТНО display-only: не enforcement поведения модели, а детектор+подсветка. standard/strict.",
+        "id": "vibe:message-display"
+      }
+    ]
+  }
+}

@@ -1,0 +1,129 @@
+---
+name: verify
+description: Four-layer verification фичи. syntax → runtime → e2e → user-reported. Только passing all 4 = feature в done. Триггеры — "/verify", "проверь работает", "запусти тесты".
+when_to_use: По завершению implementation фичи. Это единственный путь перевести feature_list.json state из active в passing.
+---
+
+# /verify
+
+Four-layer verification (4-уровневая проверка) активной фичи.
+
+## Layer 1: Syntax & Static Analysis
+
+Минимальный gate, фундамент.
+
+```bash
+# JavaScript/TypeScript
+npm run check          # tsc --noEmit
+npm run lint           # eslint
+
+# Python
+ruff check .
+mypy src/
+
+# Common
+git diff --check       # whitespace
+```
+
+Если хоть что-то красное — STOP, чинить.
+
+## Layer 2: Runtime Behavior (unit + integration)
+
+```bash
+# из feature_list.json[active].verification.layer_2_runtime
+npm test -- --filter=<feature>
+# или
+pytest tests/test_<feature>.py -v
+```
+
+Все тесты зелёные = pass.
+
+## Layer 3: End-to-End
+
+Закрывает lecture-10 (E2E меняет результат).
+
+```bash
+# Из feature_list.json[active].verification.layer_3_e2e
+./e2e/test-<feature>.sh
+# или
+playwright test e2e/<feature>.spec.ts
+# или chrome-devtools-mcp scenarios
+```
+
+Кейс из реального проекта: unit-тесты прошли 3/3, e2e нашёл 5 дефектов на границах. Этот слой не пропускать.
+
+## Layer 4: User-reported (НОВОЕ в v5.1)
+
+Закрывает CRITICAL инсайт: «если verification passing, но пользователь говорит не работает — у нас плохие verification commands».
+
+**Этот слой = реальное использование пользователем.**
+
+Если layer 1-3 зелёные:
+- Если фича без UI → автоматический pass (нет user-facing)
+- Если UI → попросить пользователя протестировать кратко ОДИН раз
+  - «Готово feat-XXX. Проверь поведенческий сценарий: <описание из verification.layer_4_user>. Работает?»
+  - Ответ «да» → layer 4 pass
+  - Ответ «нет / не так» → запись в error-journal.md + откат фичи в active + улучшение тестов
+
+## Negative-Verification self-check
+
+Перед промоушеном в passing — повторно прогнать negative-test:
+```bash
+# Специально внести ошибку → verification должна упасть
+# Если verification всё равно зелёная — verification сломана, не код
+```
+
+Это единоразовая проверка на фичу. Закрывает реальный случай (ожидаемое значение «утекло» в контекст теста) и общий «verification not verified» gap.
+
+## State transition
+
+Все 4 слоя + negative passed → feature_list.json:
+```json
+"state": "passing",
+"evidence": {
+    "layer_1_at": "ISO timestamp",
+    "layer_2_at": "...",
+    "layer_3_at": "...",
+    "layer_4_at": "...",
+    "negative_verified_at": "...",
+    "commit_hash": "abc123"
+}
+```
+
+Auto-commit:
+```bash
+git add -A
+git commit -m "feat(<feature-id>): <feature-name>
+
+Implements: <feature-id>
+Verified-By: <verification_command_hash>
+State-Transition: active→passing"
+```
+
+## Если что-то падает
+
+### Counter увеличивается, до 3
+```python
+d['features'][f]['verify_attempts'] = d['features'][f].get('verify_attempts', 0) + 1
+```
+
+При **3 неуспешных попытках** на layer 2+3 (не syntax — syntax чинить сразу) → **auto-trigger /stuck**.
+
+## Запись в error-journal
+
+При любом fail записываем в error-journal.md:
+```markdown
+## err-NNN | <date> | <feature_id>
+**Триггер**: verification fail (layer N)
+**User reported**: no (auto-detected)
+**5 Why**: 1) ... 5) корневая причина ...
+**Класс ошибки**: <verification_gap / scope_leak / state_drift / ...>
+```
+
+## Anti-patterns
+
+- ❌ Помечать passing если хоть один слой не зелёный
+- ❌ Использовать `--skip-layer` флаги
+- ❌ Игнорировать negative-verification self-check
+- ❌ Скрывать verify_attempts от пользователя
+- ❌ Считать что unit pass = feature passing (реальный случай: unit пройдены, e2e нашёл 5 дефектов на границах)

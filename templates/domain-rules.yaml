@@ -1,0 +1,147 @@
+# Domain Rules — структурированная специфика ниши
+# Этот файл — обязательное чтение для test-researcher, user-perspective-critic, architect.
+# Без него generic best-practices не знают конкретики проекта.
+#
+# Schema: каждая секция machine-readable. НЕ свободный markdown.
+# Заполняется в /new-project + дополняется через ход проекта.
+
+# ============================================================
+# PRODUCT SEMANTICS — что считать "не-багом" в нашем продукте
+# ============================================================
+product_semantics:
+  # Главная функция бизнеса (одна фраза)
+  main_function: ""
+
+  # Что в нашем продукте — фича, а в других было бы багом
+  not_a_bug:
+    - example: "Множественные результаты на один запрос"
+      reason: "Продукт показывает статистику, не точный ответ"
+
+  # Success metric — по чему меряем что продукт работает
+  success_metric:
+    - name: ""
+      target: ""
+      measured_by: ""
+
+# ============================================================
+# TARGET MARKETS — где работают наши пользователи
+# ============================================================
+target_markets:
+  countries: []  # ISO codes: например [RU, KZ, BY] для региональных рынков
+  languages: []  # [ru, en, ...]
+  timezones: []  # [Europe/Minsk, ...]
+  notes: ""      # "Особенности рекламных платформ в регионе — уточнить под нишу"
+
+# ============================================================
+# INVARIANTS — что НЕ должно нарушаться никогда
+# ============================================================
+invariants:
+  - rule: "zero_empty_results"
+    description: "Продукт никогда не отдаёт пустую выдачу"
+    fallback: "fallback-каскад: показать похожее + плашка 'не нашли точно, вот похожее'"
+    test_assertion: "assertNotEmpty(results) для всех queries"
+
+  # Добавляйте свои инварианты тут
+
+# ============================================================
+# DISAMBIGUATION TRIGGERS — когда система спрашивает пользователя
+# ============================================================
+disambiguation_triggers:
+  - trigger: "ambiguous_query"
+    description: "Если в запросе несколько возможных интерпретаций"
+    action: "спросить пользователя ОДИН раз: 'по какому вариант — X или Y?'"
+
+  # Пример из реального проекта (B2B-инструмент):
+  # - trigger: "vendor_unspecified"
+  #   description: "Запрос про продукт без указания поставщика"
+  #   action: "спросить 'по какому поставщику?' (kills 73% vocabulary_generic fails)"
+
+# ============================================================
+# RUNTIME CONSTRAINTS — что должно соблюдаться в окружении
+# ============================================================
+runtime_constraints:
+  python_version: ""        # ">=3.10" — не использовать str|None если 3.9
+  node_version: ""          # ">=18"
+  os_compat: []             # [macos, linux]
+  dependencies: []          # [postgres>=14, redis>=6]
+
+  # Apple Silicon специфика:
+  mlx_optimized: false      # true если есть MLX-модели
+
+# ============================================================
+# ANTI-PATTERNS — что НЕ копируем из других проектов
+# ============================================================
+anti_patterns:
+  - name: "subprocess_curl_for_small_responses"
+    reason: "subprocess fork overhead = 10x медленнее для маленьких responses. Использовать requests.Session."
+    source: "реальный кейс: ретроспектива проекта-поисковика по документам"
+
+  - name: "tool_use_on_medium_models"
+    reason: "Sonnet/Haiku tool_use ненадёжен. Использовать state-machine pattern."
+    source: "реальный кейс: проект RAG-ассистента"
+
+  - name: "parallel_writes_to_one_json"
+    reason: "Data loss при concurrent writes. ОТДЕЛЬНЫЕ файлы для параллельных процессов."
+    source: "реальный кейс: проект с документным ассистентом ($4 потеряно)"
+
+  - name: "truncate_stored_text"
+    reason: "Любая truncation теряет данные. 5000-char limit = 60% accuracy ceiling."
+    source: "реальный кейс: проект с документным ассистентом"
+
+  - name: "expected_in_test_context"
+    reason: "Утечка ожидаемых ответов через файл контекста = inflated metrics (96% vs реальные 65%)."
+    source: "реальный кейс: проект с документным ассистентом"
+
+  - name: "bulk_api_without_research"
+    reason: "Запуск массового job без проверки квот/batch/task_type = $25 + 48h ban. Pre-flight checklist обязателен."
+    source: "реальный кейс: проект с документным ассистентом (CRITICAL)"
+
+# ============================================================
+# MODEL-SPECIFIC GOTCHAS — параметры моделей которые легко забыть
+# ============================================================
+model_gotchas:
+  - model: "gemini-2.5-flash"
+    rule: "thinking_budget=0 для OCR/extraction"
+    reason: "Иначе 90%+ max_output_tokens на reasoning → empty/truncated"
+    source: "реальный кейс: проект с документным ассистентом"
+
+  - model: "claude-opus-4-7"
+    rule: "Проверять thinking-параметры перед bulk call"
+    reason: "Extended Thinking по умолчанию = 21x переплата ($13.49 vs $0.64)"
+    source: "реальный кейс: проект с документным ассистентом"
+
+  # Добавляйте по мере использования
+
+# ============================================================
+# BUSINESS LANGUAGE — как пользователь говорит про свой бизнес
+# ============================================================
+glossary:
+  - term: ""
+    plain_language: ""
+    not_to_confuse_with: ""
+
+# ============================================================
+# COST POLICY — границы расходов
+# ============================================================
+cost_policy:
+  per_feature_budget_usd: 5.00
+  monthly_total_budget_usd: 100.00
+
+  alert_thresholds:
+    feature_warn_at_usd: 2.00
+    feature_block_at_usd: 5.00
+
+  forbidden_providers: []   # ["anthropic_direct_api"] если только подписка
+
+  preferred_providers:
+    image_gen: ""           # "higgsfield" / "gpt_image_2"
+    text_llm: ""            # "claude_via_subscription"
+    embeddings: ""          # "gemini-embedding-001 task_type=RETRIEVAL_DOCUMENT output_dim=768"
+
+# ============================================================
+# FRESHNESS — когда этот файл должен пересматриваться
+# ============================================================
+freshness:
+  created: "YYYY-MM-DD"
+  last_reviewed: "YYYY-MM-DD"
+  review_every_n_sessions: 10  # /audit напомнит если устарел

@@ -129,15 +129,16 @@ concurrent-lock, secrets-scope).
 
 ## Установка
 
-Через marketplace:
 ```bash
-claude plugin add vibe-dev-v5@vibe-dev-v5
-claude plugin enable vibe-dev-v5
+# 1. Добавить marketplace из GitHub
+claude plugin marketplace add andrewcigan/vibe-dev-plugin
+# 2. Установить и включить плагин
+claude plugin install vibe-dev-v5@vibe-dev-v5
 ```
 
 Или локально (для разработки самого плагина):
 ```bash
-claude --plugin-dir "/path/to/vibe-dev-plugin-v5"
+claude --plugin-dir "/path/to/vibe-dev-plugin"
 ```
 
 > Технический id плагина — `vibe-dev-v5` (от него зависят имена команд и установка). Версия — **6.1.0**.

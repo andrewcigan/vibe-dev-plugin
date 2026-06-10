@@ -11,12 +11,15 @@ ERRORS=0
 echo "=== 1. Запрещённые «человеко-дни» в шаблонах ==="
 # Игнорируем: rules/no-human-days.md (описывает правило с примерами),
 # CHANGELOG.md (история починок упоминает исторические нарушения),
-# rules/quality-gate.md (примеры anti-pattern)
+# rules/quality-gate.md (примеры anti-pattern),
+# docs/*audit*.md (отчёты аудитов цитируют реальность дословно — это данные, не оценки;
+# в shipped-набор публичного релиза docs-отчёты не входят)
 HUMAN_DAYS_HITS=$(grep -rnE "(~[0-9]+ дней|~[0-9]+ days|estimate: [0-9]+ day|[0-9]+ days minimum|на N дней|N дней)" \
     --include="*.md" --include="*.yaml" --include="*.json" . 2>/dev/null \
     | grep -v "rules/no-human-days.md" \
     | grep -v "CHANGELOG.md" \
     | grep -v "rules/quality-gate.md" \
+    | grep -v "docs/.*audit" \
     | grep -v ".git/" \
     | head -5)
 
@@ -152,6 +155,86 @@ if bash tests/hooks/test-no-personal-data.sh > /tmp/vibe-nptest.out 2>&1; then
     tail -1 /tmp/vibe-nptest.out
 else
     echo "❌ gate обезличенности упал (личное в shipped или сломана логика gate):"; cat /tmp/vibe-nptest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 18. Fail-loud обвязка хуков (краш сторожа != молчаливый fail-open; v6.2 F1) ==="
+if bash tests/hooks/test-failsafe.sh > /tmp/vibe-fltest.out 2>&1; then
+    tail -1 /tmp/vibe-fltest.out
+else
+    echo "❌ тест fail-loud упал:"; cat /tmp/vibe-fltest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 19. Корпус реальных feature_list (формы боевых данных; v6.2 F1) ==="
+if bash tests/hooks/test-real-fixtures.sh > /tmp/vibe-rftest.out 2>&1; then
+    tail -1 /tmp/vibe-rftest.out
+else
+    echo "❌ тест real-fixtures упал:"; cat /tmp/vibe-rftest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 20. Активация enforcement (heartbeat + pending-профиль + pre-commit backstop; v6.2 F2) ==="
+if bash tests/hooks/test-activation.sh > /tmp/vibe-acttest.out 2>&1; then
+    tail -1 /tmp/vibe-acttest.out
+else
+    echo "❌ тест активации упал:"; cat /tmp/vibe-acttest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 21. Единый Stop-dispatcher (приоритеты + общий cap цепочки; v6.2 F3) ==="
+if bash tests/hooks/test-stop-dispatcher.sh > /tmp/vibe-sdtest.out 2>&1; then
+    tail -1 /tmp/vibe-sdtest.out
+else
+    echo "❌ тест Stop-диспетчера упал:"; cat /tmp/vibe-sdtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 22. Clarity-gate: precision на labeled-корпусе (false positive = демоция; v6.2 F4) ==="
+if bash tests/hooks/test-clarity-gate.sh > /tmp/vibe-cgtest.out 2>&1; then
+    tail -1 /tmp/vibe-cgtest.out
+else
+    echo "❌ clarity-gate: провал (false positive на good-корпусе или потерян bad-кейс):"; cat /tmp/vibe-cgtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 23. Surface + evidence по поверхности (монотонная строгость; v6.2 F5) ==="
+if bash tests/hooks/test-surface-evidence.sh > /tmp/vibe-setest.out 2>&1; then
+    tail -1 /tmp/vibe-setest.out
+else
+    echo "❌ тест surface-evidence упал:"; cat /tmp/vibe-setest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 24. Research-гейт архитектуры + lock-паттерн (v6.2 F6) ==="
+if bash tests/hooks/test-research-gate.sh > /tmp/vibe-rgtest.out 2>&1; then
+    tail -1 /tmp/vibe-rgtest.out
+else
+    echo "❌ тест research-гейта упал:"; cat /tmp/vibe-rgtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 25. Closing-mode: деградация прав при закрытии сессии (v6.2 F7) ==="
+if bash tests/hooks/test-closing-mode.sh > /tmp/vibe-cmtest.out 2>&1; then
+    tail -1 /tmp/vibe-cmtest.out
+else
+    echo "❌ тест closing-mode упал:"; cat /tmp/vibe-cmtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 26. Секрет-гигиена: ротация + маскирование вывода (v6.2 F8) ==="
+if bash tests/hooks/test-secret-hygiene.sh > /tmp/vibe-shtest.out 2>&1; then
+    tail -1 /tmp/vibe-shtest.out
+else
+    echo "❌ тест секрет-гигиены упал:"; cat /tmp/vibe-shtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 27. Enforcement-config-protect: агент не ослабляет свои гейты (v6.2 F9) ==="
+if bash tests/hooks/test-config-protect.sh > /tmp/vibe-cptest.out 2>&1; then
+    tail -1 /tmp/vibe-cptest.out
+else
+    echo "❌ тест config-protect упал:"; cat /tmp/vibe-cptest.out; ERRORS=$((ERRORS + 1))
 fi
 
 echo ""

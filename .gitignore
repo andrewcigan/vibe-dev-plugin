@@ -1,9 +1,12 @@
 .DS_Store
+*.bak
+*.tmp
 node_modules/
 .env
 .env.*
 *.pem
 *.key
+secrets/
 .harness/cost-log.json
 .harness/tools-audit.jsonl
 .harness/locks/

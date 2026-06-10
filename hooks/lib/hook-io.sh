@@ -32,12 +32,51 @@ hook_field() {
 }
 
 # Текущий профиль строгости: VIBE_DEV_PROFILE > <cwd>/.harness/profile > "standard".
+# Двухфазная активация (v6.2 F2): bootstrap пишет "pending-<профиль>"; в боевой профиль
+# переводит ТОЛЬКО живой хук (hook_activate_pending_profile) — факт перевода = доказательство
+# активации. Для САМИХ хуков pending-X читается как X (хук работает, раз читает — окна
+# слабости нет); внешние читатели (git pre-commit backstop, /doctor, скиллы) трактуют
+# pending как «активация НЕ подтверждена» и кричат.
 hook_profile() {
   local cwd="${1:-}" p="${VIBE_DEV_PROFILE:-}"
   if [ -z "$p" ] && [ -n "$cwd" ] && [ -f "$cwd/.harness/profile" ]; then
     p="$(tr -d '[:space:]' < "$cwd/.harness/profile" 2>/dev/null)"
   fi
-  printf '%s' "${p:-standard}"
+  p="${p:-standard}"
+  case "$p" in pending-*) p="${p#pending-}" ;; esac
+  printf '%s' "$p"
+}
+
+# Версия плагина из манифеста (для heartbeat/диагностики). Пусто недопустимо -> "?".
+hook_plugin_version() {
+  local pj="$(hook_plugin_root)/.claude-plugin/plugin.json" v=""
+  [ -f "$pj" ] && v="$(jq -r '.version // empty' "$pj" 2>/dev/null)"
+  printf '%s' "${v:-?}"
+}
+
+# Heartbeat активации (v6.2 F2): каждый вызов пишущего события подтверждает «хуки физически
+# работают». Пишут SessionStart и UserPromptSubmit (раз в ход достаточно). Формат строки:
+# "<unix-ts> plugin=<версия>". Читатели сравнивают ts с now (TTL), а не mtime — надёжнее.
+hook_write_heartbeat() {
+  local cwd="${1:-}"
+  [ -n "$cwd" ] && [ -d "$cwd" ] || return 0
+  mkdir -p "$cwd/.harness" 2>/dev/null || return 0
+  printf '%s plugin=%s\n' "$(date +%s)" "$(hook_plugin_version)" > "$cwd/.harness/hooks-heartbeat" 2>/dev/null || true
+}
+
+# Перевод pending-профиля в боевой. Возвращает (stdout) активированный профиль, если перевод
+# случился, иначе пусто. Вызывается из SessionStart и UserPromptSubmit диспетчеров.
+hook_activate_pending_profile() {
+  local cwd="${1:-}" pf p
+  pf="$cwd/.harness/profile"
+  [ -f "$pf" ] || return 0
+  p="$(tr -d '[:space:]' < "$pf" 2>/dev/null)"
+  case "$p" in
+    pending-*)
+      printf '%s\n' "${p#pending-}" > "$pf" 2>/dev/null || return 0
+      printf '%s' "${p#pending-}"
+      ;;
+  esac
 }
 
 # profile_in "minimal,standard,strict" "standard" -> 0 если профиль в списке, иначе 1.
@@ -99,4 +138,52 @@ hook_emit_context() {
 hook_emit_display() {
   jq -cn --arg c "$1" '{hookSpecificOutput:{hookEventName:"MessageDisplay", displayContent:$c}}'
   exit 0
+}
+
+# Stop additionalContext (мягкий канал, движок >= 2.1.163): фидбек модели без block и без
+# пометки hook-error. На старых движках поле молча игнорируется (безопасная деградация).
+# hook_emit_stop_context <text>
+hook_emit_stop_context() {
+  jq -cn --arg c "$1" '{hookSpecificOutput:{hookEventName:"Stop", additionalContext:$c}}'
+  exit 0
+}
+
+# --- Fail-loud запуск дочерней проверки (v6.2 F1; урок бага 2026-06-06). ---
+# Раньше диспетчеры звали проверки `$(bash check.sh ... 2>/dev/null)`: краш проверки давал
+# пустой stdout -> «возражений нет» -> молчаливый fail-open ФЛАГМАНСКОГО гейта.
+# Теперь: exit != 0 у проверки -> (1) crash-артефакт .harness/hook-crashes/<label>.log
+# (последний краш каждой проверки; виден SessionStart-probe и /doctor), (2) к выводу
+# добавляется громкое предупреждение — в формате канала.
+#
+# hook_run_check <cwd> <label> <format: verdict|text> <script> [args...]
+#   verdict — каналы строк "VERDICT\tmsg" (PreToolUse/Stop/SessionStart-probe): добавляет WARN-строку.
+#   text    — inject-каналы (UserPromptSubmit/PostToolUse/MessageDisplay): добавляет абзац.
+# stdout проверки возвращается как раньше (прозрачно для здоровых проверок).
+hook_run_check() {
+  local _cwd="$1" _label="$2" _format="$3"; shift 3
+  local _out _rc _errfile _err
+  _errfile="$(mktemp 2>/dev/null || printf '/tmp/vibe-hook-err.%s' "$$")"
+  _out="$(bash "$@" 2>"$_errfile")"; _rc=$?
+  if [ "$_rc" -ne 0 ]; then
+    _err="$(head -c 300 "$_errfile" 2>/dev/null | tr '\n\t' '  ')"
+    if [ -n "$_cwd" ] && [ -d "$_cwd" ]; then
+      mkdir -p "$_cwd/.harness/hook-crashes" 2>/dev/null
+      {
+        printf 'when: %s\ncheck: %s\nexit: %s\nstderr:\n' \
+          "$(date '+%Y-%m-%d %H:%M:%S' 2>/dev/null || echo '?')" "$_label" "$_rc"
+        cat "$_errfile" 2>/dev/null
+      } > "$_cwd/.harness/hook-crashes/${_label}.log" 2>/dev/null
+    fi
+    local _msg="сторож «${_label}» УПАЛ (exit ${_rc}: ${_err:-нет stderr}) и НЕ выполнил проверку — действие им не проверено. Проверь вручную то, что он сторожит. Диагностика: .harness/hook-crashes/${_label}.log; почини причину или сообщи о баге плагина."
+    if [ "$_format" = "text" ]; then
+      if [ -n "$_out" ]; then _out="${_out}
+
+⚠️ ${_msg}"; else _out="⚠️ ${_msg}"; fi
+    else
+      _out="${_out}
+WARN	${_msg}"
+    fi
+  fi
+  rm -f "$_errfile" 2>/dev/null
+  printf '%s' "$_out"
 }

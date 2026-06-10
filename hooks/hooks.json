@@ -11,7 +11,7 @@
             "timeout": 15
           }
         ],
-        "description": "Vibe Dev: единый PreToolUse-диспетчер. Write/Edit/MultiEdit — state-machine gate на feature_list.json (UI->passing без user-evidence = block) + concurrent-write warn. Bash — bulk-API gate (массовый внешний API без pre-launch-checklist = block). Профили minimal/standard/strict через .harness/profile.",
+        "description": "Vibe Dev: единый PreToolUse-диспетчер. Write/Edit/MultiEdit — state-machine gate на feature_list.json (UI->passing без user-evidence = block) + concurrent-write warn. Bash — bulk-API gate (массовый внешний API без pre-launch-checklist = block) + счётчик повторов команд (инкремент здесь: PreToolUse приходит на каждый запуск; на 3-м подряд без успеха — warn про субагент-диагностику). Профили minimal/standard/strict через .harness/profile.",
         "id": "vibe:pre-tool-use"
       }
     ],
@@ -25,7 +25,7 @@
             "timeout": 15
           }
         ],
-        "description": "Vibe Dev: PostToolUse анти-залипание №2. Bash — счётчик подряд падающих однотипных команд (≥3 без структурных изменений) -> inject подсказки про субагент-диагностику. Edit/Write/MultiEdit -> сброс счётчика (структурное изменение = прогресс). warn/inject, не block (инструмент уже выполнен). standard/strict.",
+        "description": "Vibe Dev: PostToolUse. Живая модель событий (2.1.170): событие для Bash приходит ТОЛЬКО на успехе -> сброс счётчика повторов (инкремент в PreToolUse) + secret-mask (токен в stdout -> additionalContext-предупреждение о ротации; updatedToolOutput шлём тоже — движок 2.1.170 его игнорирует, включится на будущих). Edit/Write/MultiEdit -> сброс счётчика (структурное изменение = прогресс). warn/inject, не block. standard/strict.",
         "id": "vibe:post-tool-use"
       }
     ],

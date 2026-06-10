@@ -1,0 +1,20 @@
+{
+  "$schema": "src/anon/path.txt",
+  "version": "обезличенный текст",
+  "project": "обезличенный текст",
+  "wip_limit": 1,
+  "active": null,
+  "features": {
+    "captured": [],
+    "up_next": [],
+    "active_list": [],
+    "done": [],
+    "rejected": [],
+    "superseded": [],
+    "awaiting_research": [],
+    "awaiting_reviewer": [],
+    "awaiting_demo_milestone": [],
+    "awaiting_user_acceptance": []
+  },
+  "_notes": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+}

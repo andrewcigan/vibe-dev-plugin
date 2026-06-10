@@ -20,11 +20,20 @@ PREV="нет (legacy/pre-v6)"
 [ -f "$PROJ/.harness/engine-version" ] && PREV="$(tr -d '[:space:]' < "$PROJ/.harness/engine-version")"
 
 echo "$ENGINE" > "$PROJ/.harness/engine-version"
-echo "strict"  > "$PROJ/.harness/profile"
+# Двухфазная активация (v6.2 F2): пишем pending-strict; в боевой strict переведёт ТОЛЬКО
+# живой хук (SessionStart/UserPromptSubmit) — факт перевода = доказательство, что хуки
+# физически работают. Профиль «strict» без активных хуков больше невозможен по построению.
+echo "pending-strict" > "$PROJ/.harness/profile"
 rm -f "$PROJ/.harness/hook-mode"
 
+# Независимый backstop: git pre-commit (activation + WIP=1 scope) — работает даже без плагина.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$SCRIPT_DIR/install-precommit.sh" "$PROJ"
+
 echo "✅ Проект переведён на движок $ENGINE (было: $PREV)."
-echo "   Профиль: strict. learn-mode снят."
+echo "   Профиль: pending-strict — боевым strict станет при первом срабатывании живого хука"
+echo "   (первое сообщение в сессии Claude Code в этой папке). Если профиль остаётся pending —"
+echo "   хуки НЕ работают: pre-commit backstop заблокирует коммиты с диагностикой. learn-mode снят."
 echo ""
 echo "Теперь активны как BLOCK:"
 echo "  • UI-фича → passing без user-evidence (скриншот/прогон) — был и раньше hard"

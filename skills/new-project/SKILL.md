@@ -46,9 +46,12 @@ cp ${CLAUDE_PLUGIN_ROOT}/templates/domain-rules.yaml ./domain-rules.yaml
 # Harness-метка движка: новый проект рождается на актуальном движке = strict by default (H2).
 # Проекты без этой метки = legacy (структурные проверки warn, UI-evidence всё равно hard),
 # переводятся на strict командой /upgrade-project.
+# Двухфазная активация (v6.2 F2): пишем pending-strict — в боевой strict переведёт ТОЛЬКО
+# живой хук на следующем сообщении (факт перевода = доказательство, что enforcement активен).
+# Если профиль остался pending-strict — хуки НЕ работают: НЕ продолжай молча, чини активацию (/doctor).
 mkdir -p .harness
 echo "6.0" > .harness/engine-version
-echo "strict" > .harness/profile
+echo "pending-strict" > .harness/profile
 
 # Создать стандартный .gitignore сразу (closes security gap)
 cat > .gitignore <<'EOF'
@@ -66,9 +69,18 @@ EOF
 
 # Init git
 git init -q
+
+# Pre-commit backstop (v6.2 F2): activation-страж + WIP=1 scope. Независимый канал —
+# блокирует коммиты, если профиль строгости заявлен, а живые хуки не работают.
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-precommit.sh" "$(pwd)"
+
 git add .
 git commit -q -m "init: vibe-dev harness bootstrap"
 ```
+
+После bootstrap скажи пользователю одной строкой: enforcement активируется на следующем
+сообщении (профиль pending-strict → strict переведёт живой хук). Если в следующем ходе
+НЕ появилось подтверждение активации — запусти `/doctor` и чини, не продолжай молча.
 
 ### Шаг 3: Бизнес-интервью (заполнение AGENTS.md + domain-rules.yaml)
 

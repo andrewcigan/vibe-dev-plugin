@@ -172,21 +172,71 @@ for feat_id, state, f in all_features:
     if state not in valid_states and state not in ('done',):
         errors_soft.append("%s: state '%s' не в schema (разрешены: %s)" % (feat_id, state, sorted(valid_states)))
 
+# --- Surface (v6.2 F5): поверхность фичи определяет ТИП обязательного evidence. ---
+# МОНОТОННАЯ СТРОГОСТЬ: файловая эвристика — всегда ПОЛ; заявленное поле (surface, иначе
+# category) может только УЖЕСТОЧИТЬ проверку, никогда не смягчить. Иначе declared=lib
+# отключал бы существующий UI-gate (регрессия механизма 2).
+SURFACE_RANK = {'ui': 3, 'api': 2, 'service': 2, 'job': 2, 'cli': 2,
+                'lib': 1, 'content': 1, 'data': 1, 'integration': 1, '': 0}
+
+def heuristic_surface(affected):
+    best = ''
+    for af in affected:
+        if not isinstance(af, str):
+            continue
+        if re.search(r'(components|pages|app/.*\.tsx|app/.*\.jsx|\.vue|\.svelte)', af):
+            return 'ui'  # максимум — дальше не смотрим
+        if not best and re.search(r'(/api/|^api/|routes?/|controllers?/|endpoints?/)', af, re.I):
+            best = 'api'
+        if not best and re.search(r'(jobs?/|cron|workers?/|queue)', af, re.I):
+            best = 'job'
+        if not best and re.search(r'(^|/)(bin|cli)/', af, re.I):
+            best = 'cli'
+    return best
+
 for feat_id, state, f in all_features:
     if state in ('passing', 'done'):
-        evidence = f.get('evidence', {}) or {}
-        if not evidence and not f.get('verification', {}).get('layer_1_syntax'):
-            warnings.append("%s: state=passing, но evidence отсутствует (нужны layer_1..N timestamps)" % feat_id)
-        category = f.get('category', '')
-        affected = f.get('affected_files', []) or []
-        is_ui = (category == 'ui') or any(
-            isinstance(af, str) and re.search(r'(components|pages|app/.*\.tsx|app/.*\.jsx|\.vue|\.svelte)', af)
-            for af in affected
-        )
-        if is_ui:
+        # verification/evidence полиморфны по схеме: словарь (layer_1..N) ЛИБО строка
+        # ("e2e: проверил руками") ЛИБО список шагов. Нормализуем тип ПЕРЕД .get(),
+        # иначе Python падает на строке/списке → пустой stdout → gate молча пропускает всё.
+        evidence_raw = f.get('evidence')
+        evidence = evidence_raw if isinstance(evidence_raw, dict) else {}
+        verification = f.get('verification')
+        has_layer1 = isinstance(verification, dict) and bool(verification.get('layer_1_syntax'))
+        category = str(f.get('category') or '').strip().lower()
+        affected = f.get('affected_files') or []
+        if not isinstance(affected, list):
+            affected = []
+
+        declared = str(f.get('surface') or '').strip().lower()
+        if not declared and category in SURFACE_RANK:
+            declared = category
+        heur = heuristic_surface(affected)
+        if SURFACE_RANK.get(declared, 0) >= SURFACE_RANK.get(heur, 0):
+            eff = declared
+        else:
+            eff = heur
+            if declared:
+                warnings.append(
+                    "%s: surface='%s', но по affected_files похоже на '%s' — заявленное поле может только "
+                    "УЖЕСТОЧАТЬ проверку (эвристика остаётся полом); проверь surface или файлы" % (feat_id, declared, heur))
+
+        if eff == 'ui':
             if not (evidence.get('layer_4_user_at') or evidence.get('layer_5_user_at')):
                 # UI-evidence — критичный инвариант B2/feat-204: hard BLOCK всегда (не понижается)
                 errors_hard.append("%s: UI-фича в passing БЕЗ layer_4/5 user-evidence (скриншот/прогон). Закрывает B2 (feat-204)." % feat_id)
+        elif eff in ('api', 'service', 'job', 'cli'):
+            # Evidence по типу поверхности (lane-таблица): след РЕАЛЬНОГО вызова, не юнит-тесты.
+            # Мягкий ввод v6.2: WARN (не block) — на живых проектах старые passing-фичи без evidence
+            # не должны заблокировать исправление файла; ужесточение до SOFT_LEVEL — после обкатки.
+            if not evidence_raw:
+                warnings.append(
+                    "%s: surface=%s в passing БЕЗ evidence. Нужен след реального вызова: api — curl+статус; "
+                    "job — лог реального прогона; cli — команда+exit code; service — behavior-probe "
+                    "(не pgrep). Заполни evidence." % (feat_id, eff))
+        else:
+            if not evidence_raw and not has_layer1:
+                warnings.append("%s: state=passing, но evidence отсутствует (нужны layer_1..N timestamps)" % feat_id)
 
 # Active-gate: фича в active требует артефакты, которые должны родиться ДО реализации.
 # Нет артефакта = этап пропущен = нельзя в active. Закрывает H7 (критику/ревью просили
@@ -225,12 +275,14 @@ research_content = _read_dir(os.path.join('docs', 'research'))
 for feat_id, state, f in all_features:
     if state != 'active':
         continue
-    size = (f.get('size_estimate') or '').upper()
+    size = str(f.get('size_estimate') or '').upper()
     if size in ('M', 'L') and feat_id not in ts_content:
         errors_soft.append(
             "%s: фича размера %s переходит в active без критики — нет docs/test-strategy.md с её id. "
             "Запусти dual critique (test-researcher + user-perspective-critic) → synthesizer, ПОТОМ active. Закрывает H7." % (feat_id, size))
-    affected = f.get('affected_files', []) or []
+    affected = f.get('affected_files') or []
+    if not isinstance(affected, list):
+        affected = []
     is_data = (f.get('category', '') == 'data') or any(
         isinstance(af, str) and re.search(r'(schema|migrations|prisma|drizzle)', af) for af in affected)
     if is_data and feat_id not in dm_content:

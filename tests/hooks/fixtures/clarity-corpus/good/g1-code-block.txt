@@ -1,0 +1,7 @@
+Готово, проверка прошла. Вот команда, которой всё собрано:
+
+```bash
+deploy --payload config.json   # middleware + enforcement + embedding
+```
+
+Кнопка появляется, менеджер может выдать промокод.

@@ -25,13 +25,22 @@ PROFILE="$(hook_profile "$CWD")"
 ROOT="$(hook_plugin_root)"
 profile_in "standard,strict" "$PROFILE" || hook_emit_pass
 
-ISSUES="$(HOOK_PAYLOAD="$HOOK_INPUT" bash "$ROOT/hooks/checks/clarity-detector.sh" "$CWD" 2>/dev/null)"
+# hook_run_check (fail-loud): краш детектора -> пометка на экране + crash-артефакт.
+ISSUES="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "clarity-detector" text "$ROOT/hooks/checks/clarity-detector.sh" "$CWD")"
 if [ -n "$(printf '%s' "$ISSUES" | tr -d '[:space:]')" ]; then
+  MSG="$(hook_field '.message_text')"
+  case "$ISSUES" in
+    "⚠️ сторож"*)
+      # Детектор УПАЛ — это не «нарушение языка»: в лог нарушений не пишем, краш показываем.
+      hook_emit_display "$MSG
+
+$ISSUES"
+      ;;
+  esac
   # (1) метрика повторов — лог нарушений (для /audit и саморефлексии).
   mkdir -p "$CWD/.harness" 2>/dev/null
   printf '%s\t%s\n' "$(date '+%Y-%m-%d %H:%M' 2>/dev/null || echo '?')" "$ISSUES" >> "$CWD/.harness/clarity-violations.log" 2>/dev/null
   # (2) флаг на экране пользователя (оригинал + пометка). Только экран — Claude читает оригинал.
-  MSG="$(hook_field '.message_text')"
   hook_emit_display "$MSG
 
 ⚠️ ловец непонятного: $ISSUES. Это для тебя сигнал — можешь попросить сказать проще/по-деловому."

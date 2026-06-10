@@ -1,0 +1,537 @@
+{
+  "$schema": "src/anon/path.txt",
+  "version": "обезличенный текст",
+  "wip_limit": 1,
+  "active": null,
+  "features": {
+    "captured": [
+      {
+        "id": "feat-001",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "integration",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст"
+        },
+        "state": "обезличенный текст"
+      },
+      {
+        "id": "feat-002",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "integration",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст"
+        },
+        "state": "обезличенный текст"
+      },
+      {
+        "id": "feat-003",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "обезличенный текст",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный текст"
+        },
+        "state": "обезличенный текст"
+      }
+    ],
+    "up_next": [],
+    "active_list": [],
+    "done": [
+      {
+        "id": "feat-004",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "ui",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_5_user": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "test_strategy": "обезличенный текст"
+        },
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_e2e_at": "обезличенный текст",
+          "layer_4_e2e_at": "обезличенный текст",
+          "layer_5_user_at": "обезличенный текст",
+          "test_strategy": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "build": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "e2e": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "screenshots": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "invariants": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "bug_found_and_fixed": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "decisions": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "known_limits": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      },
+      {
+        "id": "feat-005",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "api",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "test_strategy": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_e2e_at": "обезличенный текст",
+          "test_strategy": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "tests": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "negative_verification": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "live_tunnel": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "security": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "data_model": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "decisions": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "known_limits": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      },
+      {
+        "id": "feat-006",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "обезличенный текст",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_4_e2e": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_integration_smoke_at": "обезличенный текст",
+          "layer_4_e2e_at": "обезличенный текст",
+          "test_strategy": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "tests": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "negative_verification": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "false_positive_found_and_fixed": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "data_model": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "asymmetry": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "integration": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      },
+      {
+        "id": "feat-007",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "infra",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "обезличенный текст"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_4_manual": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_integration_smoke_at": "обезличенный текст",
+          "layer_4_manual_at": "обезличенный текст",
+          "tests": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "manual_run": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "launchd_run": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "decision_node_pin": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "decision_redeploy_gate": "обезличенный текст",
+          "legacy_debt_closed": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "cost": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-008",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_5_user": "обезличенный текст"
+        },
+        "evidence": {
+          "artifact": "src/anon/path.txt",
+          "layer_5_user_at": "обезличенный текст"
+        },
+        "state": "passing"
+      },
+      {
+        "id": "feat-009",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "business_invariant": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_4_e2e": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "evidence": {
+          "data_model_review_at": "обезличенный текст",
+          "review_artifact": "src/anon/path.txt",
+          "review_verdict": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_integration_smoke_at": "обезличенный текст",
+          "layer_4_e2e_at": "обезличенный текст",
+          "tests_passed": "обезличенный текст",
+          "note": "обезличенный текст"
+        },
+        "state": "passing",
+        "verification_self_check": {
+          "negative_test_at": "обезличенный текст",
+          "negative_test_note": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-010",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "обезличенный текст",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный текст"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_3_integration_smoke_at": "обезличенный текст",
+          "layer_4_e2e_at": "обезличенный текст",
+          "tests": "обезличенный текст",
+          "live_run": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "staged_defense_verified": "обезличенный текст",
+          "cost": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-011",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "integration",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный текст"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_1_syntax_at": "обезличенный текст",
+          "layer_2_runtime_at": "обезличенный текст",
+          "layer_4_e2e_at": "обезличенный текст",
+          "tests": "обезличенный текст",
+          "live_run": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "note": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-012",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "ui",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный текст",
+          "layer_5_user": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_1_2_at": "обезличенный текст",
+          "layer_5_user_at": "обезличенный текст",
+          "note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "layer_5_user": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "smoke": "обезличенный текст",
+          "stack": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-013",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "api",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_2_at": "обезличенный текст",
+          "note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "verified": "обезличенный текст"
+        }
+      },
+      {
+        "id": "feat-014",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "captured_at": "обезличенный текст",
+        "category": "integration",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "business_invariant": "обезличенный текст",
+        "verification": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный текст",
+          "layer_3_integration_smoke": "обезличенный текст",
+          "layer_4_e2e": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        },
+        "state": "passing",
+        "evidence": {
+          "layer_4_e2e_at": "обезличенный текст",
+          "url": "src/anon/path.txt",
+          "verified": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "approach": "обезличенный текст",
+          "cost": "обезличенный текст"
+        }
+      }
+    ],
+    "rejected": [],
+    "superseded": [],
+    "awaiting_research": [],
+    "awaiting_reviewer": [],
+    "awaiting_demo_milestone": [],
+    "awaiting_user_acceptance": []
+  },
+  "_notes": {
+    "mode": "обезличенный текст",
+    "source_of_truth": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "data_model_gate": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "waves": {
+      "wave_1": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "wave_2": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "wave_3": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "wave_4": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "next_step": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "decomposition_changes": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "live_url": "src/anon/path.txt"
+  }
+}

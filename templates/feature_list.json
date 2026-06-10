@@ -11,6 +11,7 @@
         "description": "Пользователь загружает PDF/TXT с локального диска",
         "captured_at": "YYYY-MM-DD",
         "category": "api",
+        "surface": "api",
         "size_estimate": "M",
         "business_invariant": "ref: domain-rules.invariants[0]"
       }
@@ -48,6 +49,7 @@
       "name": "Короткое название бизнес-языком",
       "description": "Что пользователь сможет делать",
       "category": "infra|data|api|ui|workflow|integration — обязательно. Определяет path-selection в /feature и evidence требования при passing.",
+      "surface": "ui|api|cli|job|service|lib|content — ПОВЕРХНОСТЬ: где фичу видит пользователь (v6.2 F5). Определяет ТИП обязательного evidence (rules/verification-lanes.md). Монотонность: файловая эвристика — пол, заявленное поле может только УЖЕСТОЧИТЬ (lib при .tsx в affected не отключит UI-gate); ui — критик пользовательской перспективы обязателен при любом размере.",
       "dependencies": ["feat-XXX", "..."],
       "size_estimate": "S (<1h work, light path) / M / L (heavy path with dual critique)",
       "affected_files": ["src/...", "tests/..."],

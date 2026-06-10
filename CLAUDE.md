@@ -1,6 +1,6 @@
 # Vibe Dev v6 — Мозг плагина
 
-> ✅ **v6.1 — публичный релиз: enforcement из текста в механизм + онбординг.** 20 проверяемых механизмов (hooks из коробки), таблица трассировки [docs/traceability.md](docs/traceability.md) с тестом 3 атрибутов, self-check на плагин, gate обезличенности. **Онбординг `/setup`** собирает портрет пользователя → стиль общения подстраивается под него (без портрета — нейтральный дефолт). Построено после аудита ~20 реальных проектов v5. id плагина — `vibe-dev` (версия 6.1.0).
+> ✅ **v6.2 — enforcement как проверяемый факт.** **37 механизмов** ([docs/traceability.md](docs/traceability.md)): активация хуков доказуема (heartbeat + двухфазный профиль pending→strict + независимый git pre-commit backstop + `/doctor`), краш сторожа не молчит (fail-loud + crash-артефакты + корпус реальных форм данных), **clarity-gate на финальное сообщение** (Stop-block с precision-гейтом на корпусе из 54 боевых сессий — боль №1 переведена из дисциплины в механизм), evidence по поверхности фичи (монотонная строгость), **обязательный research перед архитектурой** (lock-паттерн: пропуск только явной фразой пользователя), closing-mode (закрытие сессии не кодит), секрет-гигиена, config-protect. Построено по аудиту 54 боевых сессий + рисёрчу (Anthropic/OpenAI harness-статьи, pilot-shell/BMAD/ECC/ralph-wiggum) + независимой критике. id плагина — `vibe-dev` (версия 6.2.0, НЕ зарелизена публично — релиз по команде владельца).
 
 ## Идентичность
 
@@ -45,10 +45,10 @@
 ## Pipeline
 
 ### FAST (5 этапов) — обычный режим
-1. `/new-project` — интервью + bootstrap harness (4 файла на старте: AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml)
-2. `/architecture` + `/choose-stack` — TOC bottleneck, stack
+1. `/new-project` — интервью + bootstrap harness (4 файла на старте: AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml) + pre-commit backstop
+2. `/architecture` + `/choose-stack` — **Шаг 0: ОБЯЗАТЕЛЬНЫЙ research** (github-researcher + best-practices-researcher → docs/research/; hook блокирует ARCHITECTURE без него; пропуск — только явной фразой пользователя) → TOC bottleneck, stack
 3. `/design-handoff` — бриф для Claude Design (если UI)
-4. `/feature` loop — WIP=1, test-researcher + user-critic, /verify (4-layer)
+4. `/feature` loop — WIP=1, test-researcher + user-critic (для surface=ui — при любом размере), /verify (4-layer + lane-evidence по поверхности)
 5. `/ship` — final validation ≥90% + retrospective
 
 ### FULL (10 этапов) — рынок, маркетинг
@@ -155,6 +155,6 @@ claude --plugin-dir "/path/to/vibe-dev-plugin"
 
 ## Версия
 
-**v6.1.0** — Публичный релиз. Enforcement из текста в механизм (20 механизмов): UI-evidence, критика-до-реализации (H7), ревью модели данных, bulk-API gate, анти-залипание ×2, hookify, смена-модели без smoke, vendor-research gate, язык-ловец, gate обезличенности и др. Таблица трассировки + self-check. **Онбординг** (`/setup`) собирает портрет пользователя → язык-ловец и формат развилок подстраиваются под него (без портрета — нейтральный дефолт). Построено после аудита ~20 реальных проектов v5.
+**v6.2.0** — Enforcement как проверяемый факт (37 механизмов). Новое поверх v6.1: fail-loud обвязка хуков + crash-артефакты + корпус реальных форм; активация (heartbeat + pending-профиль + git pre-commit backstop + /doctor); единый Stop-dispatcher (cap цепочки); clarity-gate финальных сообщений (precision-гейт на labeled-корпусе); surface + evidence по поверхности (монотонная строгость); research-гейт архитектуры + lock-паттерн; closing-mode; секрет-гигиена (ротация + маскирование вывода); config-protect; fact-forcing; канон сообщений в портрете. Построено по аудиту 54 боевых сессий + рисёрчу ×3 + независимой критике (docs/v6.2-plan-2026-06-10.md). **НЕ зарелизена публично** — релиз по команде владельца (добавит UX-правки).
 
 _История: v5.x — harness-enforcement архитектура после критики v5.0 на 3 реальных проектах (проект-поисковик по документам / проект RAG-ассистента / проект с документным ассистентом); 8 must-fix механизмов (pre-flight bulk-API gate, concurrent-write lock, stuck auto-trigger, dual critique, domain-rules.yaml schema, Quality Gate, cost-preview, light/heavy path)._

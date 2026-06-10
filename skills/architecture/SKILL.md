@@ -8,9 +8,32 @@ when_to_use: После интервью (FAST) или после /research (FUL
 
 V0 архитектура через architect agent.
 
+## Шаг 0 — ОБЯЗАТЕЛЬНЫЙ рисёрч (v6.2 F6; распоряжение владельца плагина 2026-06-10)
+
+Перед архитектурой — детальный рисёрч best practices + GitHub-репо. Цена архитектурной
+ошибки для непрограммиста выше цены рисёрча. **Hook блокирует запись docs/ARCHITECTURE*.md
+без артефакта рисёрча** (architecture-research-gate).
+
+```bash
+# Маркер явного пропуска (его ставит ТОЛЬКО хук по фразе пользователя «пропусти рисёрч»):
+if [ -f .harness/locks/research-skipped ]; then
+  cat .harness/locks/research-skipped   # покажи цитату, потом ПОТРЕБИ маркер (одноразовый):
+  rm .harness/locks/research-skipped
+  # → рисёрч пропущен, иди к шагу 1
+fi
+```
+
+Если маркера нет — запусти ПАРАЛЛЕЛЬНО двух агентов (они уже в плагине):
+- `github-researcher` — ≥3 репо похожих систем, ≥1 клонировать и разобрать паттерны/анти-паттерны
+- `best-practices-researcher` — ≥5 свежих практик по проблемным классам проекта
+
+Сведи результаты в `docs/research/architecture-research.md`. Глубина по размеру проекта:
+S (лендинг/прототип) — короткий обзор (по 1-2 источника на агента); M/L — полный.
+НЕ спрашивай пользователя «делать ли рисёрч» — дефолт ДА; пропуск только его явной фразой.
+
 ## Что происходит
 
-1. Subagent `architect` (Opus) читает AGENTS.md, PRODUCT.md, domain-rules.yaml, (FULL) research/*
+1. Subagent `architect` (Opus) читает AGENTS.md, PRODUCT.md, domain-rules.yaml, **docs/research/*** (теперь и в FAST)
 2. Identify bottleneck (TOC) — узкое место для главной функции
 3. ≤10 компонентов (Karpathy Simplicity First)
 4. Mermaid-диаграмма data flow

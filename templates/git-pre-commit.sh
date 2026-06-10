@@ -1,0 +1,78 @@
+#!/bin/bash
+# Vibe Dev — git pre-commit проекта (ставится scripts/install-precommit.sh при bootstrap/upgrade).
+#
+# Два блока:
+#   1) ACTIVATION BACKSTOP (v6.2 F2) — независимый канал: живёт в .git/hooks/, работает даже
+#      если плагин Claude Code вообще не загрузился. Профиль строгости без живых хуков =
+#      enforcement-театр («харнес не поднялся») — ловим на каждом коммите.
+#   2) WIP=1 SCOPE — diff ⊆ active feature.affected_files (копия проверки в .harness/hooks/).
+#
+# Этот файл самодостаточен по блоку 1 (ноль зависимостей от плагина) — в этом его смысл.
+
+set -u
+ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+HARNESS="$ROOT_DIR/.harness"
+TTL=1800  # 30 мин: heartbeat старше — сессия без живых хуков (или вне Claude Code)
+
+# --- 1. ACTIVATION BACKSTOP ---
+if [ -d "$HARNESS" ] && [ ! -f "$HARNESS/hooks-disabled" ]; then
+  PROFILE=""
+  [ -f "$HARNESS/profile" ] && PROFILE="$(tr -d '[:space:]' < "$HARNESS/profile" 2>/dev/null)"
+
+  fail_activation() {
+    cat >&2 <<EOF
+🚨 КОММИТ ОСТАНОВЛЕН: enforcement не активен, хотя профиль строгости «${PROFILE}» заявлен.
+
+Причина: $1
+
+Профиль без живых сторожей — это театр строгости: проверки (UI-приёмка, scope, bulk-API)
+молча НЕ выполняются. Ровно так выглядел провал «харнес не поднялся» в боевых проектах.
+
+Как починить (по порядку):
+  1. Плагин включён?   claude plugin list | grep vibe-dev   (если нет — установи/включи)
+  2. Перезапусти сессию Claude Code В ЭТОЙ папке (хуки подхватываются при старте).
+  3. После рестарта первое же сообщение активирует профиль (хук подтвердит сам).
+
+Осознанно работаешь БЕЗ плагина (например, правишь руками вне Claude Code):
+  touch .harness/hooks-disabled        # выключает этот backstop (журналируется в /audit)
+
+Крайний случай (НЕ рекомендуется): git commit --no-verify — инцидент для error-journal.
+EOF
+    exit 1
+  }
+
+  case "$PROFILE" in
+    pending-*)
+      fail_activation "профиль «${PROFILE}» так и не подтверждён живым хуком (bootstrap прошёл, плагин — нет)."
+      ;;
+    standard|strict)
+      HB="$HARNESS/hooks-heartbeat"
+      if [ ! -f "$HB" ]; then
+        fail_activation "нет heartbeat (.harness/hooks-heartbeat) — ни один хук ни разу не отработал в этом проекте."
+      else
+        HB_TS="$(awk '{print $1; exit}' "$HB" 2>/dev/null)"
+        NOW="$(date +%s)"
+        case "$HB_TS" in
+          ''|*[!0-9]*) fail_activation "heartbeat повреждён (.harness/hooks-heartbeat)." ;;
+          *)
+            AGE=$((NOW - HB_TS))
+            if [ "$AGE" -gt "$TTL" ]; then
+              fail_activation "heartbeat устарел (${AGE}с > ${TTL}с) — в текущей сессии хуки не работают."
+            fi
+            ;;
+        esac
+      fi
+      ;;
+    *)
+      : # minimal / пусто — backstop не применяется
+      ;;
+  esac
+fi
+
+# --- 2. WIP=1 SCOPE (копия проверки, установлена рядом с проектом) ---
+SCOPE_CHECK="$HARNESS/hooks/pre-commit-scope.sh"
+if [ -f "$SCOPE_CHECK" ]; then
+  bash "$SCOPE_CHECK" || exit 1
+fi
+
+exit 0

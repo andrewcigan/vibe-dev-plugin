@@ -8,10 +8,17 @@
     {
       "name": "vibe-dev",
       "source": "./",
-      "description": "Vibe Dev v6 — harness-first pipeline от бизнес-идеи до работающего продукта. 20 enforcement-механизмов (hooks из коробки) + онбординг под пользователя (/setup), state-machine, dual critique, анти-залипание, язык-ловец, error-journal, таблица трассировки.",
-      "version": "6.1.0",
+      "description": "Vibe Dev v6.2 — harness-first pipeline от бизнес-идеи до работающего продукта. 37 enforcement-механизмов: активация хуков с backstop, fail-loud, clarity-gate финальных сообщений, evidence по поверхности, research-гейт архитектуры, closing-mode, секрет-гигиена, config-protect + онбординг (/setup) и трассировка с self-check.",
+      "version": "6.2.0",
       "category": "development",
-      "tags": ["harness", "pipeline", "vibe-dev", "lean", "toc", "enforcement"]
+      "tags": [
+        "harness",
+        "pipeline",
+        "vibe-dev",
+        "lean",
+        "toc",
+        "enforcement"
+      ]
     }
   ]
 }

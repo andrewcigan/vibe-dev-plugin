@@ -19,7 +19,9 @@ PASS=0; FAIL=0
 
 unset VIBE_DEV_PROFILE CLAUDE_PLUGIN_ROOT HOOK_PAYLOAD 2>/dev/null || true
 
-run() { printf '%s' "$1" | bash "$DISPATCH"; }
+# Сброс цепочки Stop-блоков перед каждым прогоном: этот тест проверяет ЛОГИКУ intent-детектора,
+# общий cap цепочки (F3) тестируется отдельно в test-stop-dispatcher.sh.
+run() { rm -f "$PROJ/.harness/stop-chain-count" 2>/dev/null; printf '%s' "$1" | bash "$DISPATCH"; }
 assert_contains() {
   if printf '%s' "$2" | grep -q -- "$3"; then
     PASS=$((PASS+1)); printf '  ok   %s\n' "$1"

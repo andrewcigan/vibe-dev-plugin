@@ -215,6 +215,25 @@ OUT="$(run "$(write_payload "$FL" "$ACTIVE_INTEG")")"
 assert_empty "27. integration-фича + research с id -> pass" "$OUT"
 rm -rf "$PROJ/docs"
 
+# --- регрессия: поле verification/evidence как СТРОКА или СПИСОК не должно ронять хук ---
+# Реальные проекты пишут проверку человеческим текстом ("e2e: проверил руками") или
+# списком шагов — не только словарём layer_1..N. Раньше хук делал .get() вслепую и падал
+# (AttributeError), Python-краш → пустой stdout → gate молча пропускал ВСЁ (fail-open).
+# Поймано при обкатке на боевом проекте Sensei (feat-15: verification-строкой).
+VER_STR_UI='{"features":{"passing_list":[{"id":"feat-301","state":"passing","category":"ui","affected_files":["src/components/A.tsx"],"verification":"e2e: проверил руками","evidence":{}}]}}'
+VER_LIST_UI='{"features":{"passing_list":[{"id":"feat-302","state":"passing","category":"ui","affected_files":["src/components/A.tsx"],"verification":["шаг 1","шаг 2"],"evidence":{}}]}}'
+EVID_STR_UI='{"features":{"passing_list":[{"id":"feat-303","state":"passing","category":"ui","affected_files":["src/components/A.tsx"],"evidence":"ссылка на коммит abc123"}]}}'
+rm -f "$FL"
+# 28. verification-СТРОКА: хук не падает, UI-gate доходит -> deny (до фикса: краш -> пусто -> НЕ deny)
+OUT="$(run "$(write_payload "$FL" "$VER_STR_UI")")"
+assert_contains "28. verification-строка не роняет хук, UI-gate -> deny" "$OUT" '"permissionDecision":"deny"'
+# 29. verification-СПИСОК: не падает, UI-gate -> deny
+OUT="$(run "$(write_payload "$FL" "$VER_LIST_UI")")"
+assert_contains "29. verification-список не роняет хук, UI-gate -> deny" "$OUT" '"permissionDecision":"deny"'
+# 30. evidence-СТРОКА (ссылка на коммит, не словарь): не падает, UI без layer_4/5 -> deny
+OUT="$(run "$(write_payload "$FL" "$EVID_STR_UI")")"
+assert_contains "30. evidence-строка не роняет хук, UI-gate -> deny" "$OUT" '"permissionDecision":"deny"'
+
 rm -rf "$PROJ" "$NOPROJ"
 echo ""
 echo "Итог: PASS=$PASS FAIL=$FAIL"

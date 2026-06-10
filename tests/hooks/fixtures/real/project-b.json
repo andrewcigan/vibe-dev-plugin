@@ -1,0 +1,522 @@
+{
+  "version": "обезличенный текст",
+  "wip_limit": 1,
+  "active": "обезличенный текст",
+  "_source": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_roadmap": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_next_session": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_metrics": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_pilot_result_2026-06-06": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_wave4_result_2026-06-06": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "_wave2_result_2026-06-06": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "features": {
+    "captured": [
+      {
+        "id": "feat-001",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "обезличенный текст",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-002",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "integration",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-003",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-004",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-005",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-006",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-007",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-008",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-009",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "обезличенный текст",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-010",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-011",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-012",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-013",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-014",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "обезличенный текст",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-015",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-016",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-017",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-018",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-019",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-020",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-021",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "infra",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-022",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "infra",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-023",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "integration",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст",
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-024",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст"
+      },
+      {
+        "id": "feat-025",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "infra",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст"
+      }
+    ],
+    "up_next": [
+      {
+        "id": "feat-026",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "state": "active",
+        "started_at": "обезличенный текст"
+      },
+      {
+        "id": "feat-027",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      },
+      {
+        "id": "feat-028",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "infra",
+        "size_estimate": "M",
+        "dependencies": [],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст"
+      }
+    ],
+    "active_list": [],
+    "done": [
+      {
+        "id": "feat-029",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "integration",
+        "size_estimate": "S",
+        "dependencies": [],
+        "affected_files": [
+          "src/anon/path.txt",
+          "src/anon/path.txt",
+          "src/anon/path.txt"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст",
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "completed_at": "обезличенный текст",
+        "verification_note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "evidence": {
+          "layer_1_syntax": "обезличенный текст",
+          "layer_2_runtime": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+        }
+      },
+      {
+        "id": "feat-030",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "S",
+        "dependencies": [],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст",
+        "state": "passing",
+        "completed_at": "обезличенный текст",
+        "verification_note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      {
+        "id": "feat-031",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "infra",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст",
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "completed_at": "обезличенный текст",
+        "verification_note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      {
+        "id": "feat-032",
+        "name": "обезличенный текст",
+        "description": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "category": "data",
+        "size_estimate": "L",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "note": "обезличенный текст",
+        "state": "passing",
+        "started_at": "обезличенный текст",
+        "progress": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "completed_at": "обезличенный текст",
+        "verification_note": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    ],
+    "rejected": [],
+    "superseded": [
+      {
+        "id": "feat-033",
+        "name": "обезличенный текст",
+        "description": "обезличенный текст",
+        "category": "data",
+        "size_estimate": "M",
+        "dependencies": [
+          "обезличенный текст"
+        ],
+        "verification_command": "обезличенный текст",
+        "done_when": "обезличенный текст",
+        "business_invariant": "обезличенный текст",
+        "superseded_by": "обезличенный текст",
+        "superseded_at": "обезличенный текст",
+        "superseded_reason": "обезличенный длинный текст: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+    ],
+    "awaiting_research": [],
+    "awaiting_reviewer": [],
+    "awaiting_demo_milestone": [],
+    "awaiting_user_acceptance": []
+  }
+}

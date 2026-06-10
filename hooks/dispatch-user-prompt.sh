@@ -19,27 +19,89 @@ CWD="$(hook_field '.cwd')"
 # Guard: только vibe-target-проекты.
 hook_is_vibe_project "$CWD" || hook_emit_pass
 
+# Активация (v6.2 F2): heartbeat «хуки живы» + перевод pending-профиля в боевой.
+# UserPromptSubmit срабатывает каждое сообщение -> bootstrap активируется без рестарта.
+hook_write_heartbeat "$CWD"
+ACTIVATED="$(hook_activate_pending_profile "$CWD")"
+
+# Новый промпт пользователя = новая цепочка хода: сброс общего cap Stop-блоков (F3)
+# и счётчика дописок clarity-gate (F4).
+rm -f "$CWD/.harness/stop-chain-count" "$CWD/.harness/clarity-stop-count" 2>/dev/null
+
 PROFILE="$(hook_profile "$CWD")"
 ROOT="$(hook_plugin_root)"
 
 # Активен только в standard,strict.
-profile_in "standard,strict" "$PROFILE" || hook_emit_pass
+if ! profile_in "standard,strict" "$PROFILE"; then
+  [ -n "$ACTIVATED" ] && hook_emit_context "UserPromptSubmit" "✅ Vibe Dev: enforcement активирован живым хуком — профиль «${ACTIVATED}» подтверждён."
+  hook_emit_pass
+fi
 
 PIECES=""
+[ -n "$ACTIVATED" ] && PIECES="✅ Vibe Dev: enforcement активирован живым хуком — профиль «${ACTIVATED}» подтверждён (скажи пользователю одной строкой)."
 
 # H6: сигнал завершения сессии -> cold-start чеклист + маркер handoff-pending.
-HANDOFF="$(HOOK_PAYLOAD="$HOOK_INPUT" bash "$ROOT/hooks/checks/handoff-reminder.sh" "$CWD" 2>/dev/null)"
+# hook_run_check (fail-loud): краш проверки -> абзац-предупреждение + crash-артефакт.
+HANDOFF="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "handoff-reminder" text "$ROOT/hooks/checks/handoff-reminder.sh" "$CWD")"
 if [ -n "$(printf '%s' "$HANDOFF" | tr -d '[:space:]')" ]; then
-  # Маркер для SessionStart-probe (loop H6): следующий старт проверит, обновился ли
-  # SESSION.md после этого сигнала. Если нет — handoff мог не записаться -> warn.
-  mkdir -p "$CWD/.harness" 2>/dev/null
-  : > "$CWD/.harness/handoff-pending" 2>/dev/null
-  PIECES="$HANDOFF"
+  case "$HANDOFF" in
+    "⚠️ сторож"*)
+      # Проверка УПАЛА, не успев ничего решить — это НЕ сигнал завершения: маркеры не ставим,
+      # но предупреждение о краше доносим.
+      ;;
+    *)
+      # Маркер для SessionStart-probe (loop H6): следующий старт проверит, обновился ли
+      # SESSION.md после этого сигнала. Если нет — handoff мог не записаться -> warn.
+      mkdir -p "$CWD/.harness/locks" 2>/dev/null
+      : > "$CWD/.harness/handoff-pending" 2>/dev/null
+      # closing-mode (F7, П6): на время закрытия — деградация прав (PreToolUse-гейт:
+      # запись только в state-файлы, Bash только git/read-only). Снимется следующим
+      # промптом без сигнала завершения (ветка else ниже).
+      : > "$CWD/.harness/locks/closing-mode" 2>/dev/null
+      ;;
+  esac
+  if [ -n "$PIECES" ]; then
+    PIECES="$PIECES
+—
+$HANDOFF"
+  else
+    PIECES="$HANDOFF"
+  fi
+else
+  # Промпт БЕЗ сигнала завершения: пользователь продолжает работу — режим закрытия снят
+  # (его инструкция главнее; закрывает FP «на сегодня всё… хотя нет, поправь ещё кнопку»).
+  rm -f "$CWD/.harness/locks/closing-mode" 2>/dev/null
 fi
 
 # Анти-залипание (прокси №1 tunnel-vision): стоп-сигнал / коррекция курса -> напоминание
 # (смена УРОВНЯ, не способа). Маркер handoff НЕ ставит — это не завершение сессии.
-STUCK="$(HOOK_PAYLOAD="$HOOK_INPUT" bash "$ROOT/hooks/checks/stuck-signal-reminder.sh" "$CWD" 2>/dev/null)"
+STUCK="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "stuck-signal" text "$ROOT/hooks/checks/stuck-signal-reminder.sh" "$CWD")"
+
+# research-skip (F6, lock-паттерн): явная фраза «пропусти рисёрч» -> хук (не агент!) пишет
+# маркер .harness/locks/research-skipped с цитатой; гейт архитектуры его уважает.
+RSKIP="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "research-skip" text "$ROOT/hooks/checks/research-skip-listener.sh" "$CWD")"
+if [ -n "$(printf '%s' "$RSKIP" | tr -d '[:space:]')" ]; then
+  if [ -n "$PIECES" ]; then
+    PIECES="$PIECES
+—
+$RSKIP"
+  else
+    PIECES="$RSKIP"
+  fi
+fi
+
+# secret-in-prompt (F8): живой ключ в сообщении пользователя -> предупреждение о ротации
+# (inject, не block: ключ уже в контексте — задача предупредить и направить в .env).
+SECR="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "secret-in-prompt" text "$ROOT/hooks/checks/secret-in-prompt.sh" "$CWD")"
+if [ -n "$(printf '%s' "$SECR" | tr -d '[:space:]')" ]; then
+  if [ -n "$PIECES" ]; then
+    PIECES="$PIECES
+—
+$SECR"
+  else
+    PIECES="$SECR"
+  fi
+fi
 if [ -n "$(printf '%s' "$STUCK" | tr -d '[:space:]')" ]; then
   if [ -n "$PIECES" ]; then
     PIECES="$PIECES

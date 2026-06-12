@@ -1,6 +1,6 @@
 {
   "name": "vibe-dev",
-  "version": "6.2.0",
+  "version": "6.2.1",
   "description": "Harness-first pipeline для Claude Code: бизнес-идея → работающий продукт. v6.2: enforcement как проверяемый факт — 37 механизмов: активация хуков с независимым backstop (heartbeat + двухфазный профиль + git pre-commit), fail-loud (краш сторожа не молчит), clarity-gate на финальное сообщение (Stop block с precision-гейтом на реальном корпусе), evidence по поверхности фичи (монотонная строгость), обязательный research перед архитектурой (lock-паттерн), closing-mode, секрет-гигиена, config-protect + онбординг (/setup) и таблица трассировки с self-check.",
   "author": {
     "name": "Andrei Tsyhan"

@@ -4,7 +4,7 @@
 
 ## Идентичность плагина
 
-Vibe Dev v6 — harness-first pipeline для разработки продуктов от бизнес-идеи. Главный принцип: **«Harness is enforcement, not documentation.»** (id плагина — `vibe-dev`, версия — 6.2.0.)
+Vibe Dev v6 — harness-first pipeline для разработки продуктов от бизнес-идеи. Главный принцип: **«Harness is enforcement, not documentation.»** (id плагина — `vibe-dev`, версия — 6.2.1.)
 
 ## Структура
 
@@ -69,7 +69,7 @@ vibe-dev/
 
 ## Текущая версия
 
-**v6.2.0** — enforcement как проверяемый факт (37 механизмов): доказуемая активация (heartbeat + pending→strict живым хуком + git pre-commit backstop + `/doctor`), fail-loud обвязка сторожей, clarity-gate финального сообщения, evidence по поверхности, research-гейт архитектуры, closing-mode, секрет-гигиена, config-protect; живая верификация на 2.1.170. (v6.1 — публичный релиз: 20 механизмов + онбординг + gate обезличенности; v5.x — первая harness-enforcement версия.)
+**v6.2.1** — enforcement как проверяемый факт (38 механизмов): доказуемая активация (heartbeat + pending→strict живым хуком + git pre-commit backstop + `/doctor`), fail-loud обвязка сторожей, clarity-gate финального сообщения, evidence по поверхности, research-гейт архитектуры, closing-mode, секрет-гигиена, config-protect, interrupt-recovery (техническое прерывание ≠ запрет); живая верификация на 2.1.170. (v6.1 — публичный релиз: 20 механизмов + онбординг + gate обезличенности; v5.x — первая harness-enforcement версия.)
 
 ## Как разрабатывать плагин
 

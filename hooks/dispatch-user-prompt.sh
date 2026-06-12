@@ -73,6 +73,20 @@ else
   rm -f "$CWD/.harness/locks/closing-mode" 2>/dev/null
 fi
 
+# interrupt-recovery (v6.2.1): хвост последнего хода оборван техническим прерыванием
+# (обрыв клиента/доставка сообщения), в новом промпте нет стоп-слов -> inject «продолжай,
+# это был обрыв, не запрет» (агент не стоит часами после лживого "user rejected").
+IRECOV="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "interrupt-recovery" text "$ROOT/hooks/checks/interrupt-recovery.sh" "$CWD")"
+if [ -n "$(printf '%s' "$IRECOV" | tr -d '[:space:]')" ]; then
+  if [ -n "$PIECES" ]; then
+    PIECES="$PIECES
+—
+$IRECOV"
+  else
+    PIECES="$IRECOV"
+  fi
+fi
+
 # Анти-залипание (прокси №1 tunnel-vision): стоп-сигнал / коррекция курса -> напоминание
 # (смена УРОВНЯ, не способа). Маркер handoff НЕ ставит — это не завершение сессии.
 STUCK="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "stuck-signal" text "$ROOT/hooks/checks/stuck-signal-reminder.sh" "$CWD")"

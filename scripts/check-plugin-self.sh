@@ -238,6 +238,14 @@ else
 fi
 
 echo ""
+echo "=== 28. Interrupt-recovery: техническое прерывание ≠ запрет (v6.2.1) ==="
+if bash tests/hooks/test-interrupt-recovery.sh > /tmp/vibe-irtest.out 2>&1; then
+    tail -1 /tmp/vibe-irtest.out
+else
+    echo "❌ тест interrupt-recovery упал:"; cat /tmp/vibe-irtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

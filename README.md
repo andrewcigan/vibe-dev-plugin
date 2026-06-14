@@ -1,184 +1,223 @@
 # Vibe Dev v6
 
-**Harness-first pipeline от бизнес-идеи до работающего продукта — плагин для Claude Code.**
+> 🌐 **English:** this file · **Русский:** [README.ru.md](README.ru.md)
 
-Плагин берёт идею у предпринимателя-непрограммиста и автономно ведёт её до работающего
-продукта: агент сам принимает технические решения, а человек остаётся на уровне бизнеса
-и архитектуры. Главный принцип:
+**A harness-first plugin that turns a business idea into a shipped product — for founders who build with Codex and Claude Code.**
 
-> ## «Harness — это enforcement, не documentation.»
-> Каждый принцип имеет **реальный механизм** (hook / gate / agent / self-check), а не строчку
-> в инструкции, которую агент может проигнорировать. Дисциплину ломает ровно то звено, которое
-> должно её соблюдать — сам агент. Поэтому правила превращены в проверяемые «посты».
+Vibe Dev is built for entrepreneurs who don't write code but ship real products with AI
+agents. You stay at the level of business and architecture; the agent makes the technical
+decisions and does the work. The point of the plugin is to make the agent *reliable* — so
+"done" means done, not "the code compiled."
 
-В v6.2 таких механизмов — **38**, каждый с тремя атрибутами: *где зафиксирован / чем enforce /
-что произойдёт при попытке обойти* (полный список — `docs/traceability.md`). Полноту проверяет
-self-check плагина — строка без механизма не пройдёт. Новое в v6.2: **активация хуков стала
-проверяемым фактом** (сторож, который «не включился», больше не может молчать), а **ясность
-финального сообщения** — из пожелания стала блокирующим гейтом. Все новые сторожа проверены
-живыми прогонами на движке Claude Code 2.1.170.
+> ## "The harness is enforcement, not documentation."
+> Every principle is backed by a **real mechanism** (hook / gate / agent / self-check), not a
+> line in an instruction file that the agent can quietly ignore. Discipline is broken by
+> exactly the link that's supposed to keep it — the agent itself. So the rules are turned into
+> checkpoints that are actually enforced.
 
----
-
-## Как это работает (харнесс простыми словами)
-
-У Claude Code есть ключевые моменты, которые он объявляет: «сейчас сохраню файл», «выполню
-команду», «показываю сообщение человеку», «открываю/закрываю сессию». Плагин **вешает на эти
-моменты маленьких инспекторов** (hooks). Каждый инспектор смотрит на намерение и выносит один
-из вердиктов:
-
-- **block** — действие отменяется (например, нельзя пометить фичу «готово» без доказательства);
-- **warn / inject** — действие проходит, но появляется пометка для агента или флаг для человека;
-- **pass** — всё чисто, молча пропустить.
-
-Список «на таком-то событии — позови такого-то инспектора» лежит в `hooks/hooks.json` и
-**подхватывается автоматически** при установке (Claude Code v2.1+) — ручная настройка не нужна.
-Строгость регулируется на проект: `minimal` / `standard` / `strict` (живые проекты не ломаются —
-переводятся командой `/upgrade-project`).
+In v6.2 there are **38 such mechanisms**, each with three attributes: *where it's defined /
+what enforces it / what happens if you try to bypass it* (full list in `docs/traceability.md`).
+The plugin's self-check verifies completeness — a claim without a live mechanism doesn't pass.
+New in v6.2: **hook activation became a provable fact** (a guard that "didn't turn on" can no
+longer stay silent), and **clarity of the final message** went from a wish to a blocking gate.
+Every new guard was verified with live runs on the Claude Code 2.1.170 engine.
 
 ---
 
-## Механизмы — что каждый ловит (ключевые из 38)
+## Who it's for
 
-### A. «Готово» = проверено, а не на словах
-| Механизм | Что ловит | Что делает |
+- **Founders and non-engineers** who want to ship a working product, not learn to code.
+- People who already work with **Codex** and **Claude Code** and want the agent to behave like
+  a disciplined senior engineer instead of an eager intern.
+- Anyone tired of agents that declare "done" on code that was never actually run.
+
+You describe the business. The agent picks the stack, writes the code, tests it, and only
+reports "done" when a verification command passed and the behavior matched expectations.
+
+---
+
+## How it works (the harness in plain words)
+
+An AI coding agent announces key moments: "about to save a file," "about to run a command,"
+"showing a message to the human," "opening/closing a session." The plugin **attaches small
+inspectors to those moments** (hooks). Each inspector looks at the *intent* and returns one
+verdict:
+
+- **block** — the action is cancelled (e.g. you can't mark a feature "done" without evidence);
+- **warn / inject** — the action proceeds, but a note appears for the agent or a flag for the human;
+- **pass** — all clear, stay silent.
+
+The map of "on this event, call this inspector" lives in `hooks/hooks.json` and is **loaded
+automatically** on install (Claude Code v2.1+) — no manual wiring. Strictness is per-project:
+`minimal` / `standard` / `strict` (existing projects aren't broken — they're migrated with
+`/upgrade-project`).
+
+---
+
+## What it catches (key mechanisms of 38)
+
+### A. "Done" means verified, not claimed
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **UI-evidence gate** | UI-фичу помечают «готово» по typecheck/тестам, но пользователь нажал — пусто | **block** (нужен скриншот/живой прогон) |
-| **Evidence по поверхности** (v6.2) | фича «без UI» (API/задача по расписанию/CLI) закрывается без следа реального вызова; UI-фича маскируется под «библиотеку» | поверхность определяется по файлам и только ужесточается: ui → **block**, остальные → **warn** с инструкцией приёмки |
-| **Критика до реализации** (H7) | средняя/большая фича уходит в работу без продуманной стратегии проверки | **block** (нет `docs/test-strategy.md` — нельзя в active) |
-| **Ревью модели данных** | пишут схему БД без отдельного критического ревью (модель «застывает», переделка дорогая) | **block** (нет `docs/data-model-review.md` — нельзя в active) |
-| **State-machine переходов** | фича прыгает в невалидное состояние / битый служебный файл | **block** (актуальный проект) / warn (старый) |
+| **UI-evidence gate** | a UI feature is marked "done" on typecheck/tests, but a real click shows nothing | **block** (a screenshot / live run is required) |
+| **Surface-aware evidence** (v6.2) | a "no-UI" feature (API / scheduled job / CLI) is closed with no trace of a real call; a UI feature hides as a "library" | the surface is inferred from files and can only tighten: ui → **block**, others → **warn** with an acceptance recipe |
+| **Test-strategy before build** | a medium/large feature goes into work without a thought-through verification plan | **block** (no `docs/test-strategy.md` → it can't enter `active`) |
+| **Data-model review gate** | a DB schema is written without a separate critical review (the model "freezes," reworks are expensive) | **block** (no `docs/data-model-review.md` → it can't enter `active`) |
+| **State-machine transitions** | a feature jumps to an invalid state / a corrupted state file | **block** (current project) / warn (legacy) |
 
-### A2. Активация хуков — проверяемый факт (новое в v6.2)
-| Механизм | Что ловит | Что делает |
+### A2. Hook activation as a provable fact (new in v6.2)
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **Heartbeat** | хуки «вроде установлены», но физически не работают (тихий театр строгости) | каждое живое событие пишет отметку с версией; читатели сверяют свежесть |
-| **Двухфазный профиль** | профиль «strict» записан, а enforcement не включался | bootstrap пишет `pending-strict`; в боевой `strict` переводит ТОЛЬКО живой хук — факт перевода = доказательство |
-| **Git pre-commit backstop** | плагин снесли/сломали — и никто не заметил | НЕЗАВИСИМЫЙ от плагина пост в `.git/hooks`: pending-профиль или протухший heartbeat → **block** коммита |
-| **Fail-loud + crash-артефакты** | сторож упал и молча «разрешил всё» (реальный баг 2026-06-06) | краш → громкое предупреждение + лог краша + probe при старте сессии |
-| **Корпус реальных форм** | гейт зелёный на синтетике, падает на боевых файлах | self-check гоняет гейт на 6 обезличенных боевых `feature_list` |
-| **`/doctor`** | «почему сторожа молчат?» | самодиагностика: профиль/heartbeat/краши/установка + таблица починки |
+| **Heartbeat** | hooks "look installed" but don't physically run (silent strictness theater) | every live event writes a stamp with the version; readers check freshness |
+| **Two-phase profile** | profile says "strict" but enforcement never turned on | bootstrap writes `pending-strict`; only a live hook promotes it to real `strict` — the promotion *is* the proof |
+| **Git pre-commit backstop** | the plugin was removed/broken and nobody noticed | an INDEPENDENT post in `.git/hooks`: a pending profile or stale heartbeat → **block** the commit |
+| **Fail-loud + crash artifacts** | a guard crashed and silently "allowed everything" (a real bug, 2026-06-06) | crash → loud warning + crash log + a probe at session start |
+| **Real-shape fixture corpus** | a gate green on synthetic data, broken on real files | self-check runs gates against 6 anonymized real `feature_list` files |
+| **`/doctor`** | "why are the guards silent?" | self-diagnosis: profile / heartbeat / crashes / install + a fix table |
 
-### B. Безопасность и деньги
-| Механизм | Что ловит | Что делает |
+### B. Safety and money
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **bulk-API gate** | массовый внешний API без проверки лимитов (реальный кейс: бан проекта на 2 суток + впустую деньги) | **block** без pre-launch-checklist (теперь чеклист требует явные объём × цену) |
-| **Смена модели без smoke** | правка вносит модель/настройку, влияющую на каждый ответ (реальный кейс: 3 дня обрывов клиентам после «новее = drop-in») | **warn** «это изменение контракта, прогони smoke» |
-| **Vendor-lock без research** | в архитектуру вшивают конкретного поставщика наугад, без сравнения вариантов | **block** integration-фичи без `docs/research/*.md` |
-| **Секрет в чате** (v6.2) | пользователь вставил живой ключ в сообщение | **warn**: ключ скомпрометирован → ротация + перенос в `.env` |
-| **Секрет в выводе команды** (v6.2) | CLI напечатал токен — он оседает в контексте сессии | **warn** модели: не переиспользовать литералом, предложить ротацию (+маска вывода на движках с поддержкой) |
-| **concurrent-write** | две сессии пишут в один файл (реальный кейс: потеря данных) | **warn** (advisory) |
+| **Bulk-API gate** | a mass external-API job with no limit check (real case: a project banned for 2 days + wasted money) | **block** without a pre-launch checklist (the checklist now requires explicit volume × price) |
+| **Model-swap guard** | an edit introduces a model / setting that affects every answer (real case: 3 days of dropped client replies after "newer = drop-in") | **warn** "this is a contract change, run a smoke test" |
+| **Vendor-lock research gate** | a specific provider is hard-wired into the architecture blindly, with no comparison | **block** an integration feature without `docs/research/*.md` |
+| **Secret-in-prompt** (v6.2) | the user pasted a live key into a message | **warn**: the key is compromised → rotate + move to `.env` |
+| **Secret-in-output** (v6.2) | a CLI printed a token — it lingers in the session context | **warn** to the model: don't reuse the literal, suggest rotation (+ output masking on engines that support it) |
+| **Concurrent-write advisory** | two sessions write to one file (real case: data loss) | **warn** (advisory) |
 
-### C. Анти-залипание
-| Механизм | Что ловит | Что делает |
+### C. Anti-stall
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **Стоп-сигнал пользователя** | человек пишет «не туда / остановись / мы не то делаем», а агент продолжает тактически | **inject** «смена уровня, не способа; запусти субагент-диагностику» |
-| **Interrupt-recovery** (v6.2.1) | обрыв связи (закрытая крышка ноутбука) или доставка сообщения убили выполнявшийся инструмент — система лживо пишет «пользователь отклонил», агент стоит часами | следующее сообщение без «стоп» → **inject** «это был обрыв, не запрет — продолжай план»; настоящий «стоп» сохраняет силу |
-| **Повтор падающих команд** | одна и та же команда запускается 3-й раз подряд без успеха и без структурных правок | **warn** ДО выполнения: подсказка про субагент-диагностику (носитель выверен по живой модели событий 2.1.170) |
+| **User stop-signal** | the human writes "wrong way / stop / that's not it" and the agent keeps grinding tactically | **inject** "change the *level*, not the method; launch a diagnostic subagent" |
+| **Interrupt-recovery** (v6.2.1) | a dropped connection (closed laptop lid) or an inbound message kills the running tool — the system falsely logs "user rejected," and the agent stalls for hours | the next message without a stop-word → **inject** "that was a disconnect, not a veto — continue the plan"; a real "stop" keeps its force |
+| **Repeated-failure detector** | the same command is launched a 3rd time in a row with no success and no structural change | **warn** before running: prompt for a diagnostic subagent (carrier verified against the live 2.1.170 event model) |
 
-### D. Понятный язык (главная боль непрограммиста)
-| Механизм | Что ловит | Что делает |
+### D. Plain language (the non-engineer's biggest pain)
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **Clarity-gate на финал хода** (v6.2) | ход завершается оценкой в человеко-днях или тяжёлым жаргоном вне кода | **block**: агент обязан дописать то же самое простыми словами (≤10 строк); точность держит размеченный корпус из боевых сессий + лимиты дописок |
-| **Язык-ловец (экранный слой)** | жаргон / развилка без «что теряешь» / человеко-дни в любом сообщении | **флаг на экране + лог-метрика** (честно display-only; в Desktop-среде событие не приходит — несущий слой выше) |
-| **Онбординг (`/setup`)** | система не знает, как говорить с новым пользователем | портрет `~/.vibe-dev/portrait.md` → строгость гейтов и формат развилок подстраиваются (без портрета — нейтральный дефолт) |
+| **Clarity gate on the final turn** (v6.2) | the turn ends with a person-days estimate or heavy jargon outside code blocks | **block**: the agent must add a plain-words version (≤10 lines); precision is held by a labeled corpus from real sessions + append limits |
+| **Jargon catcher (screen layer)** | jargon / a fork with no "what you lose" / person-days in any message | **on-screen flag + a log metric** (honestly display-only; on Desktop the event doesn't fire — the load-bearing layer is the gate above) |
+| **Onboarding (`/setup`)** | the system doesn't know how to talk to a new user | a portrait at `~/.vibe-dev/portrait.md` → gate strictness and fork format adapt (no portrait → a neutral default) |
 
-### E. Дисциплина процесса
-| Механизм | Что ловит | Что делает |
+### E. Process discipline
+| Mechanism | What it catches | What it does |
 |---|---|---|
-| **WIP=1 / scope** | правки выходят за рамки заявленной фичи | **block** коммита (diff ⊆ affected_files) |
-| **Намерение без действия** | агент завершает ход словами «сейчас сделаю X» без единого действия | **block** (продолжить ход) |
-| **Единый Stop-диспетчер** (v6.2) | несколько сторожей на завершении хода каскадят блокировки и зацикливают ход | приоритеты + общий предел ≤3 блокировок на ход; переполнение → pass с записью в лог |
-| **Research-гейт архитектуры** (v6.2) | архитектура пишется без изучения лучших практик и готовых решений | **block** записи `ARCHITECTURE*.md` без `docs/research/*`; пропуск — ТОЛЬКО явной фразой пользователя |
-| **Closing-mode** (v6.2) | «закрываем сессию» → агент вдруг начинает кодить | права деградируют: запись только в файлы состояния; новая работа → backlog; снимается обычным сообщением |
-| **Lock-паттерн** (v6.2) | агент сам «изображает согласие пользователя» (маркеры пропуска/закрытия) | маркеры `.harness/locks/*` пишут ТОЛЬКО хуки по явной фразе — запись агентом **block** |
-| **Config-protect** (v6.2) | агент ослабляет собственные гейты (профиль, heartbeat, отключение) | **block** во всех профилях; отключение enforcement — только руками пользователя |
-| **Handoff-петля** | при закрытии сессии план остаётся в чате (новая сессия его не увидит) | **inject** cold-start чеклиста + детекция пропуска при старте |
-| **Правило пользователя** (`/hookify`) | «больше не делай X» забывается и повторяется | человек замораживает коррекцию в постоянное **block/warn**-правило без кода |
+| **WIP=1 / scope** | edits spill outside the declared feature | **block** the commit (diff ⊆ affected_files) |
+| **Intent-without-action** | the agent ends a turn saying "I'll now do X" with no action taken | **block** (continue the turn) |
+| **Unified Stop dispatcher** (v6.2) | several end-of-turn guards cascade blocks and loop the turn | priorities + a shared cap of ≤3 blocks per turn; overflow → pass with a log entry |
+| **Architecture research gate** (v6.2) | architecture is written without studying best practices and existing solutions | **block** writing `ARCHITECTURE*.md` without `docs/research/*`; the skip is allowed ONLY by an explicit user phrase |
+| **Closing mode** (v6.2) | "let's close the session" → the agent suddenly starts coding | rights degrade: writes only to state files; new work → backlog; lifted by a normal next message |
+| **Lock pattern** (v6.2) | the agent fakes "user consent" markers (skip / closing) | `.harness/locks/*` markers are written ONLY by hooks on an explicit phrase — an agent write is **block** |
+| **Config-protect** (v6.2) | the agent weakens its own gates (profile, heartbeat, disabling) | **block** in all profiles; disabling enforcement is the user's manual action only |
+| **Handoff loop** | at session close the plan stays in the chat (the next session won't see it) | **inject** a cold-start checklist + detect a missed handoff at startup |
+| **User rules (`/hookify`)** | "never do X again" is forgotten and repeated | the human freezes a correction into a permanent **block/warn** rule, no code needed |
 
-### F. Инфраструктура харнесса
-| Механизм | Что делает |
+### F. Harness infrastructure
+| Mechanism | What it does |
 |---|---|
-| **Hooks из коробки** | авто-загрузка `hooks.json` при установке; без файла — невозможно «забыть включить» |
-| **warn доходит до модели** | предупреждения идут правильным каналом (иначе молча терялись бы) |
-| **Профили + version-lifecycle** | minimal/standard/strict; старые проекты не форсятся, переводятся по команде |
-| **Таблица трассировки + self-check** | каждый механизм описан 3 атрибутами; строка без живого механизма роняет self-check |
-| **Gate обезличенности** | в публичной версии случайно осталось личное (почта / клиентский проект / личный путь) — **block** self-check |
+| **Hooks out of the box** | `hooks.json` auto-loads on install; with no file you can't "forget to turn it on" |
+| **Warnings reach the model** | warnings travel on the correct channel (otherwise they'd be silently lost) |
+| **Profiles + version lifecycle** | minimal/standard/strict; legacy projects aren't forced, they migrate on command |
+| **Traceability table + self-check** | every mechanism is described by 3 attributes; a row without a live mechanism fails the self-check |
+| **Personal-data gate** | if anything personal slips into the public build (email / client project / private path) — **block** the self-check |
 
-> **Честно — что осталось дисциплиной, а не механизмом:** проверка связок между модулями на
-> реальном пути, «агент делает сам, не шлёт в терминал», реалистичность тестовых данных. Их
-> хуком надёжно не заставить. Держим дисциплиной + ловим на реальном проекте. Не выдаём за
-> «железобетон».
+> **Honest — what's still discipline, not a mechanism:** checking cross-module wiring on the
+> real path, "the agent does it itself instead of sending you to the terminal," realistic test
+> data. A hook can't reliably force these. We keep them as discipline + catch them on real
+> projects. We don't pass them off as "bulletproof."
 
-Построено **после аудита всех ~20 реальных проектов** предыдущих версий (12 ретроспектив +
-~150 заметок памяти + 6 журналов багов); v6.2 — после **аудита 54 боевых сессий** на v6.1
-+ рисёрча практик харнессов + независимой критики плана.
+Built **after auditing all ~20 real projects** from earlier versions (12 retrospectives + ~150
+memory notes + 6 bug journals); v6.2 followed an **audit of 54 live sessions** on v6.1 + harness
+practice research + an independent critique of the plan.
 
 ---
 
-## 7 подсистем
+## 7 subsystems
 
-**Instructions** (CLAUDE.md-роутинг + domain-rules.yaml) · **State** (feature_list.json +
-SESSION.md + error-journal) · **Verification** (4 слоя + dual critique + negative-gate) ·
+**Instructions** (CLAUDE.md routing + domain-rules.yaml) · **State** (feature_list.json +
+SESSION.md + error-journal) · **Verification** (4 layers + dual critique + negative gate) ·
 **Scope** (affected_files, WIP=1) · **Lifecycle** (init, cold-start, clean-exit, /upgrade) ·
-**Learning** (feedback-память, ретроспективы, anti-patterns) · **Cost & Safety** (bulk-gate,
+**Learning** (feedback memory, retrospectives, anti-patterns) · **Cost & Safety** (bulk-gate,
 concurrent-lock, secrets-scope).
 
 ---
 
-## Команды
+## Commands
 
-| Команда | Что делает |
+| Command | What it does |
 |---|---|
-| `/setup` | Онбординг: 6 простых вопросов → портрет (как с тобой общаться) |
-| `/new-project` | Бизнес-интервью + bootstrap harness (4 файла на старте) |
-| `/resume <project>` | Cold-start test + диф с прошлой сессией |
+| `/setup` | Onboarding: 6 simple questions → a portrait (how to talk to you) |
+| `/new-project` | Business interview + bootstrap the harness (4 files at start) |
+| `/resume <project>` | Cold-start test + diff against the previous session |
 | `/feature <id>` | WIP=1 + dual critique (test-researcher + user-perspective-critic) |
-| `/verify` | 4-слойная проверка (синтаксис + рантайм + e2e + пользователь) |
-| `/hookify` | «больше не делай X» → постоянное block/warn-правило |
-| `/handoff` · `/end-session` | Clean-exit + фиксация состояния в файлы |
-| `/audit` | Внешняя оценка харнесса + скорость ошибок |
-| `/stuck` | Стак-протокол + LLM-кворум |
-| `/ship` | Финальная валидация ≥90% + ретроспектива |
-| `/research` · `/architecture` · `/dev-plan` · `/upgrade-project` | … (полный список в `skills/`) |
+| `/verify` | 4-layer verification (syntax + runtime + e2e + user) |
+| `/hookify` | "never do X again" → a permanent block/warn rule |
+| `/handoff` · `/end-session` | Clean exit + persist state into files |
+| `/audit` | External harness assessment + error rate |
+| `/stuck` | Stuck protocol + an LLM quorum |
+| `/ship` | Final validation ≥90% + retrospective |
+| `/research` · `/architecture` · `/dev-plan` · `/upgrade-project` | … (full list in `skills/`) |
 
 ## Pipeline
 
-- **FAST (5 этапов)** — внутренние инструменты, простые MVP, Telegram-боты:
-  интервью → архитектура+стек → дизайн-handoff (если UI) → `/feature` loop → `/ship`.
-- **FULL (10 этапов)** — продукты на рынок: идеи R1/R2 → валидация → research → архитектура+
-  прототип → дизайн → wave-план → `/feature` loop → `/ship` + маркетинг-запуск.
+- **FAST (5 stages)** — internal tools, simple MVPs, bots:
+  interview → architecture + stack → design handoff (if UI) → `/feature` loop → `/ship`.
+- **FULL (10 stages)** — products going to market: ideas R1/R2 → validation → research →
+  architecture + prototype → design → wave plan → `/feature` loop → `/ship` + marketing launch.
 
 ---
 
-## Установка
+## Install
 
+### Claude Code
 ```bash
-# 1. Добавить marketplace из GitHub
+# 1. Add the marketplace from GitHub
 claude plugin marketplace add andrewcigan/vibe-dev-plugin
-# 2. Установить и включить плагин
+# 2. Install and enable the plugin
 claude plugin install vibe-dev@vibe-dev
 ```
-
-Или локально (для разработки самого плагина):
+Or locally (for developing the plugin itself):
 ```bash
 claude --plugin-dir "/path/to/vibe-dev-plugin"
 ```
+In Claude Code you get the full harness: auto-loaded hooks, the slash commands above, and
+profile-based strictness.
 
-> Технический id плагина — `vibe-dev` (от него зависят имена команд и установка). Версия — **6.2.1**.
+### Codex
+Codex reads `AGENTS.md` automatically. Point it at the harness:
+```bash
+git clone https://github.com/andrewcigan/vibe-dev-plugin
+# then run Codex with the repo's AGENTS.md as your project rules
+```
+In Codex the harness drives the agent through `AGENTS.md`, the domain rules, the state files,
+and the methodology — the same principles and workflow, applied as the agent's operating
+instructions.
+
+> The plugin's technical id is `vibe-dev` (command names and install depend on it). Version: **6.2.1**.
 
 ---
 
-## Версия
+## Version
 
-**v6.2.1** — Interrupt-recovery: техническое прерывание (обрыв клиента / доставка сообщения) больше не парализует агента «жду указаний» — следующий промпт без «стоп» продолжает план автоматически.
+**v6.2.1** — Interrupt-recovery: a technical interruption (client disconnect / message delivery)
+no longer paralyzes the agent into "waiting for instructions" — the next prompt without a
+stop-word continues the plan automatically.
 
-**v6.2.0** — Enforcement как проверяемый факт (37 механизмов): доказуемая активация хуков
-(heartbeat + двухфазный профиль + независимый git pre-commit backstop + `/doctor`), fail-loud
-(краш сторожа не молчит), clarity-gate финального сообщения, evidence по поверхности фичи,
-обязательный research перед архитектурой, closing-mode, секрет-гигиена, config-protect.
-Все новые сторожа проверены живыми прогонами на движке 2.1.170. Построено по аудиту 54 боевых
-сессий v6.1. Полный список изменений — [`CHANGELOG.md`](CHANGELOG.md).
+**v6.2.0** — Enforcement as a provable fact (37 mechanisms): provable hook activation (heartbeat
++ two-phase profile + independent git pre-commit backstop + `/doctor`), fail-loud (a crashed
+guard can't stay silent), clarity gate on the final message, surface-aware evidence, mandatory
+research before architecture, closing mode, secret hygiene, config-protect. Every new guard was
+verified with live runs on the 2.1.170 engine. Built from an audit of 54 live v6.1 sessions.
+Full change list — [`CHANGELOG.md`](CHANGELOG.md).
 
-_v6.1.0 — публичный релиз: enforcement из текста в механизм (20 механизмов) + онбординг
-(`/setup`) + gate обезличенности, после аудита ~20 реальных проектов v5._
+_v6.1.0 — public release: enforcement from text into mechanism (20 mechanisms) + onboarding
+(`/setup`) + personal-data gate, after an audit of ~20 real v5 projects._
+
+---
+
+## Notes
+
+- The harness was built for, and currently converses in, **Russian** (its clarity gates and
+  prompts are Russian-language). The methodology, mechanisms, and pipeline are
+  language-agnostic; UI/interface localization is not done yet.
+- Author: Andrei Tsyhan.

@@ -10,3 +10,8 @@ secrets/
 .harness/cost-log.json
 .harness/tools-audit.jsonl
 .harness/locks/
+
+# --- Приватная кухня: НЕ уходит в публичный репозиторий (наружу — только чистый плагин) ---
+_internal/
+_archive/
+research/

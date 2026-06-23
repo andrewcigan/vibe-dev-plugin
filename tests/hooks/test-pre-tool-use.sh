@@ -149,6 +149,28 @@ rm -f "$PROJ/.harness/pre-launch-checklist.yaml"
 OUT="$(jq -cn --arg cwd "$NOPROJ" --arg cmd 'for u in $(cat x); do curl "$u"; done' '{hook_event_name:"PreToolUse",tool_name:"Bash",cwd:$cwd,tool_input:{command:$cmd}}' | bash "$DISPATCH")"
 assert_empty "15. не-vibe + bulk -> pass" "$OUT"
 
+# --- bulk-API: диагностика vs реальный bulk (false-positive fix) ---
+rm -f "$PROJ/.harness/pre-launch-checklist.yaml"
+# 15a. Диагностика: 3 retry по одному хосту (литералы) -> pass (НЕ bulk)
+OUT="$(run "$(bash_payload 'for i in 1 2 3; do curl -s "https://api.gladia.io/v2/$i"; done')")"
+assert_empty "15a. диагностика for i in 1 2 3 + curl -> pass" "$OUT"
+# 15b. Диагностика: малый брейс-range {1..3} -> pass
+OUT="$(run "$(bash_payload 'for i in {1..3}; do curl -s https://api.gladia.io; done')")"
+assert_empty "15b. диагностика for i in {1..3} + curl -> pass" "$OUT"
+# 15c. Реальный bulk: большой брейс {1..1000} -> deny
+OUT="$(run "$(bash_payload 'for i in {1..1000}; do curl -s "https://api.x/$i"; done')")"
+assert_contains "15c. bulk {1..1000} + curl -> deny" "$OUT" '"permissionDecision":"deny"'
+# 15d. Реальный bulk: фиксированный перечень >5 элементов -> deny
+OUT="$(run "$(bash_payload 'for u in a b c d e f g; do curl -s "https://api.x/$u"; done')")"
+assert_contains "15d. bulk 7 литералов + curl -> deny" "$OUT" '"permissionDecision":"deny"'
+# 15e. Реальный bulk: while-read поток -> deny
+OUT="$(run "$(bash_payload 'while read u; do curl -s "$u"; done < urls.txt')")"
+assert_contains "15e. bulk while-read + curl -> deny" "$OUT" '"permissionDecision":"deny"'
+# 15f. Одиночный curl (не цикл) -> pass
+OUT="$(run "$(bash_payload 'curl -s -o /dev/null -w "%{http_code}" https://api.gladia.io')")"
+assert_empty "15f. одиночный curl -> pass" "$OUT"
+rm -f "$PROJ/.harness/pre-launch-checklist.yaml"
+
 # --- concurrent-write advisory (session-based WARN, не block) ---
 # 16. Первая запись в shared-файл -> pass
 rm -rf "$PROJ/.harness/locks"

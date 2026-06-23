@@ -23,19 +23,47 @@ if [ -f "$ALLOW" ] && ! grep -q "bulk_api:" "$ALLOW" 2>/dev/null; then
 fi
 
 # --- Детект bulk-паттернов в команде ---
+# Цель — отличить РЕАЛЬНУЮ массовую работу (цикл по файлу/коллекции/много элементов,
+# поток через xargs/parallel, LLM/embedding-батч) от ГОРСТКИ диагностических проб
+# (3 retry, чтобы подтвердить, что 403 не транзиентный). Диагностику не блокируем:
+# фиксированный перечень <=5 или {1..N<=6} по curl/wget — это проверка, не нагрузка.
 detected=0
-PATTERNS='for .* in .*(curl|wget)
-while read.*(curl|wget)
-xargs.*(curl|wget)
-parallel.*(curl|wget)
-for i in \{1\.\.[0-9]+\}.*(curl|wget)
-(openai|anthropic|gemini|voyage).*(embed|generate|messages\.create|chat\.completions)'
-while IFS= read -r p; do
-  [ -z "$p" ] && continue
-  if printf '%s' "$CMD" | grep -qE "$p"; then detected=1; break; fi
-done <<EOF
-$PATTERNS
-EOF
+HAS_HTTP=0
+printf '%s' "$CMD" | grep -qE '(curl|wget)' && HAS_HTTP=1
+
+# (A) Поток данных через while-read / xargs / parallel рядом с curl/wget = всегда bulk
+#     (число итераций = размер потока, неизвестно/велико).
+if [ "$HAS_HTTP" -eq 1 ]; then
+  if printf '%s' "$CMD" | grep -qE 'while[[:space:]]+(IFS=[^;]*[[:space:]]+)?read'; then detected=1; fi
+  if [ "$detected" -eq 0 ] && printf '%s' "$CMD" | grep -qE '(xargs|parallel)([[:space:]]|$)'; then detected=1; fi
+fi
+
+# (B) for-петля с curl/wget: анализируем ТОЛЬКО перечень (между "in" и ";"/"do"),
+#     а не тело (в curl-теле может быть $i — это не делает цикл массовым).
+if [ "$detected" -eq 0 ] && [ "$HAS_HTTP" -eq 1 ] && \
+   printf '%s' "$CMD" | grep -qE 'for[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]+in[[:space:]]'; then
+  items="$(printf '%s' "$CMD" | sed -nE 's/.*for[[:space:]]+[A-Za-z_][A-Za-z0-9_]*[[:space:]]+in[[:space:]]+(.*)/\1/p' | head -1)"
+  items="$(printf '%s' "$items" | sed -E 's/;.*//; s/[[:space:]]+do([[:space:]].*)?$//')"
+  if printf '%s' "$items" | grep -qE '\$\(|`|\$\{?[A-Za-z_]|\*|\.txt|\.csv|\.tsv|\.json|\.jsonl|\.ndjson|seq[[:space:]]|cat[[:space:]]'; then
+    detected=1   # динамический/файловый перечень = массовая работа
+  else
+    range="$(printf '%s' "$items" | grep -oE '\{[0-9]+\.\.[0-9]+\}' | head -1)"
+    if [ -n "$range" ]; then
+      a="${range#\{}"; a="${a%%..*}"; b="${range##*..}"; b="${b%\}}"
+      if [ "$b" -ge "$a" ]; then cnt=$(( b - a + 1 )); else cnt=$(( a - b + 1 )); fi
+      [ "$cnt" -gt 6 ] && detected=1   # {1..6} и меньше — диагностика; больше — bulk
+    else
+      n="$(printf '%s' "$items" | wc -w | tr -d ' ')"
+      [ "${n:-0}" -gt 5 ] && detected=1   # >5 фиксированных элементов — bulk
+    fi
+  fi
+fi
+
+# (C) Прямая LLM/embedding-батч сигнатура (стоимость/квота вне зависимости от формы цикла)
+if [ "$detected" -eq 0 ] && \
+   printf '%s' "$CMD" | grep -qE '(openai|anthropic|gemini|voyage).*(embed|generate|messages\.create|chat\.completions)'; then
+  detected=1
+fi
 
 # Детект по числу API-вызовов в запускаемом скрипте (python/node/ts с >5 вызовами)
 if [ "$detected" -eq 0 ] && printf '%s' "$CMD" | grep -qE '(python3?|node|ts-node|bun) '; then

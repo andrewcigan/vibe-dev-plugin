@@ -24,7 +24,7 @@ assert_eq() {
 }
 assert_file() { if [ -f "$2" ]; then PASS=$((PASS+1)); printf '  ok   %s\n' "$1"; else FAIL=$((FAIL+1)); printf '  FAIL %s (файл должен существовать: %s)\n' "$1" "$2"; fi; }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 
 echo "Активация enforcement (F2) — сценарии:"
 

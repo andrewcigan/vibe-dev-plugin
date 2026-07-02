@@ -37,7 +37,7 @@ deny_in() { printf '%s' "$1" | grep -o '"permissionDecision":"deny"'; }
 # --- Mock-проект (актуальный движок: есть engine-version) ---
 PROJ="$(mktemp -d)"
 mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"
+echo "7.0" > "$PROJ/.harness/engine-version"
 FL="$PROJ/feature_list.json"
 
 write_payload() {  # write_payload <file_path> <content>
@@ -195,7 +195,7 @@ assert_contains "20a. legacy: структурная ошибка -> warn" "$OUT
 assert_empty "20b. legacy: структурная -> НЕ блокирует" "$(deny_in "$OUT")"
 OUT="$(run "$(write_payload "$FL" "$BAD_UI")")"
 assert_contains "20c. legacy: UI-evidence всё равно -> deny (hard, инвариант B2)" "$OUT" '"permissionDecision":"deny"'
-echo "6.0" > "$PROJ/.harness/engine-version"
+echo "7.0" > "$PROJ/.harness/engine-version"
 
 # --- active-gate (H7): M/L-фича в active требует артефакт критики ---
 ACTIVE_L='{"features":{"active_list":[{"id":"feat-50","state":"active","category":"api","size_estimate":"L","affected_files":["src/api/y.ts"]}]}}'

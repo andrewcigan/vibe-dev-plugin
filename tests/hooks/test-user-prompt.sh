@@ -38,7 +38,7 @@ assert_empty() {
 
 PROJ="$(mktemp -d)"
 mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"
+echo "7.0" > "$PROJ/.harness/engine-version"
 
 up_payload() {  # up_payload <prompt> [cwd]
   jq -cn --arg p "$1" --arg cwd "${2:-$PROJ}" \

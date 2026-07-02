@@ -27,7 +27,7 @@ assert_empty() {
 }
 assert_absent() { if [ ! -f "$2" ]; then PASS=$((PASS+1)); printf '  ok   %s\n' "$1"; else FAIL=$((FAIL+1)); printf '  FAIL %s (файл должен отсутствовать: %s)\n' "$1" "$2"; fi; }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 MARKER="$PROJ/.harness/handoff-pending"
 ss_payload() { jq -cn --arg cwd "${1:-$PROJ}" '{hook_event_name:"SessionStart",cwd:$cwd}'; }
 mk_marker()  { : > "$MARKER"; touch -t "$1" "$MARKER"; }

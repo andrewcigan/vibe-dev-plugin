@@ -31,7 +31,7 @@ assert_empty() {
 }
 
 PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
+echo "7.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
 
 up() { jq -cn --arg cwd "$PROJ" --arg p "$1" '{hook_event_name:"UserPromptSubmit",cwd:$cwd,prompt:$p}' | bash "$UP"; }
 pt() { # $1=stdout инструмента

@@ -50,7 +50,7 @@ rec_user_prompt_arr() { jq -cn --arg t "$1" '{type:"user",message:{role:"user",c
 # --- mock vibe-проект ---
 PROJ="$(mktemp -d)"
 mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"
+echo "7.0" > "$PROJ/.harness/engine-version"
 
 stop_payload() {  # stop_payload <transcript_path> [cwd]
   jq -cn --arg tp "$1" --arg cwd "${2:-$PROJ}" \

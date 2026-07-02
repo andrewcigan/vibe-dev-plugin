@@ -28,7 +28,7 @@ assert_file() { if [ -f "$2" ]; then PASS=$((PASS+1)); printf '  ok   %s\n' "$1"
 assert_absent() { if [ ! -f "$2" ]; then PASS=$((PASS+1)); printf '  ok   %s\n' "$1"; else FAIL=$((FAIL+1)); printf '  FAIL %s (файл должен отсутствовать: %s)\n' "$1" "$2"; fi; }
 
 # --- Песочница ---
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 STUBS="$(mktemp -d)"   # фейковые проверки для юнита hook_run_check
 
 cat > "$STUBS/ok.sh" <<'EOF'

@@ -26,7 +26,7 @@ assert_empty() {
   else FAIL=$((FAIL+1)); printf '  FAIL %s (ожидал пусто)\n     получил: %s\n' "$1" "$2"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 
 edit_pl() { jq -cn --arg f "$1" --arg ns "$2" --arg cwd "${3:-$PROJ}" '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Edit",tool_input:{file_path:$f,old_string:"old",new_string:$ns}}'; }
 write_pl() { jq -cn --arg f "$1" --arg c "$2" --arg cwd "${3:-$PROJ}" '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Write",tool_input:{file_path:$f,content:$c}}'; }

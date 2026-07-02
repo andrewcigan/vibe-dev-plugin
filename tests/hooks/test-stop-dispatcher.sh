@@ -30,7 +30,7 @@ assert_eq() {
 rec_user_prompt() { jq -cn --arg t "$1" '{type:"user",message:{role:"user",content:$t}}'; }
 rec_asst_text()   { jq -cn --arg t "$1" '{type:"assistant",message:{role:"assistant",content:[{type:"text",text:$t}]}}'; }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 
 # Транскрипт с намерением-без-действия (триггер intent-блока).
 TR="$PROJ/transcript.jsonl"

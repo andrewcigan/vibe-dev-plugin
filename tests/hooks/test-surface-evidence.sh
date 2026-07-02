@@ -31,7 +31,7 @@ assert_empty() {
 }
 
 PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
+echo "7.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
 
 # write_fl <json-фичи> — Write-намерение feature_list с одной passing-фичей.
 write_fl() {

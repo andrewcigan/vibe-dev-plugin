@@ -23,7 +23,7 @@ PASS=0; FAIL=0
 unset VIBE_DEV_PROFILE CLAUDE_PLUGIN_ROOT HOOK_PAYLOAD 2>/dev/null || true
 
 PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"
+echo "7.0" > "$PROJ/.harness/engine-version"
 echo strict > "$PROJ/.harness/profile"
 
 # Контрольная битая фича: UI в passing без layer_4/5 evidence — обязана ловиться всегда.

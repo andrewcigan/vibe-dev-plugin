@@ -32,7 +32,7 @@ assert_empty() {
   else FAIL=$((FAIL+1)); printf '  FAIL %s (ожидал пусто)\n     получил: %s\n' "$1" "$2"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 PORTRAIT_MED="$(mktemp)"; printf 'jargon_tolerance: medium\n' > "$PORTRAIT_MED"
 PORTRAIT_HIGH="$(mktemp)"; printf 'jargon_tolerance: high\n' > "$PORTRAIT_HIGH"
 NO_PORTRAIT="/nonexistent/portrait.md"

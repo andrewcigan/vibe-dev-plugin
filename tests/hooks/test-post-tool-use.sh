@@ -33,7 +33,7 @@ assert_empty() {
   else FAIL=$((FAIL+1)); printf '  FAIL %s (ожидал пусто)\n     получил: %s\n' "$1" "$2"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 reset_state() { rm -f "$PROJ/.harness/bash-repeat-state" 2>/dev/null; }
 
 pre_b() {  # pre_b <command> [cwd] — PreToolUse Bash payload (РЕАЛЬНАЯ форма: без tool_response)

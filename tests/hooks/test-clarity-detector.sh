@@ -31,7 +31,7 @@ assert_empty() {
   else FAIL=$((FAIL+1)); printf '  FAIL %s (ожидал пусто)\n     получил: %s\n' "$1" "$2"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 md_pl() { jq -cn --arg m "$1" --arg cwd "${2:-$PROJ}" '{hook_event_name:"MessageDisplay",cwd:$cwd,message_text:$m}'; }
 
 echo "clarity-detector (язык-ловец) — сценарии:"

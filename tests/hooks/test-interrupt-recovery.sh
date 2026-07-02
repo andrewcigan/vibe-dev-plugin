@@ -32,7 +32,7 @@ assert_not_contains() {
   else PASS=$((PASS+1)); printf '  ok   %s\n' "$1"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 TR="$PROJ/transcript.jsonl"
 
 payload() {  # payload <prompt> — UserPromptSubmit payload c transcript_path

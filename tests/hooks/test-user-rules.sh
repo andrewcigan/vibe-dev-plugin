@@ -25,7 +25,7 @@ assert_empty() {
   else FAIL=$((FAIL+1)); printf '  FAIL %s (ожидал пусто)\n     получил: %s\n' "$1" "$2"; fi
 }
 
-PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "6.0" > "$PROJ/.harness/engine-version"
+PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"; echo "7.0" > "$PROJ/.harness/engine-version"
 cat > "$PROJ/.harness/user-rules.json" <<'JSON'
 [
   {"id":"no-force-push","tool":"Bash","match":"push.*--force","action":"block","message":"Force-push запрещён (правило пользователя)"},

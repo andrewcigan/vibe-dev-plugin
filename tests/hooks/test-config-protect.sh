@@ -27,7 +27,7 @@ assert_not_contains() {
 }
 
 PROJ="$(mktemp -d)"; mkdir -p "$PROJ/.harness"
-echo "6.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
+echo "7.0" > "$PROJ/.harness/engine-version"; echo strict > "$PROJ/.harness/profile"
 
 bashcmd() { jq -cn --arg cwd "$PROJ" --arg c "$1" '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Bash",tool_input:{command:$c}}' | bash "$PRE"; }
 write()   { jq -cn --arg cwd "$PROJ" --arg fp "$1" '{hook_event_name:"PreToolUse",cwd:$cwd,tool_name:"Write",tool_input:{file_path:$fp,content:"x"}}' | bash "$PRE"; }

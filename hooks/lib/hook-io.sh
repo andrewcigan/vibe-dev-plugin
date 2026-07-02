@@ -75,6 +75,42 @@ hook_upgrade_nudge() {
   fi
 }
 
+# C1 (v7 Волна 2, автопамять): бриф возврата на SessionStart. Собирает активные фичи +
+# наличие недавних ошибок + наличие слепка сжатия в компактный блок и ОБЯЗАТЕЛЬНО завершает
+# recall-фразой (без неё агент инъекцию игнорирует — verified-паттерн basic-memory).
+# Пишет ФАКТЫ + «перепроверь по живому», НЕ статус «готово» (иначе размножит ложь о готовности).
+# Пусто, если возвращать нечего (чистый старт). Fail-safe: любая ошибка → меньше текста.
+hook_cold_start_brief() {
+  local cwd="${1:-}" fl active errj ckpt body=""
+  [ -n "$cwd" ] || return 0
+  fl="$cwd/feature_list.json"
+  if [ -f "$fl" ]; then
+    active="$(jq -r '
+      (.features // {}) | to_entries[]? | .value | if type=="array" then .[] else empty end
+      | select((.state // "") == "active")
+      | "  • " + ((.id // "?")|tostring) + ": " + (((.title // .name // .goal // .behavior // .description // "") | tostring)[0:80])
+    ' "$fl" 2>/dev/null | head -8)"
+  fi
+  errj=""; [ -f "$cwd/error-journal.md" ] && errj="yes"
+  ckpt=""; [ -f "$cwd/.harness/last-checkpoint.md" ] && ckpt="yes"
+  [ -n "$active" ] || [ -n "$errj" ] || [ -n "$ckpt" ] || return 0
+
+  body="🧭 Vibe Dev — бриф возврата (ФАКТЫ; статус «готово» перепроверь по живому, не по памяти):"
+  if [ -n "$active" ]; then
+    body="$body
+В работе сейчас (feature_list.json, state=active):
+$active"
+  fi
+  [ -n "$ckpt" ] && body="$body
+• Есть слепок последнего сжатия контекста: .harness/last-checkpoint.md — что просили до компакции."
+  [ -n "$errj" ] && body="$body
+• Недавние тупики — в error-journal.md: прочти, чтобы не повторить отвергнутые попытки."
+  body="$body
+
+Прежде чем продолжать — открой и сверься: feature_list.json (что в работе), SESSION.md (состояние), error-journal.md (тупики). Не доверяй памяти о готовности: «сделано» = evidence-гейт прошёл и поведение проверено вживую."
+  printf '%s' "$body"
+}
+
 # Heartbeat активации (v6.2 F2): каждый вызов пишущего события подтверждает «хуки физически
 # работают». Пишут SessionStart и UserPromptSubmit (раз в ход достаточно). Формат строки:
 # "<unix-ts> plugin=<версия>". Читатели сравнивают ts с now (TTL), а не mtime — надёжнее.

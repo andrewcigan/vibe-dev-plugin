@@ -249,6 +249,14 @@ else
 fi
 
 echo ""
+echo "=== 29. M2 слепок перед сжатием: extractive-парсинг транскрипта (v7 автопамять) ==="
+if bash tests/hooks/test-pre-compact.sh > /tmp/vibe-pctest.out 2>&1; then
+    tail -1 /tmp/vibe-pctest.out
+else
+    echo "❌ тест pre-compact упал:"; cat /tmp/vibe-pctest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -80,6 +80,19 @@
         "description": "Vibe Dev: язык-ловец. Сообщение агента с жаргоном / развилкой без «что теряешь» / человеко-днями -> запись в .harness/clarity-violations.log (метрика) + флаг на экране пользователя (displayContent). ЧЕСТНО display-only: не enforcement поведения модели, а детектор+подсветка. standard/strict.",
         "id": "vibe:message-display"
       }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-compact.sh\"",
+            "timeout": 30
+          }
+        ],
+        "description": "Vibe Dev: PreCompact-хук M2 (v7, автопамять). Перед сжатием контекста — extractive-слепок транскрипта (первая просьба пользователя + последние просьбы + хвост хода) в .harness/last-checkpoint.md; SessionStart-бриф C1 восстанавливает контекст после компакции. Пишет ФАКТЫ, НЕ статус «готово». Без LLM/субагента, всегда exit 0 (fail-open). Событие подтверждено живым прогоном 2026-07-02 на 2.1.170. Активно во всех профилях (слепок безвреден).",
+        "id": "vibe:pre-compact"
+      }
     ]
   }
 }

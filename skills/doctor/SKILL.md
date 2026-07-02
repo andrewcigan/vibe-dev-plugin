@@ -30,6 +30,16 @@ else
   echo "— Heartbeat: НЕТ (ни один хук ни разу не сработал в этом проекте)"
 fi
 echo "— Краши сторожей: $(ls .harness/hook-crashes/ 2>/dev/null | tr '\n' ' ' || echo нет)"
+[ -f .harness/last-checkpoint.md ] && echo "— Слепок сжатия (M2): есть ($(awk -F'trigger=' '/trigger=/{print $2; exit}' .harness/last-checkpoint.md 2>/dev/null))"
+# Аудит журнала (read-only, G5): только отчёт, без правок — обнаружение отделено от правки.
+if [ -f error-journal.md ]; then
+  JT=$(grep -c '^## err-' error-journal.md 2>/dev/null || echo 0)
+  JA=$(grep -cE '^\*\*status\*\*:[[:space:]]*active' error-journal.md 2>/dev/null || echo 0)
+  JS=$(grep -cE '^\*\*status\*\*:' error-journal.md 2>/dev/null || echo 0)
+  echo "— Журнал ошибок: записей $JT, active $JA, без штампа устаревания $((JT-JS))"
+  DUP=$(grep -oE 'Класс ошибки\*\*:[^|]*' error-journal.md 2>/dev/null | sort | uniq -d | head -3 | tr '\n' ';')
+  [ -n "$DUP" ] && echo "— ⚠️ Повторяющиеся классы ошибок (возможен рекуррент, перепроверь): $DUP"
+fi
 [ -f .harness/hooks-disabled ] && echo "— ⚠️ hooks-disabled: backstop ОСОЗНАННО выключен"
 [ -f .git/hooks/pre-commit ] && grep -q "Vibe Dev" .git/hooks/pre-commit 2>/dev/null \
   && echo "— pre-commit backstop: установлен" || echo "— pre-commit backstop: НЕ установлен"

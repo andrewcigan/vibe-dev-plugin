@@ -71,5 +71,14 @@ if [ -n "$UPGRADE" ]; then
   OUT="${OUT}${UPGRADE}"
 fi
 
+# C1 (v7 Волна 2): бриф возврата — активные фичи + тупики + слепок сжатия + recall-фраза.
+BRIEF="$(hook_cold_start_brief "$CWD")"
+if [ -n "$BRIEF" ]; then
+  [ -n "$OUT" ] && OUT="$OUT
+
+"
+  OUT="${OUT}${BRIEF}"
+fi
+
 [ -n "$OUT" ] && hook_emit_context "SessionStart" "$OUT"
 hook_emit_pass

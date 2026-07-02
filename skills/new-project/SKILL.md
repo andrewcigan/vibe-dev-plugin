@@ -50,7 +50,8 @@ cp ${CLAUDE_PLUGIN_ROOT}/templates/domain-rules.yaml ./domain-rules.yaml
 # живой хук на следующем сообщении (факт перевода = доказательство, что enforcement активен).
 # Если профиль остался pending-strict — хуки НЕ работают: НЕ продолжай молча, чини активацию (/doctor).
 mkdir -p .harness
-echo "6.0" > .harness/engine-version
+# Пин на АКТУАЛЬНЫЙ мажор плагина (динамически — новый проект не должен сам себе слать «обновись»).
+echo "$(jq -r '.version // "7"' "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null | cut -d. -f1).0" > .harness/engine-version
 echo "pending-strict" > .harness/profile
 
 # Создать стандартный .gitignore сразу (closes security gap)

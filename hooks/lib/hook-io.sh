@@ -54,25 +54,24 @@ hook_plugin_version() {
   printf '%s' "${v:-?}"
 }
 
-# Канал доставки правок (v7): сравнивает версию, к которой ПРИКРЕПЛЁН проект
-# (.harness/engine-version, ставит /upgrade-project) с УСТАНОВЛЕННОЙ версией плагина.
-# Возвращает (stdout) строку-подсказку, только если установлен новый МАЖОР — иначе пусто.
-# Почему только мажор: код хуков применяется сразу (грузится из CLAUDE_PLUGIN_ROOT), а
-# профиль/строгость проекта меняет лишь /upgrade-project, и меняется он на границе мажора.
-# Fail-safe: любая неполнота данных / нечисловой мажор -> пусто (никогда не ломает старт).
+# Канал доставки правок (v7): нудит /upgrade-project ТОЛЬКО функционально-МЯГКИЕ (legacy) проекты —
+# нет .harness/engine-version ЛИБО его major < 6. Пин 6.x/7.x уже строгий (legacy-порог — major≥6),
+# его НЕ нудим (анти-шум: бамп версии плагина не должен трогать уже-строгие проекты).
+# ВАЖНО: новые механизмы v7 применяются НЕЗАВИСИМО от пина (хуки грузятся из CLAUDE_PLUGIN_ROOT);
+# пин гейтит ТОЛЬКО строгость state-machine (legacy=warn vs strict=block). Fail-safe: нечитаемо → молчим.
 hook_upgrade_nudge() {
-  local cwd="${1:-}" ev pin inst pin_major inst_major
+  local cwd="${1:-}" ev pin pin_major
   [ -n "$cwd" ] || return 0
   ev="$cwd/.harness/engine-version"
-  [ -f "$ev" ] || return 0
-  pin="$(tr -d '[:space:]' < "$ev" 2>/dev/null)"
-  inst="$(hook_plugin_version)"
-  [ -n "$pin" ] && [ -n "$inst" ] && [ "$inst" != "?" ] || return 0
-  pin_major="${pin%%.*}"; inst_major="${inst%%.*}"
-  case "$pin_major.$inst_major" in *[!0-9.]*) return 0 ;; esac
-  if [ "$inst_major" -gt "$pin_major" ] 2>/dev/null; then
-    printf '⚠️ Vibe Dev: установлен плагин %s, а проект закреплён на движке %s (мажор ниже). Правки строгости к профилю проекта не применяются, пока не прогонишь /upgrade-project (код хуков уже обновлён — обновляется только пин профиля).' "$inst" "$pin"
+  if [ -f "$ev" ]; then
+    pin="$(tr -d '[:space:]' < "$ev" 2>/dev/null)"
+    pin_major="${pin%%.*}"
+    case "$pin_major" in ''|*[!0-9]*) return 0 ;; esac   # нечитаемый пин — молчим (fail-safe)
+    [ "$pin_major" -ge 6 ] 2>/dev/null && return 0        # major≥6 = уже строгий → тишина
+    # major < 6 → legacy, нудим ниже
   fi
+  # нет файла ЛИБО major<6 → мягкий режим
+  printf '⚠️ Vibe Dev: проект в МЯГКОМ режиме (движок не закреплён или устарел) — структурные проверки только предупреждают, не блокируют. Прогони /upgrade-project, чтобы включить полную строгость (dry-run проверит, что текущее состояние пройдёт).'
 }
 
 # C1 (v7 Волна 2, автопамять): бриф возврата на SessionStart. Собирает активные фичи +

@@ -19,10 +19,10 @@ echo "— Профиль: $(cat .harness/profile 2>/dev/null || echo '(нет ф
 echo "— Движок проекта (пин): $(cat .harness/engine-version 2>/dev/null || echo '(нет — legacy)')"
 PV=$(jq -r '.version // "?"' "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null)
 echo "— Установлен плагин: ${PV:-?} ($(git -C "${CLAUDE_PLUGIN_ROOT}" log -1 --format='%h %cd' --date=short 2>/dev/null || echo 'не git-копия'))"
-PIN=$(tr -d '[:space:]' < .harness/engine-version 2>/dev/null)
-if [ -n "$PIN" ] && [ -n "$PV" ] && [ "$PV" != "?" ] && [ "${PV%%.*}" -gt "${PIN%%.*}" ] 2>/dev/null; then
-  echo "— ⚠️ Канал доставки: установлен мажор ${PV%%.*} > пин проекта ${PIN%%.*} → прогони /upgrade-project (профиль отстаёт; код хуков уже обновлён)"
-fi
+PIN=$(tr -d '[:space:]' < .harness/engine-version 2>/dev/null); PINMAJ="${PIN%%.*}"
+SOFT=0; [ -z "$PIN" ] && SOFT=1
+case "$PINMAJ" in ''|*[!0-9]*) : ;; *) [ "$PINMAJ" -lt 6 ] 2>/dev/null && SOFT=1 ;; esac
+[ "$SOFT" = 1 ] && echo "— ⚠️ Проект в МЯГКОМ режиме (движок не закреплён/устарел, major<6) → /upgrade-project для полной строгости. Пин 6.x/7.x уже строгий — апгрейд не нужен (новые механизмы v7 работают и так)."
 if [ -f .harness/hooks-heartbeat ]; then
   HB_TS=$(awk '{print $1; exit}' .harness/hooks-heartbeat); NOW=$(date +%s)
   echo "— Heartbeat: $((NOW - HB_TS))с назад ($(cat .harness/hooks-heartbeat))"
@@ -49,7 +49,7 @@ claude plugin list 2>/dev/null | grep -i vibe || echo "— Плагин: не в
 | Краши сторожей в `.harness/hook-crashes/` | Сторож падал — его проверки в те моменты НЕ выполнялись | Открыть лог, починить причину (или сообщить о баге плагина), удалить лог |
 | pre-commit backstop НЕ установлен | Независимого канала нет — «театр строгости» не ловится на коммитах | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-precommit.sh" "$(pwd)"` |
 | `hooks-disabled` существует | Backstop выключен осознанно | Если работа в Claude Code возобновилась — удалить файл |
-| Установлен мажор > пин проекта | Профиль проекта отстаёт от новой строгости плагина (код хуков применяется сразу, пин — нет) | `/upgrade-project` (dry-run → перечитает пин, применит новую строгость) |
+| Проект в мягком режиме (нет пина движка / major<6) | Структурные проверки только предупреждают, не блокируют. Пин 6.x/7.x уже строгий — не нудим | `/upgrade-project` (dry-run → пин на текущий мажор + strict). Новые механизмы v7 работают независимо от пина |
 | Всё зелёное | Enforcement жив | Ничего не делать |
 
 ## Шаг 3: Доложить пользователю

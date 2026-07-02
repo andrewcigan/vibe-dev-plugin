@@ -7,7 +7,11 @@
 # Использование: bash upgrade-project.sh [<путь-проекта>]   (по умолчанию — текущая папка)
 
 set -u
-ENGINE="6.0"
+# Пин на АКТУАЛЬНЫЙ мажор плагина (динамически из манифеста рядом со скриптом).
+_SD="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_MAJ="$(jq -r '.version // empty' "$_SD/../.claude-plugin/plugin.json" 2>/dev/null | cut -d. -f1)"
+case "$_MAJ" in ''|*[!0-9]*) _MAJ=7 ;; esac
+ENGINE="${_MAJ}.0"
 PROJ="${1:-$PWD}"
 
 if [ ! -d "$PROJ/.harness" ] && [ ! -f "$PROJ/feature_list.json" ]; then

@@ -272,6 +272,23 @@ ts_content = _read_rel(os.path.join('docs', 'test-strategy.md'))
 dm_content = _read_rel(os.path.join('docs', 'data-model-review.md'))
 research_content = _read_dir(os.path.join('docs', 'research'))
 
+def _is_schema_def(af):
+    # v7 P7: только ОПРЕДЕЛЕНИЕ схемы (папки/файлы), НЕ любое вхождение слова "schema" в путь —
+    # иначе фичи-наполнители реестров цеплялись ложно. Сузили триггер, НО уровень оставили block
+    # (правила #1 ревью-модели и #11 vendor-lock действуют независимо от размера фичи).
+    if not isinstance(af, str):
+        return False
+    p = af.lower()
+    if 'migrations/' in p or 'prisma/schema' in p or 'drizzle/schema' in p:
+        return True
+    if p.endswith('.sql'):
+        return True
+    if re.search(r'(^|/)schema\.(prisma|ts|js|py|sql|rb)$', p):
+        return True
+    if re.search(r'(^|/)schema/', p):
+        return True
+    return False
+
 for feat_id, state, f in all_features:
     if state != 'active':
         continue
@@ -283,12 +300,14 @@ for feat_id, state, f in all_features:
     affected = f.get('affected_files') or []
     if not isinstance(affected, list):
         affected = []
-    is_data = (f.get('category', '') == 'data') or any(
-        isinstance(af, str) and re.search(r'(schema|migrations|prisma|drizzle)', af) for af in affected)
+    # Escape: явный маркер «модель предопределена» (внешний стандарт) снимает data-gate —
+    # правило reviewer-data-model «не применять для модели по внешнему стандарту».
+    data_predefined = bool(f.get('data_model_predefined'))
+    is_data = (not data_predefined) and ((f.get('category', '') == 'data') or any(_is_schema_def(af) for af in affected))
     if is_data and feat_id not in dm_content:
         errors_soft.append(
             "%s: data-фича в active без ревью модели — нет docs/data-model-review.md с её id. "
-            "Запусти data-model-reviewer ПЕРЕД реализацией схемы (глобальное правило ~/CLAUDE.md)." % feat_id)
+            "Запусти data-model-reviewer ПЕРЕД реализацией схемы (или пометь data_model_predefined: true, если модель по внешнему стандарту)." % feat_id)
     is_integration = (f.get('category', '') == 'integration') or any(
         isinstance(af, str) and re.search(r'(scraper|fetcher|/providers?/|external)', af, re.I) for af in affected)
     if is_integration and feat_id not in research_content:

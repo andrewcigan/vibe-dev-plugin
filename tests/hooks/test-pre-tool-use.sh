@@ -224,6 +224,11 @@ mkdir -p "$PROJ/docs"; echo "# Data-model review для feat-60" > "$PROJ/docs/d
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_DATA")")"
 assert_empty "25. data-фича + review с id -> pass" "$OUT"
 rm -rf "$PROJ/docs"
+# 25b. v7 P7: путь со словом "schema" в имени (не определение схемы), category != data -> НЕ ложный deny
+FP_SCHEMA='{"features":{"active_list":[{"id":"feat-61","state":"active","category":"lib","size_estimate":"S","affected_files":["src/registry/json-schema-loader.ts"]}]}}'
+rm -rf "$PROJ/docs"
+OUT="$(run "$(write_payload "$FL" "$FP_SCHEMA")")"
+assert_empty "25b. P7: 'schema' в имени файла, не data-фича -> pass (нет ложного deny)" "$OUT"
 
 # --- vendor-research gate: integration-фича в active требует docs/research/*.md (дыра аудита) ---
 ACTIVE_INTEG='{"features":{"active_list":[{"id":"feat-70","state":"active","category":"integration","size_estimate":"S","affected_files":["src/providers/insta.ts"]}]}}'

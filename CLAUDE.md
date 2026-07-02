@@ -1,6 +1,6 @@
 # Vibe Dev v6 — Мозг плагина
 
-> ✅ **v6.2 — enforcement как проверяемый факт.** **38 механизмов** ([docs/traceability.md](docs/traceability.md)): активация хуков доказуема (heartbeat + двухфазный профиль pending→strict + независимый git pre-commit backstop + `/doctor`), краш сторожа не молчит (fail-loud + crash-артефакты + корпус реальных форм данных), **clarity-gate на финальное сообщение** (Stop-block с precision-гейтом на корпусе из 54 боевых сессий — боль №1 переведена из дисциплины в механизм), evidence по поверхности фичи (монотонная строгость), **обязательный research перед архитектурой** (lock-паттерн: пропуск только явной фразой пользователя), closing-mode (закрытие сессии не кодит), секрет-гигиена, config-protect, **interrupt-recovery** (техническое прерывание — обрыв клиента / доставка сообщения — не парализует агента; v6.2.1). Построено по аудиту 54 боевых сессий + рисёрчу (Anthropic/OpenAI harness-статьи, pilot-shell/BMAD/ECC/ralph-wiggum) + независимой критике. id плагина — `vibe-dev` (версия 6.2.1, опубликована: github andrewcigan/vibe-dev-plugin).
+> ✅ **v6.2 — enforcement как проверяемый факт.** **Механизмы** (актуальное число и живой статус — только в [docs/traceability.md](docs/traceability.md), сейчас 42 отслеживаемых; 2 из них — экранный язык-ловец `clarity-detector` и маска секретов в выводе — честно помечены display-only/частичными и НЕ считаются enforcement): активация хуков доказуема (heartbeat + двухфазный профиль pending→strict + независимый git pre-commit backstop + `/doctor`), краш сторожа не молчит (fail-loud + crash-артефакты + корпус реальных форм данных), **clarity-gate на финальное сообщение** (Stop-block с precision-гейтом на корпусе из 54 боевых сессий — боль №1 переведена из дисциплины в механизм), evidence по поверхности фичи (монотонная строгость), **обязательный research перед архитектурой** (lock-паттерн: пропуск только явной фразой пользователя), closing-mode (закрытие сессии не кодит), секрет-гигиена, config-protect, **interrupt-recovery** (техническое прерывание — обрыв клиента / доставка сообщения — не парализует агента; v6.2.1). Построено по аудиту 54 боевых сессий + рисёрчу (Anthropic/OpenAI harness-статьи, pilot-shell/BMAD/ECC/ralph-wiggum) + независимой критике. id плагина — `vibe-dev` (версия 6.2.1, опубликована: github andrewcigan/vibe-dev-plugin).
 
 ## Идентичность
 
@@ -34,7 +34,7 @@
 
 ## 7 подсистем
 
-1. **Instructions** — AGENTS.md (≤200 строк роутинг), docs/ topic-files, domain-rules.yaml (structured)
+1. **Instructions** — CLAUDE.md (≤200 строк роутинг), docs/ topic-files, domain-rules.yaml (structured)
 2. **State** — feature_list.json (scope + backlog), SESSION.md (с TTL-секциями), error-journal.md
 3. **Verification** — test-strategy, eval-samples, three-layer (syntax + runtime + e2e) + user-reported (4-й уровень), negative-gate (3 типа: mutation/leak/invariant), dual critique
 4. **Scope** — feature.affected_files, WIP=1, light/heavy path по размеру фичи
@@ -45,7 +45,7 @@
 ## Pipeline
 
 ### FAST (5 этапов) — обычный режим
-1. `/new-project` — интервью + bootstrap harness (4 файла на старте: AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml) + pre-commit backstop
+1. `/new-project` — интервью + bootstrap harness (4 файла на старте: CLAUDE.md, feature_list.json, SESSION.md, domain-rules.yaml) + pre-commit backstop
 2. `/architecture` + `/choose-stack` — **Шаг 0: ОБЯЗАТЕЛЬНЫЙ research** (github-researcher + best-practices-researcher → docs/research/; hook блокирует ARCHITECTURE без него; пропуск — только явной фразой пользователя) → TOC bottleneck, stack
 3. `/design-handoff` — бриф для Claude Design (если UI)
 4. `/feature` loop — WIP=1, test-researcher + user-critic (для surface=ui — при любом размере), /verify (4-layer + lane-evidence по поверхности)

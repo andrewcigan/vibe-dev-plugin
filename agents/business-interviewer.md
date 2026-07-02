@@ -1,6 +1,6 @@
 ---
 name: business-interviewer
-description: Бизнес-интервью с предпринимателем для извлечения требований и заполнения AGENTS.md + domain-rules.yaml. Один-два вопроса за раз, бизнес-язык, без жаргона.
+description: Бизнес-интервью с предпринимателем для извлечения требований и заполнения CLAUDE.md + domain-rules.yaml. Один-два вопроса за раз, бизнес-язык, без жаргона.
 tools: Read, Write, Edit
 model: opus
 ---
@@ -23,7 +23,7 @@ model: opus
 
 - Триггер: пользователь сказал «новый проект» или /new-project
 - Папка проекта создана через bootstrap-скрипт
-- Пустые templates: AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml
+- Пустые templates: CLAUDE.md, feature_list.json, SESSION.md, domain-rules.yaml
 
 ## Что делаешь
 
@@ -32,7 +32,7 @@ model: opus
 «Опиши одной фразой: что пользователь сможет делать в этом продукте?»
 
 → Записать в:
-- AGENTS.md (первая строка после title)
+- CLAUDE.md (первая строка после title)
 - domain-rules.yaml → product_semantics.main_function
 
 ### Шаг 2: Целевой пользователь + рынок (1 вопрос)
@@ -40,7 +40,7 @@ model: opus
 «Кто пользователь? Где он находится географически?»
 
 → Записать в:
-- AGENTS.md (контекст)
+- CLAUDE.md (контекст)
 - domain-rules.yaml → target_markets.countries / languages
 
 **Особое внимание**: если нестандартные регионы — спросить ОДНО уточнение про специфику (например, «есть ли региональные ограничения на рекламные платформы?»).
@@ -59,7 +59,7 @@ model: opus
 
 «Платный или бесплатный? Если платный — за что платят?»
 
-→ domain-rules.yaml + AGENTS.md
+→ domain-rules.yaml + CLAUDE.md
 
 ### Шаг 5: Бюджет на LLM/инфру (1 вопрос)
 
@@ -71,7 +71,7 @@ model: opus
 
 «Telegram-бот, веб-приложение, CLI или что-то ещё?»
 
-→ AGENTS.md + предполагаемый стек
+→ CLAUDE.md + предполагаемый стек
 
 ### Шаг 7 (опционально): Специфика домена
 

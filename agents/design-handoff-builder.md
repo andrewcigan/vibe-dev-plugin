@@ -22,7 +22,7 @@ FULL этап 11 (после detail-architecture) или FAST этап 3 (есл
 
 ## Input
 
-- AGENTS.md
+- CLAUDE.md
 - docs/PRODUCT.md, user-stories.md
 - docs/ARCHITECTURE.md (компоненты)
 - domain-rules.yaml.target_markets (язык / регион)

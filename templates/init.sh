@@ -72,14 +72,14 @@ echo "[Stage 5/5] Harness self-check..."
 
 ERRORS=0
 
-# AGENTS.md routing ≤200 lines invariant
-if [ -f "AGENTS.md" ]; then
-  LINES=$(wc -l < AGENTS.md)
+# CLAUDE.md routing ≤200 lines invariant
+if [ -f "CLAUDE.md" ]; then
+  LINES=$(wc -l < CLAUDE.md)
   if [ "$LINES" -gt 200 ]; then
-    echo "  ⚠️  AGENTS.md = $LINES строк (должно быть ≤200). Вынеси в docs/ topic-files."
+    echo "  ⚠️  CLAUDE.md = $LINES строк (должно быть ≤200). Вынеси в docs/ topic-files."
     ERRORS=$((ERRORS+1))
   else
-    echo "  ✓ AGENTS.md ($LINES строк ≤200)"
+    echo "  ✓ CLAUDE.md ($LINES строк ≤200)"
   fi
 fi
 

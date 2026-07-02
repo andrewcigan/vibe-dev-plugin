@@ -9,18 +9,18 @@
 **Что**: как агент знает правила проекта.
 
 **Артефакты**:
-- `AGENTS.md` (routing, ≤200 строк)
+- `CLAUDE.md` (routing, ≤200 строк)
 - `domain-rules.yaml` (structured, специфика ниши)
 - `docs/ARCHITECTURE.md` (топологический map)
 - `docs/PRODUCT.md` (бизнес-смысл)
 
 **Enforcement**:
-- `init.sh` Stage 5: ≤200 строк AGENTS.md, иначе exit 1
+- `init.sh` Stage 5: ≤200 строк CLAUDE.md, иначе exit 1
 - `domain-rules.yaml` schema validation
 - `/audit` проверяет freshness (last_reviewed)
 
 **Common failures**:
-- AGENTS.md разрастается (защита: проверка длины)
+- CLAUDE.md разрастается (защита: проверка длины)
 - domain-rules.yaml не machine-readable (защита: YAML schema)
 
 ---

@@ -33,7 +33,7 @@ S (лендинг/прототип) — короткий обзор (по 1-2 и
 
 ## Что происходит
 
-1. Subagent `architect` (Opus) читает AGENTS.md, PRODUCT.md, domain-rules.yaml, **docs/research/*** (теперь и в FAST)
+1. Subagent `architect` (Opus) читает CLAUDE.md, PRODUCT.md, domain-rules.yaml, **docs/research/*** (теперь и в FAST)
 2. Identify bottleneck (TOC) — узкое место для главной функции
 3. ≤10 компонентов (Karpathy Simplicity First)
 4. Mermaid-диаграмма data flow

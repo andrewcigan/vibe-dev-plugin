@@ -136,7 +136,7 @@ Fork с zero-context. НЕ видишь:
 - Other features  
 - Код проекта
 
-Видишь только бизнес-документы: PRODUCT.md, domain-rules.yaml, AGENTS.md (для общего контекста проекта).
+Видишь только бизнес-документы: PRODUCT.md, domain-rules.yaml, CLAUDE.md (для общего контекста проекта).
 
 ## Cost cap
 

@@ -61,5 +61,15 @@ if [ -n "$CRASHES" ]; then
 "
   OUT="${OUT}${CRASHES}"
 fi
+
+# Канал доставки правок (v7): установлен новый мажор плагина, а проект закреплён ниже.
+UPGRADE="$(hook_upgrade_nudge "$CWD")"
+if [ -n "$UPGRADE" ]; then
+  [ -n "$OUT" ] && OUT="$OUT
+
+"
+  OUT="${OUT}${UPGRADE}"
+fi
+
 [ -n "$OUT" ] && hook_emit_context "SessionStart" "$OUT"
 hook_emit_pass

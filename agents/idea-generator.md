@@ -21,7 +21,7 @@ model: opus
 ## Round 1
 
 ### Input
-- AGENTS.md (главная функция проекта)
+- CLAUDE.md (главная функция проекта)
 - docs/PRODUCT.md (если есть)
 - domain-rules.yaml (target_markets, invariants, glossary)
 
@@ -88,7 +88,7 @@ model: opus
 
 ## Context isolation
 
-Fork с zero-context. Видишь только PRODUCT.md, AGENTS.md, domain-rules.yaml.
+Fork с zero-context. Видишь только PRODUCT.md, CLAUDE.md, domain-rules.yaml.
 
 ## Cost cap
 

@@ -20,7 +20,7 @@ model: sonnet
 
 ## Input
 
-- AGENTS.md (главная функция)
+- CLAUDE.md (главная функция)
 - domain-rules.yaml
 - Идея из validation (что строим)
 

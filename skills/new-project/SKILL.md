@@ -82,13 +82,13 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 сообщении (профиль pending-strict → strict переведёт живой хук). Если в следующем ходе
 НЕ появилось подтверждение активации — запусти `/doctor` и чини, не продолжай молча.
 
-### Шаг 3: Бизнес-интервью (заполнение AGENTS.md + domain-rules.yaml)
+### Шаг 3: Бизнес-интервью (заполнение CLAUDE.md + domain-rules.yaml)
 
 Пройди по блокам ниже. **ОДИН вопрос за раз.** Каждый ответ → сразу записываешь в файлы (не копи в чате).
 
 **Блок 1: Главная функция**
 - «Опиши одной фразой: что пользователь сможет делать в этом продукте?»
-- → пиши в AGENTS.md (первая строка после title)
+- → пиши в CLAUDE.md (первая строка после title)
 - → дублируй в domain-rules.yaml → product_semantics.main_function
 
 **Блок 2: Целевой пользователь и рынок**
@@ -101,7 +101,7 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 
 **Блок 4 (только FULL): Бизнес-модель**
 - «Платный или бесплатный? Кто платит?»
-- → domain-rules.yaml + AGENTS.md
+- → domain-rules.yaml + CLAUDE.md
 
 **Блок 5: Бюджет**
 - «Сколько готов потратить на LLM/инфраструктуру в месяц?»
@@ -109,7 +109,7 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 
 **Блок 6: Канал доставки**
 - «Telegram-бот? Веб? CLI? Десктоп?»
-- → AGENTS.md + предполагай стек (см. Шаг 4)
+- → CLAUDE.md + предполагай стек (см. Шаг 4)
 
 ### Шаг 4: Tech-defaults (НЕ спрашивай пользователя — Quality > Speed)
 
@@ -144,7 +144,7 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 ./init.sh  # будет создан позже на /architecture, пропустить если ещё нет
 ```
 
-Прочитай AGENTS.md обратно, убедись:
+Прочитай CLAUDE.md обратно, убедись:
 - ≤200 строк ✓
 - 4 файла существуют ✓
 - domain-rules.yaml заполнен ключевыми полями ✓
@@ -153,7 +153,7 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 
 ```
 ✓ Проект <name> создан в <рабочая-папка>/<name>
-✓ Harness bootstrap: 4 файла (AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml)
+✓ Harness bootstrap: 4 файла (CLAUDE.md, feature_list.json, SESSION.md, domain-rules.yaml)
 ✓ Режим: FAST (5 этапов) / FULL (10 этапов)
 ✓ Стек: <выбранный>
 
@@ -177,4 +177,4 @@ git commit -q -m "init: vibe-dev harness bootstrap"
 
 - Пользователь сказал: «новый проект», «начнём новый», «стартуем проект X», «/new-project»
 - Текущая папка пустая или есть только `.git`
-- Нет AGENTS.md в текущей директории
+- Нет CLAUDE.md в текущей директории

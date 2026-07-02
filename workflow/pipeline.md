@@ -9,7 +9,7 @@
 Для внутренних инструментов, простых MVP, Telegram-ботов, понятного стека.
 
 ### Этап 1: /new-project
-- **Что**: бизнес-интервью + bootstrap 4 файлов (AGENTS.md, feature_list.json, SESSION.md, domain-rules.yaml)
+- **Что**: бизнес-интервью + bootstrap 4 файлов (CLAUDE.md, feature_list.json, SESSION.md, domain-rules.yaml)
 - **Critic**: business-interviewer (Opus)
 - **Артефакты**: 4 файла + git init + .gitignore
 - **Gate**: домен-rules.yaml заполнен (main_function, target_markets, invariants ≥2)

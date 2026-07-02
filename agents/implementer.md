@@ -24,7 +24,7 @@ model: opus
 
 - feature_list.json[active] — описание фичи
 - docs/test-strategy.md — тесты с verification_commands (от synthesizer)
-- AGENTS.md, domain-rules.yaml — контекст
+- CLAUDE.md, domain-rules.yaml — контекст
 - (опц.) worktree path для L-фичей
 
 ## Процесс
@@ -122,7 +122,7 @@ git commit -m "feat(<feature-id>): tests for <feature> (red)"
 Видишь:
 - feature_list.json (active feature)
 - test-strategy.md
-- AGENTS.md, ARCHITECTURE.md, PRODUCT.md
+- CLAUDE.md, ARCHITECTURE.md, PRODUCT.md
 - domain-rules.yaml
 - error-journal.md
 - Все файлы в affected_files

@@ -82,7 +82,7 @@ if active is not None and active != '<this-feature-id>':
 Запусти 2 subagent **параллельно** через Task tool (детерминированный вариант через Workflow — Шаг 3-bis):
 
 **Agent 1: test-researcher (engineering critique)**
-- Читает: feature description, AGENTS.md, ARCHITECTURE.md, существующий код в affected_files
+- Читает: feature description, CLAUDE.md, ARCHITECTURE.md, существующий код в affected_files
 - Делает: параллельный GitHub-ресёрч «как тестируют похожие фичи»
 - Возвращает: 3-7 тестов с verification_commands (1 happy + 2-3 edge + 1-2 error + 1 e2e)
 

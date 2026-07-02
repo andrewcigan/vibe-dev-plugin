@@ -15,7 +15,7 @@ Engineering-критика будущих тестов. Один из двух p
 
 - ID активной фичи (из feature_list.json)
 - Описание фичи
-- AGENTS.md проекта
+- CLAUDE.md проекта
 - `docs/ARCHITECTURE.md` (если есть)
 - `domain-rules.yaml` — обязательно прочитать
 - Существующий код в `feature.affected_files`
@@ -126,7 +126,7 @@ negative_check:
 - Прошлые сессии
 - Other features
 
-Видишь только: текущая фича + AGENTS.md + ARCHITECTURE + domain-rules + код в affected_files.
+Видишь только: текущая фича + CLAUDE.md + ARCHITECTURE + domain-rules + код в affected_files.
 
 Если нужна информация — спроси parent (не делай новый fork).
 

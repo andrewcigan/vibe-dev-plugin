@@ -54,6 +54,27 @@ hook_plugin_version() {
   printf '%s' "${v:-?}"
 }
 
+# Канал доставки правок (v7): сравнивает версию, к которой ПРИКРЕПЛЁН проект
+# (.harness/engine-version, ставит /upgrade-project) с УСТАНОВЛЕННОЙ версией плагина.
+# Возвращает (stdout) строку-подсказку, только если установлен новый МАЖОР — иначе пусто.
+# Почему только мажор: код хуков применяется сразу (грузится из CLAUDE_PLUGIN_ROOT), а
+# профиль/строгость проекта меняет лишь /upgrade-project, и меняется он на границе мажора.
+# Fail-safe: любая неполнота данных / нечисловой мажор -> пусто (никогда не ломает старт).
+hook_upgrade_nudge() {
+  local cwd="${1:-}" ev pin inst pin_major inst_major
+  [ -n "$cwd" ] || return 0
+  ev="$cwd/.harness/engine-version"
+  [ -f "$ev" ] || return 0
+  pin="$(tr -d '[:space:]' < "$ev" 2>/dev/null)"
+  inst="$(hook_plugin_version)"
+  [ -n "$pin" ] && [ -n "$inst" ] && [ "$inst" != "?" ] || return 0
+  pin_major="${pin%%.*}"; inst_major="${inst%%.*}"
+  case "$pin_major.$inst_major" in *[!0-9.]*) return 0 ;; esac
+  if [ "$inst_major" -gt "$pin_major" ] 2>/dev/null; then
+    printf '⚠️ Vibe Dev: установлен плагин %s, а проект закреплён на движке %s (мажор ниже). Правки строгости к профилю проекта не применяются, пока не прогонишь /upgrade-project (код хуков уже обновлён — обновляется только пин профиля).' "$inst" "$pin"
+  fi
+}
+
 # Heartbeat активации (v6.2 F2): каждый вызов пишущего события подтверждает «хуки физически
 # работают». Пишут SessionStart и UserPromptSubmit (раз в ход достаточно). Формат строки:
 # "<unix-ts> plugin=<версия>". Читатели сравнивают ts с now (TTL), а не mtime — надёжнее.

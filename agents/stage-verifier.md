@@ -29,7 +29,7 @@ model: sonnet
 ## Критерии по этапам
 
 ### После /new-project
-- [ ] AGENTS.md существует и ≤200 строк
+- [ ] CLAUDE.md существует и ≤200 строк
 - [ ] feature_list.json валиден
 - [ ] SESSION.md существует
 - [ ] domain-rules.yaml не пустой (main_function + ≥1 invariant)
@@ -114,7 +114,7 @@ model: sonnet
 
 Блокеры:
 - ❌ feature_list.json: feature 'feat-003' без affected_files (WIP=1 не enforce-able)
-- ❌ AGENTS.md = 250 строк (max 200, выноси в docs/ topic-files)
+- ❌ CLAUDE.md = 250 строк (max 200, выноси в docs/ topic-files)
 
 Чини их прежде чем продолжать.
 ```

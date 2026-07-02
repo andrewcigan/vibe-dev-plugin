@@ -20,7 +20,7 @@ model: sonnet
 Ты — fresh subagent, **никогда не видевший** этот проект до сейчас.
 
 **Видишь** (read-only):
-- AGENTS.md
+- CLAUDE.md
 - README.md
 - feature_list.json
 - SESSION.md
@@ -53,8 +53,8 @@ model: sonnet
 ## Чек-листы по подсистемам
 
 ### 1. Instructions (1-5)
-- [ ] AGENTS.md существует
-- [ ] AGENTS.md ≤200 строк (если больше — балл -1)
+- [ ] CLAUDE.md существует
+- [ ] CLAUDE.md ≤200 строк (если больше — балл -1)
 - [ ] domain-rules.yaml существует и заполнен (не template)
 - [ ] domain-rules.yaml имеет invariants ≥2
 - [ ] domain-rules.yaml.freshness.last_reviewed более 30 сессий назад

@@ -98,7 +98,7 @@
 
 **Слой 0 (Enforcement)**:
 - WIP=1 enforced через pre-commit hook
-- AGENTS.md ≤200 строк через init.sh check
+- CLAUDE.md ≤200 строк через init.sh check
 - Cost preview перед bulk API
 - 4-layer verification обязательна
 

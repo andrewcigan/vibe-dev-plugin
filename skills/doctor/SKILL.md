@@ -16,7 +16,13 @@ echo "=== Vibe Dev /doctor ==="
 echo "— Папка: $(pwd)"
 echo "— Vibe-проект: $([ -d .harness ] || [ -f feature_list.json ] && echo да || echo НЕТ)"
 echo "— Профиль: $(cat .harness/profile 2>/dev/null || echo '(нет файла)')"
-echo "— Движок проекта: $(cat .harness/engine-version 2>/dev/null || echo '(нет — legacy)')"
+echo "— Движок проекта (пин): $(cat .harness/engine-version 2>/dev/null || echo '(нет — legacy)')"
+PV=$(jq -r '.version // "?"' "${CLAUDE_PLUGIN_ROOT}/.claude-plugin/plugin.json" 2>/dev/null)
+echo "— Установлен плагин: ${PV:-?} ($(git -C "${CLAUDE_PLUGIN_ROOT}" log -1 --format='%h %cd' --date=short 2>/dev/null || echo 'не git-копия'))"
+PIN=$(tr -d '[:space:]' < .harness/engine-version 2>/dev/null)
+if [ -n "$PIN" ] && [ -n "$PV" ] && [ "$PV" != "?" ] && [ "${PV%%.*}" -gt "${PIN%%.*}" ] 2>/dev/null; then
+  echo "— ⚠️ Канал доставки: установлен мажор ${PV%%.*} > пин проекта ${PIN%%.*} → прогони /upgrade-project (профиль отстаёт; код хуков уже обновлён)"
+fi
 if [ -f .harness/hooks-heartbeat ]; then
   HB_TS=$(awk '{print $1; exit}' .harness/hooks-heartbeat); NOW=$(date +%s)
   echo "— Heartbeat: $((NOW - HB_TS))с назад ($(cat .harness/hooks-heartbeat))"
@@ -40,6 +46,7 @@ claude plugin list 2>/dev/null | grep -i vibe || echo "— Плагин: не в
 | Краши сторожей в `.harness/hook-crashes/` | Сторож падал — его проверки в те моменты НЕ выполнялись | Открыть лог, починить причину (или сообщить о баге плагина), удалить лог |
 | pre-commit backstop НЕ установлен | Независимого канала нет — «театр строгости» не ловится на коммитах | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-precommit.sh" "$(pwd)"` |
 | `hooks-disabled` существует | Backstop выключен осознанно | Если работа в Claude Code возобновилась — удалить файл |
+| Установлен мажор > пин проекта | Профиль проекта отстаёт от новой строгости плагина (код хуков применяется сразу, пин — нет) | `/upgrade-project` (dry-run → перечитает пин, применит новую строгость) |
 | Всё зелёное | Enforcement жив | Ничего не делать |
 
 ## Шаг 3: Доложить пользователю

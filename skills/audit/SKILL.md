@@ -16,7 +16,7 @@ when_to_use: Раз в неделю или при подозрении что ч
 ```
 Ты — независимый аудитор проекта. Не работаешь с этой кодовой базой.
 Прочитай ТОЛЬКО:
-- AGENTS.md
+- CLAUDE.md
 - README.md (для людей)
 - feature_list.json
 - SESSION.md
@@ -43,7 +43,7 @@ when_to_use: Раз в неделю или при подозрении что ч
 
 | # | Подсистема | Что проверяет |
 |---|---|---|
-| 1 | **Instructions** | AGENTS.md ≤200 строк, domain-rules.yaml заполнен, нет монолита |
+| 1 | **Instructions** | CLAUDE.md ≤200 строк, domain-rules.yaml заполнен, нет монолита |
 | 2 | **State** | feature_list.json валиден, SESSION.md свежий, нет дублирования |
 | 3 | **Verification** | 4-layer применяется, negative-gate работает, dual critique для L фичей |
 | 4 | **Scope** | WIP=1 не нарушено, affected_files указаны, no scope-leak |
@@ -77,7 +77,7 @@ recurrence_rate = recurring_errors / total_errors * 100
 
 ### Freshness checks
 - domain-rules.yaml `last_reviewed` — старше N сессий?
-- AGENTS.md — обновлялся в этой фазе проекта?
+- CLAUDE.md — обновлялся в этой фазе проекта?
 - README.md — соответствует ли текущей реальности?
 
 ## Cost snapshot
@@ -97,7 +97,7 @@ Trend: ↑ / ↓ / flat
 **Date**: YYYY-MM-DD (by external evaluator, fresh context)
 
 **7-tuple scores**:
-- Instructions: 4/5 — AGENTS.md норма, нет topic-files в docs/
+- Instructions: 4/5 — CLAUDE.md норма, нет topic-files в docs/
 - State: 3/5 — feature_list.json валиден, SESSION.md устарел на 3 дня
 - Verification: 2/5 — bottleneck! negative-gate не используется
 - Scope: 5/5 — WIP=1 enforced корректно

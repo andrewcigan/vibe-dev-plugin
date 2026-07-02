@@ -24,7 +24,7 @@ FULL pipeline этап 14 — до начала /feature loop. Также исп
 
 ## Input
 
-- AGENTS.md (главная функция)
+- CLAUDE.md (главная функция)
 - docs/PRODUCT.md (user stories)
 - domain-rules.yaml (invariants, target_markets, disambiguation_triggers, glossary)
 - docs/research/* (если есть — для realistic сценариев)

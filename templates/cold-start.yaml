@@ -6,7 +6,7 @@
 questions:
   - id: q1
     question: "Что это за продукт и для кого?"
-    expected_source: ["docs/PRODUCT.md", "AGENTS.md"]
+    expected_source: ["docs/PRODUCT.md", "CLAUDE.md"]
     answer_pattern: "Один абзац: главная функция, целевой пользователь, ключевая ценность"
     fail_action: "Прочитать docs/PRODUCT.md или ASK пользователю если документа нет"
 

@@ -15,9 +15,12 @@ decisions and does the work. The point of the plugin is to make the agent *relia
 > exactly the link that's supposed to keep it — the agent itself. So the rules are turned into
 > checkpoints that are actually enforced.
 
-In v6.2 there are **38 such mechanisms**, each with three attributes: *where it's defined /
-what enforces it / what happens if you try to bypass it* (full list in `docs/traceability.md`).
-The plugin's self-check verifies completeness — a claim without a live mechanism doesn't pass.
+The number of mechanisms and their live status live in `docs/traceability.md` — the single
+source of truth (42 tracked today; 2 of them — the screen-layer jargon catcher and the
+secret-output mask — are honestly marked display-only/partial, i.e. **not** real enforcement).
+Each mechanism carries three attributes: *where it's defined / what enforces it / what happens
+if you try to bypass it*. The plugin's self-check verifies completeness — a claim without a live
+mechanism doesn't pass.
 New in v6.2: **hook activation became a provable fact** (a guard that "didn't turn on" can no
 longer stay silent), and **clarity of the final message** went from a wish to a blocking gate.
 Every new guard was verified with live runs on the Claude Code 2.1.170 engine.
@@ -54,7 +57,7 @@ automatically** on install (Claude Code v2.1+) — no manual wiring. Strictness 
 
 ---
 
-## What it catches (key mechanisms of 38)
+## What it catches (key mechanisms)
 
 ### A. "Done" means verified, not claimed
 | Mechanism | What it catches | What it does |

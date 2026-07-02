@@ -1,7 +1,7 @@
 # Vibe Dev — Feature State Machine
 # Источник правды для allowed transitions. Hook hooks/checks/state-transition.sh читает этот файл.
 
-version: "5.2.0"
+version: "6.2.1"
 
 states:
   - captured              # есть в backlog

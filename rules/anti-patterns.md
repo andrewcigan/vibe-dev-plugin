@@ -26,7 +26,7 @@ Strategy pattern на 30 строк там где хватает 2 if'а.
 
 ## Из harness-engineering (15 gotchas)
 
-### AP-5: AGENTS.md разрастается
+### AP-5: CLAUDE.md разрастается
 Дописываем в один файл, пока не станет 1000 строк (lost in the middle).
 **Защита**: init.sh stage 5 проверяет ≤200 строк.
 

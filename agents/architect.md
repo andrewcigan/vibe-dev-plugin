@@ -24,7 +24,7 @@ model: opus
 
 ## Что получаешь
 
-- AGENTS.md (главная функция)
+- CLAUDE.md (главная функция)
 - docs/PRODUCT.md (если есть)
 - domain-rules.yaml (особенно invariants, target_markets, runtime_constraints)
 - (FULL) docs/research/* (если /research завершён)
@@ -35,7 +35,7 @@ model: opus
 
 Целиком прочитай:
 - domain-rules.yaml (invariants определяют архитектурные требования)
-- AGENTS.md
+- CLAUDE.md
 - docs/PRODUCT.md
 - docs/research/* (FULL)
 

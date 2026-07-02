@@ -1,109 +1,92 @@
-# Enforcement Philosophy — Сердце v5.1
+# Enforcement Philosophy — Сердце Vibe Dev
 
 > «Harness is enforcement, not documentation.»
 
 После критики v5.0 на 3 реальных проектах главное открытие: **архитектура из документов и принципов деградирует за 2-3 недели**. Работает только то, что физически невозможно нарушить.
 
+> **Единственный источник истины о статусе механизмов — [`docs/traceability.md`](../docs/traceability.md).** Он сверяется с ЖИВЫМИ прогонами и честно помечает, что реально `block`, что `warn/inject`, что `log`, а что `display-only`/мёртвое на текущем движке. Проза (README, CLAUDE.md) считает механизмы приблизительно и устаревает — **при расхождении верь traceability, не прозе и не числу в заголовке**.
+
 ---
 
 ## Тест для каждого инварианта
 
-Перед тем как добавить любое правило в v5.1, оно должно ответить **на 3 вопроса**:
+Перед тем как назвать что-либо «инвариантом», оно должно ответить **на 3 вопроса**:
 
 1. **Где зафиксирован?** (конкретный файл, не «в принципах»)
 2. **Какой механизм enforces?** (hook / script / agent / schema validator)
 3. **Что произойдёт при попытке обхода?** (block / warn / log)
 
-Если хотя бы одного атрибута нет — это **пожелание, не инвариант**. Удалять или превращать в механизм.
+Если хотя бы одного атрибута нет — это **пожелание, не инвариант**. Либо превратить в механизм, либо честно пометить «discipline» — не выдавать за механизм.
 
 ---
 
-## Принципы и их механизмы (полный список)
+## Три класса — честная граница (её отсутствие и было болезнью)
 
-| # | Принцип | Файл | Механизм | При обходе |
-|---|---|---|---|---|
-| 1 | Quality > Speed | `rules/quality-gate.md` | Pre-send filter на исходящие сообщения | Сообщение блокируется до переписания |
-| 2 | Execute, don't ask на техническом | `cold-start.yaml` + `quality-gate.md` | Filter ловит technical A/B вопросы | Reformulate в business-impact |
-| 3 | Top-down user perspective | `agents/user-perspective-critic.md` | Параллельный subagent при /feature heavy path | Mandatory artefact `critique-merge.md` |
-| 4 | Бизнес-язык, no jargon | `quality-gate.md` глоссарий | Pre-send check: термин не из словаря | Переписать |
-| 5 | WIP=1 | `hooks/pre-commit-scope.sh` | Pre-commit hook: diff ⊆ affected_files | Commit blocked |
-| 6 | Surgical changes | Same as WIP=1 + `feature_list.json schema` | affected_files обязательно | Validation error |
-| 7 | Agent-portability | `AGENTS.md` (primary, не CLAUDE.md) | `init.sh` проверяет наличие | Bootstrap fail |
-| 8 | State-machine over tool_use на средних моделях | `domain-rules.yaml anti_patterns` + `/audit` rule | Audit-check ищет tool_use patterns | Warning + рекомендация |
-| 9 | Verification 4-layer | `skills/verify/SKILL.md` | Skill enforces order | Нельзя ставить passing без всех 4 |
-| 10 | Negative-verification self-check | Same | Тест должен упасть на специально внесённой ошибке | Verification rejected |
-| 11 | API research first | `templates/pre-launch-checklist.yaml` + `hooks/pre-bash-bulk-api.sh` | Hook detect `for X in <large_list>: api_call` → block | Block до passed checklist |
-| 12 | Concurrent writes guard | `templates/tools-allowlist.yaml` + `hooks/pre-write-concurrent.sh` | File lock table | Block с suggestion |
-| 13 | Cost preview перед bulk | `tools-allowlist.yaml cost section` + `hooks/pre-bash-bulk-api.sh` | Estimate > $2 → confirm | Block без confirm |
-| 14 | Stuck auto-trigger | `scripts/stuck-watcher.sh` (background) | Watcher 30/45 мин timers | Auto /stuck |
-| 15 | Cold-start test | `templates/cold-start.yaml` + skill resume | External evaluator с fresh context | Continue не разрешён если <4/5 |
-| 16 | 5-dim clean-exit | `skills/handoff/SKILL.md` | Auto-trigger на tmux detach | SESSION.md Open Issues |
-| 17 | AGENTS.md ≤200 строк | `init.sh` Stage 5 | wc -l + сравнение | init.sh exit 1 |
-| 18 | Memory two-step save | `agents/synthesizer.md` discipline | Topic file FIRST, index SECOND | Orphaned file (recoverable) |
-| 19 | Priority ordering (local > project > user > org) | OS-level через ~/.claude иерархию | Уже work in Claude Code | N/A |
-| 20 | Secrets per-project scope | `templates/secrets-scope.yaml` | Key-vault read проверяет scope | Permission denied |
+1. **Механизм (block).** Хук/скрипт/схема физически не даёт нарушить.
+   Примеры: `hooks/pre-commit-scope.sh` — diff вне `affected_files` → коммит отклонён; `hooks/checks/state-transition.sh` — UI→passing без user-evidence → block; `hooks/checks/architecture-research-gate.sh` — ARCHITECTURE без research → block (пропуск только явной фразой пользователя).
+2. **Механизм-подсказка (warn / inject / log).** Ловит и подсвечивает, но не блокирует — среда не даёт точки блокировки для этого класса.
+   Примеры: `hooks/checks/bulk-api.sh` (массовый внешний API без чек-листа), `hooks/checks/concurrent-write.sh` (гонка записи), clarity-gate на Stop (`hooks/checks/clarity-stop-gate.sh` — жаргон/развилка → заставить дописать/переписать последний абзац).
+3. **Дисциплина (нет enforce).** Правило есть, механизма нет: содержание финального сообщения, тон, «посмотрел глазами» в SDK **не перехватываются до показа**. Это ЧЕСТНО помечается как discipline.
+
+**Ключевая честность (за что билась критика v5.0):** в Claude Code SDK **нет** хука, редактирующего сообщение агента ДО показа пользователю. Значит «Quality > Speed как pre-send фильтр, блокирующий сообщение до переписания» — **НЕ механизм** (такого API нет). Реальный носитель ясности — clarity-gate на событии Stop (приходит ПОСЛЕ, может заставить дописать) + глобальное языковое правило в `~/CLAUDE.md`. Это класс 2/3, не класс 1. Точно так же «формат вывода», «следующий шаг», «человеко-дни» в финале — дисциплина, не block.
+
+---
+
+## Что реально enforce'ится (указатели на живые файлы)
+
+Не таблица-декларация (она и гнила в прошлых версиях), а ссылки на существующие механизмы. Полный список со статусом и датами живой проверки — в `docs/traceability.md`.
+
+| Инвариант | Файл механизма | Класс | При обходе |
+|---|---|---|---|
+| Правки ⊆ affected_files (WIP=1, surgical) | `hooks/pre-commit-scope.sh` + git pre-commit backstop (`scripts/install-precommit.sh`) | block | коммит отклонён |
+| UI→passing без user-evidence | `hooks/checks/state-transition.sh` | block | запись feature_list отклонена |
+| Обязательный research перед архитектурой | `hooks/checks/architecture-research-gate.sh` | block (lock) | пропуск только явной фразой |
+| Правка своего же enforcement / профиля | `hooks/checks/enforcement-config-protect.sh`, `locks-protect.sh` | block | отклонено |
+| Массовый внешний API без чек-листа | `hooks/checks/bulk-api.sh` | warn→block | стоп на явном bulk без pre-launch |
+| Гонка параллельной записи | `hooks/checks/concurrent-write.sh` | warn | подсказка про lock |
+| Ясность финального сообщения | `hooks/checks/clarity-stop-gate.sh` на Stop | warn/inject | заставить дописать/переписать |
+| Роутинг проекта ≤200 строк | `templates/init.sh` (проверяет **CLAUDE.md**, не AGENTS.md) | warn | подсказка вынести в docs/ topic-files |
+
+> **Роутинг-файл проекта — `CLAUDE.md`** (Claude Code convention). Прежняя ставка на «AGENTS.md primary» снята: пользователь работает почти всегда в Claude Code, agent-portability убрана как design constraint (см. CHANGELOG). Для Codex-совместимости роутинг можно продублировать отдельно — это не меняет primary.
+
+**Stuck-протокол** — сейчас это дисциплина (`/stuck`) + напоминающий сторож (`hooks/checks/stuck-signal-reminder.sh`), **а НЕ фоновый таймер 30/45 мин**: авто-триггер по таймеру в движке не реализован (нет зарегистрированного демона). Не выдавать таймер за механизм.
 
 ---
 
 ## Anti-pattern: «principle without mechanism»
 
-Если ты собираешься написать в архитектуре фразу типа:
-
-- «Все агенты должны соблюдать X»
-- «Это рекомендуется»
-- «Обычно мы делаем Y»
-- «Принцип Z важен»
-
-— **STOP**. Это не закрытое правило. Либо найди механизм enforcement, либо удали.
-
----
+Если ты собираешься написать в архитектуре фразу типа «все агенты должны соблюдать X», «это рекомендуется», «обычно мы делаем Y», «принцип Z важен» — **STOP**. Это не закрытое правило. Либо найди механизм enforcement, либо честно пометь discipline. Не пиши «блокируется», если блокировки нет.
 
 ## Anti-pattern: «декларация == закрытое»
 
-В критике v5.0 это была самая частая ошибка: «execute don't ask — принцип в core». Но что произойдёт если модель напишет «вариант A или вариант B»? **Ничего.** Принцип сам себя не enforces.
-
-В v5.1 каждый такой принцип ОБЯЗАН иметь:
-- Конкретный файл с описанием
-- Конкретный механизм проверки
-- Конкретное последствие нарушения
+Самая частая ошибка v5.0: «execute don't ask — принцип в core». Но что произойдёт, если модель напишет «вариант A или вариант B»? **Ничего.** Принцип сам себя не enforces. Тот же провал — «Quality>Speed блокирует сообщение»: сообщение уже показано, блокировать нечем. Честный носитель — Stop-gate (дописка) + глобальный язык, и это класс 2/3.
 
 ---
 
 ## Failure modes этой философии
 
 ### Risk 1: Over-enforcement → пользователь начнёт обходить
-
-Если каждое действие блокируется hook'ом, пользователь начнёт `--force` или просто закроет сессию. **Защита**: каждый hook имеет «escape hatch» с явным confirm. Не deny, а «вы уверены? введите 'я понимаю риск' для продолжения».
+Если каждое действие блокируется — пользователь уйдёт в `--force` или закроет сессию. **Защита**: escape-hatch с явной фразой (lock-паттерн: research-skip, secret-scan), а не глухой deny.
 
 ### Risk 2: Hooks устаревают → false positives растут
-
-Hook на конкретный pattern (например `for X in list: api_call`) ловит и легитимные случаи. **Защита**: per-hook метрика false positive rate. Если >20% за 2 недели — пересмотреть.
+Хук на конкретный паттерн ловит и легитимные случаи. **Защита**: сузить прицел на корпусе реальных прогонов ПЕРЕД включением; метрика ложных срабатываний; старт нового сторожа в log-only/warn.
 
 ### Risk 3: Сложность системы → когнитивный налог
-
-20 правил с 20 hook'ами = тяжёлый старт. **Защита**: hooks стартуют **только при первом triggered нарушении**, не на пустом проекте. AGENTS.md ≤200 строк — единственная всегда-on проверка.
+Много сторожей = тяжёлый старт. **Защита**: профили `minimal/standard/strict`; сторожа гардятся `hook_is_vibe_project`; heartbeat подтверждает, что они вообще живы.
 
 ### Risk 4: Каждый hook сам становится source of bugs
-
-Bash hook упал → блокирует всю работу. **Защита**: hooks should fail-open (если hook сам падает, не блокировать действие, но залогировать в audit log).
+Bash-хук упал → мог бы заблокировать работу. **Защита**: fail-loud обвязка — краш сторожа не молчит (пишет crash-артефакт + сообщает на старте сессии), но не парализует действие тихо.
 
 ---
 
 ## Когда правило важнее enforcement
 
-Есть категории где enforcement невозможен:
-- **Тон коммуникации** — общая культура, нет grep
-- **Top-down user perspective** в дизайне — частично enforced через user-perspective-critic agent, но не на 100%
-- **Качество решений** — субъективно
-
-Для них: **внешний evaluator-agent** через `/audit` периодически проверяет. Не реал-тайм, но регулярно.
+Категории, где enforcement до-показа невозможен: тон коммуникации, эстетика «глазами», качество решений, «лишний вопрос vs бизнес-развилка». Для них — глобальные правила + внешний `evaluator-agent` через `/audit` (регулярно, не реал-тайм) + Stop-gate как максимум сдвига вероятности. Это ЧЕСТНО не гарантия.
 
 ---
 
-## Главная цитата
+## Лестница доверия
 
-Из лекции 1 harness-engineering, перефраз для v5.1:
+> «Хороший роутинг-файл (CLAUDE.md) важнее апгрейда модели. Hook важнее файла. Тест важнее hook.»
 
-> «Хороший AGENTS.md важнее апгрейда модели. Hook важнее AGENTS.md. Тест важнее hook.»
-
-Лестница доверия: principle → file → hook → automated test. Чем выше — тем меньше доверия к дисциплине, больше — к механике.
+principle → file → hook → automated test. Чем выше — тем меньше доверия к дисциплине, больше — к механике. Число механизмов в прозе — не показатель здоровья; показатель — сколько из них подтверждены живым прогоном в `docs/traceability.md`.

@@ -11,7 +11,7 @@ when_to_use: После /new-project в FULL режиме. Перед /critique.
 ## Что происходит
 
 1. Запускается subagent `idea-generator` (Opus)
-2. Читает: AGENTS.md, PRODUCT.md, domain-rules.yaml
+2. Читает: CLAUDE.md, PRODUCT.md, domain-rules.yaml
 3. Создаёт `docs/ideas-round-1.md` (10+ идей)
 4. Просит пользователя пометить «берём / не берём» (1 простой вопрос)
 5. После фидбэка — Round 2 (углубление выбранных)

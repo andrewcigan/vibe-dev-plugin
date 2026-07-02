@@ -78,7 +78,15 @@ if [ -n "$CW" ]; then
 $CW"; else WARNS="$CW"; fi
 fi
 
-# --- Приоритет 3 (v6.3): wave-continue — слот. Пререквизит: passthrough вопросов. ---
+# --- Приоритет 3 (v7 P6): wave-continue — в go-режиме ход кончился вопросом -> gentle inject. ---
+# Только warn/inject (не block, не capped-block): вопрос не давим (passthrough бизнес-развилок).
+# Не запускается, если приоритет 1/2 уже сделал block (emit_capped_block выходит из скрипта).
+WC_VERDICT="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "wave-continue" verdict "$ROOT/hooks/checks/wave-continue.sh" "$CWD")"
+WCW="$(printf '%s' "$WC_VERDICT" | awk -F'\t' '$1=="WARN"{print $2; exit}')"
+if [ -n "$WCW" ]; then
+  if [ -n "$WARNS" ]; then WARNS="$WARNS
+$WCW"; else WARNS="$WCW"; fi
+fi
 
 # WARN'ы (например, краш проверки) -> мягкий additionalContext (>=2.1.163; старые движки игнорируют).
 if [ -n "$WARNS" ]; then

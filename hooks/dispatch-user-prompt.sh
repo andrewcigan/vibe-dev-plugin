@@ -117,6 +117,10 @@ $SSKIP"
   fi
 fi
 
+# go-mode (v7 P6): явная фраза «не тормози / делай до конца» -> хук ставит .harness/locks/go-mode
+# (стоп-слово снимает). wave-continue на Stop читает маркер. Тихо (только маркер, без текста).
+HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "go-mode" text "$ROOT/hooks/checks/go-mode-listener.sh" "$CWD" >/dev/null 2>&1
+
 # secret-in-prompt (F8): живой ключ в сообщении пользователя -> предупреждение о ротации
 # (inject, не block: ключ уже в контексте — задача предупредить и направить в .env).
 SECR="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "secret-in-prompt" text "$ROOT/hooks/checks/secret-in-prompt.sh" "$CWD")"

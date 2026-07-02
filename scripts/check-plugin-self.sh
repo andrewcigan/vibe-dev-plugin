@@ -273,6 +273,14 @@ else
 fi
 
 echo ""
+echo "=== 32. wave-continue: go-режим + ход кончился вопросом (P6, v7 Волна 5) ==="
+if bash tests/hooks/test-wave-continue.sh > /tmp/vibe-wctest.out 2>&1; then
+    tail -1 /tmp/vibe-wctest.out
+else
+    echo "❌ тест wave-continue упал:"; cat /tmp/vibe-wctest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

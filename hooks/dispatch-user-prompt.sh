@@ -104,6 +104,19 @@ $RSKIP"
   fi
 fi
 
+# secret-skip (v7 P14 escape, lock-паттерн): явная фраза «ключ тестовый / забей» -> хук (не агент!)
+# пишет одноразовый маркер .harness/locks/secret-scan-off; secret-scan-write снимает по нему блок.
+SSKIP="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "secret-skip" text "$ROOT/hooks/checks/secret-skip-listener.sh" "$CWD")"
+if [ -n "$(printf '%s' "$SSKIP" | tr -d '[:space:]')" ]; then
+  if [ -n "$PIECES" ]; then
+    PIECES="$PIECES
+—
+$SSKIP"
+  else
+    PIECES="$SSKIP"
+  fi
+fi
+
 # secret-in-prompt (F8): живой ключ в сообщении пользователя -> предупреждение о ротации
 # (inject, не block: ключ уже в контексте — задача предупредить и направить в .env).
 SECR="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "secret-in-prompt" text "$ROOT/hooks/checks/secret-in-prompt.sh" "$CWD")"

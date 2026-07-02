@@ -9,11 +9,12 @@
 
 set -u
 CWD="${1:-$PWD}"
+# Единый словарь живого ключа (один источник для обоих secret-хуков).
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/secret-lexicon.sh" 2>/dev/null || true
+SECRET_RE="${VIBE_SECRET_RE:-sk-ant-[A-Za-z0-9_-]{10,}}"
 
 PROMPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null)"
 [ -z "$PROMPT" ] && exit 0
-
-SECRET_RE='sk-ant-[A-Za-z0-9_-]{10,}|sk-proj-[A-Za-z0-9_-]{10,}|sk-or-v1-[A-Za-z0-9_-]{10,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[A-Z0-9]{16}|xox[bp]-[A-Za-z0-9-]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY'
 
 FOUND="$(printf '%s' "$PROMPT" | grep -oE "$SECRET_RE" 2>/dev/null | head -1)"
 [ -z "$FOUND" ] && exit 0

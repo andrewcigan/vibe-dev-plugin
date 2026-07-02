@@ -257,6 +257,14 @@ else
 fi
 
 echo ""
+echo "=== 30. Новые замки: secret-scan (P14) + folder-scope (P9) (v7 Волна 3) ==="
+if bash tests/hooks/test-new-locks.sh > /tmp/vibe-nltest.out 2>&1; then
+    tail -1 /tmp/vibe-nltest.out
+else
+    echo "❌ тест new-locks упал:"; cat /tmp/vibe-nltest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

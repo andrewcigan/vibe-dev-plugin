@@ -265,6 +265,14 @@ else
 fi
 
 echo ""
+echo "=== 31. Гигиена журнала: read-only аудит + дедуп + circuit breaker (v7 Волна 4) ==="
+if bash tests/hooks/test-journal-hygiene.sh > /tmp/vibe-jhtest.out 2>&1; then
+    tail -1 /tmp/vibe-jhtest.out
+else
+    echo "❌ тест journal-hygiene упал:"; cat /tmp/vibe-jhtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -281,6 +281,14 @@ else
 fi
 
 echo ""
+echo "=== 33. Единый резолвер путей: fail-loud при неоднозначном корне (v8 L2-F1) ==="
+if bash tests/hooks/test-resolve-paths.sh > /tmp/vibe-rptest.out 2>&1; then
+    tail -1 /tmp/vibe-rptest.out
+else
+    echo "❌ тест resolve-paths упал:"; cat /tmp/vibe-rptest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -13,6 +13,10 @@
 _hook_io_self="${BASH_SOURCE[0]}"   # .../hooks/lib/hook-io.sh -> поднимаемся на 2 уровня до корня плагина
 HOOK_IO_PLUGIN_ROOT="$(cd "$(dirname "$_hook_io_self")/../.." && pwd)"
 
+# Единый резолвер путей артефактов проекта (v8 L2-F1). Sourced здесь → функции vibe_path_*
+# и vibe_resolve_root доступны всем диспетчерам и checks, которые подключают hook-io.
+. "$(dirname "$_hook_io_self")/resolve-paths.sh"
+
 hook_plugin_root() {
   if [ -n "${CLAUDE_PLUGIN_ROOT:-}" ]; then
     printf '%s' "$CLAUDE_PLUGIN_ROOT"
@@ -38,9 +42,12 @@ hook_field() {
 # слабости нет); внешние читатели (git pre-commit backstop, /doctor, скиллы) трактуют
 # pending как «активация НЕ подтверждена» и кричат.
 hook_profile() {
-  local cwd="${1:-}" p="${VIBE_DEV_PROFILE:-}"
-  if [ -z "$p" ] && [ -n "$cwd" ] && [ -f "$cwd/.harness/profile" ]; then
-    p="$(tr -d '[:space:]' < "$cwd/.harness/profile" 2>/dev/null)"
+  local cwd="${1:-}" p="${VIBE_DEV_PROFILE:-}" pf
+  if [ -z "$p" ] && [ -n "$cwd" ]; then
+    pf="$(vibe_path_profile "$cwd")"
+    if [ -f "$pf" ]; then
+      p="$(tr -d '[:space:]' < "$pf" 2>/dev/null)"
+    fi
   fi
   p="${p:-standard}"
   case "$p" in pending-*) p="${p#pending-}" ;; esac
@@ -62,7 +69,7 @@ hook_plugin_version() {
 hook_upgrade_nudge() {
   local cwd="${1:-}" ev pin pin_major
   [ -n "$cwd" ] || return 0
-  ev="$cwd/.harness/engine-version"
+  ev="$(vibe_path_engine_version "$cwd")"
   if [ -f "$ev" ]; then
     pin="$(tr -d '[:space:]' < "$ev" 2>/dev/null)"
     pin_major="${pin%%.*}"
@@ -82,7 +89,7 @@ hook_upgrade_nudge() {
 hook_cold_start_brief() {
   local cwd="${1:-}" fl active errj ckpt body=""
   [ -n "$cwd" ] || return 0
-  fl="$cwd/feature_list.json"
+  fl="$(vibe_path_feature_list "$cwd")"
   if [ -f "$fl" ]; then
     active="$(jq -r '
       (.features // {}) | to_entries[]? | .value | if type=="array" then .[] else empty end
@@ -90,8 +97,8 @@ hook_cold_start_brief() {
       | "  • " + ((.id // "?")|tostring) + ": " + (((.title // .name // .goal // .behavior // .description // "") | tostring)[0:80])
     ' "$fl" 2>/dev/null | head -8)"
   fi
-  errj=""; [ -f "$cwd/error-journal.md" ] && errj="yes"
-  ckpt=""; [ -f "$cwd/.harness/last-checkpoint.md" ] && ckpt="yes"
+  errj=""; [ -f "$(vibe_path_error_journal "$cwd")" ] && errj="yes"
+  ckpt=""; [ -f "$(vibe_path_checkpoint "$cwd")" ] && ckpt="yes"
   [ -n "$active" ] || [ -n "$errj" ] || [ -n "$ckpt" ] || return 0
 
   body="🧭 Vibe Dev — бриф возврата (ФАКТЫ; статус «готово» перепроверь по живому, не по памяти):"
@@ -116,15 +123,15 @@ $active"
 hook_write_heartbeat() {
   local cwd="${1:-}"
   [ -n "$cwd" ] && [ -d "$cwd" ] || return 0
-  mkdir -p "$cwd/.harness" 2>/dev/null || return 0
-  printf '%s plugin=%s\n' "$(date +%s)" "$(hook_plugin_version)" > "$cwd/.harness/hooks-heartbeat" 2>/dev/null || true
+  mkdir -p "$(vibe_path_harness_dir "$cwd")" 2>/dev/null || return 0
+  printf '%s plugin=%s\n' "$(date +%s)" "$(hook_plugin_version)" > "$(vibe_path_heartbeat "$cwd")" 2>/dev/null || true
 }
 
 # Перевод pending-профиля в боевой. Возвращает (stdout) активированный профиль, если перевод
 # случился, иначе пусто. Вызывается из SessionStart и UserPromptSubmit диспетчеров.
 hook_activate_pending_profile() {
   local cwd="${1:-}" pf p
-  pf="$cwd/.harness/profile"
+  pf="$(vibe_path_profile "$cwd")"
   [ -f "$pf" ] || return 0
   p="$(tr -d '[:space:]' < "$pf" 2>/dev/null)"
   case "$p" in

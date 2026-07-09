@@ -36,6 +36,6 @@ MODEL_PAT='gpt-[0-9]|gpt-image|claude-[a-z0-9]|gemini-[0-9]|gemini-(pro|flash)|o
 SETTING_PAT='(max_tokens|temperature|reasoning_effort|thinking_budget|response_format|top_p|system_prompt|systemPrompt|MODEL_NAME|_MODEL|model_id|model_name)[[:space:]]*[=:]'
 
 if printf '%s' "$subj" | grep -qiE "$MODEL_PAT" || printf '%s' "$subj" | grep -qE "$SETTING_PAT"; then
-  printf 'WARN%sПохоже на смену модели или настроек, влияющих на КАЖДЫЙ вывод (файл: %s). Это изменение контракта, не правка конфига — прогони регрессионный smoke на реальных сценариях и проверь обрыв / finish_reason=length / утечку служебного текста ДО выкатки в прод. «Новее» ≠ «совместимее».\n' "$TAB" "${file:-?}"
+  printf 'WARN%sПохоже на смену модели или настроек, влияющих на КАЖДЫЙ вывод (файл: %s). Это изменение контракта, не правка конфига — прогони регрессионный smoke на реальных сценариях и проверь обрыв / finish_reason=length / утечку служебного текста ДО выкатки в прод. «Новее» ≠ «совместимее». Если это защитная/security-работа — роуть на Opus, не на свежайшую frontier: её safety-классификатор может отказать в benign defensive-задаче mid-task (L1-F4, rules/model-tier-routing.md).\n' "$TAB" "${file:-?}"
 fi
 exit 0

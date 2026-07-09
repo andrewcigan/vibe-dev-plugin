@@ -3,6 +3,7 @@ name: prototype-builder
 description: HTML/CSS прототип для проверки user stories ДО написания production-кода. Кликабельный, главная функция работает, без backend (mock data). Цель — пользователь подтверждает UX до того как мы пишем реальный код.
 tools: Read, Write, Bash, Glob
 model: sonnet
+effort: max
 ---
 
 # Prototype Builder Agent

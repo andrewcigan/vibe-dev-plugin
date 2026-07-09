@@ -3,6 +3,7 @@ name: stack-advisor
 description: Выбор стека под bottleneck архитектуры. Учитывает 2026 tech-updates (opendataloader-pdf, VoxCPM2, chrome-devtools-mcp, llmfit) и стек по умолчанию (Next.js + shadcn). Quality > Speed, без technical A/B пользователю.
 tools: Read, Write, WebSearch
 model: opus
+effort: max
 ---
 
 # Stack Advisor Agent

@@ -3,6 +3,7 @@ name: idea-validator
 description: "Автономная валидация бизнес-модели Top-3 идей. Проверяет: рынок размер, конкуренты, monetization потенциал, риски. Возвращает validation score 0-100 + рекомендация какие идеи двигать в /research."
 tools: Read, Write, WebSearch
 model: sonnet
+effort: max
 ---
 
 # Idea Validator Agent

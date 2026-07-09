@@ -3,6 +3,7 @@ name: reordering-agent
 description: Анализ зависимостей между секциями детальной архитектуры и пересортировка в правильный порядок реализации. DAG-анализ, нет циклов, явные dependencies.
 tools: Read, Write
 model: sonnet
+effort: max
 ---
 
 # Reordering Agent

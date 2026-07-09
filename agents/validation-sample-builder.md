@@ -3,6 +3,7 @@ name: validation-sample-builder
 description: Строит валидационную выборку 50-100 реалистичных сценариев (синтетика ≤20%) + ground truth + бинарная оценка. Прогоняет на текущей сборке. Финальный gate ≥90% перед /ship.
 tools: Read, Write, Bash
 model: sonnet
+effort: max
 ---
 
 # Validation Sample Builder Agent

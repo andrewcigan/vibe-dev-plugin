@@ -3,6 +3,8 @@ name: test-researcher
 description: Engineering-перспектива тестов. Читает фичу, GitHub-pattern для похожих, предлагает 3-7 verification commands (1 happy + 2-3 edge + 1-2 error + 1 e2e). Не пишет код. Возвращает тестовую стратегию для фичи.
 tools: Read, Bash, Glob, Grep, WebSearch
 model: sonnet
+effort: max
+disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---
 
 # Test Researcher Agent

@@ -53,11 +53,19 @@ for s in skills/*/; do
 done
 
 echo ""
-echo "=== 4. Все agents имеют frontmatter ==="
+echo "=== 4. Все agents: frontmatter + контракт model/effort (v8 L1-F1) ==="
 for a in agents/*.md; do
     if ! head -1 "$a" | grep -q "^---$"; then
         echo "❌ No frontmatter: $a"
-        ERRORS=$((ERRORS + 1))
+        ERRORS=$((ERRORS + 1)); continue
+    fi
+    # Контракт L1-F1: model + effort обязательны у КАЖДОГО агента (движок читает их из
+    # фронтматтера; наличие — enforced здесь). Фронтматтер короткий → ищем в первых 20 строках.
+    if ! head -20 "$a" | grep -q "^model:"; then
+        echo "❌ Нет 'model:' во фронтматтере (L1-F1): $a"; ERRORS=$((ERRORS + 1))
+    fi
+    if ! head -20 "$a" | grep -q "^effort:"; then
+        echo "❌ Нет 'effort:' во фронтматтере (L1-F1): $a"; ERRORS=$((ERRORS + 1))
     fi
 done
 

@@ -3,6 +3,7 @@ name: idea-generator
 description: Генерация идей в 2 раунда. Round 1 — 10+ идей с аргументацией. Round 2 — после фидбэка пользователя (берём/не берём) — глубже копаем выбранные. Каждая идея с 2-3 интерпретациями (Karpathy Think Before).
 tools: Read, Write, WebSearch
 model: opus
+effort: max
 ---
 
 # Idea Generator Agent

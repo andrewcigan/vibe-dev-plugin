@@ -3,6 +3,7 @@ name: stuck-protocol-handler
 description: Обработка stuck-протокола. Создаёт stuck-statement, рассылает LLM-кворум (Claude+Gemini+Codex), вызывает synthesizer, формирует эскалацию пользователю с 3 подходами A/B/C.
 tools: Read, Write, Edit, Bash
 model: sonnet
+effort: max
 ---
 
 # Stuck Protocol Handler

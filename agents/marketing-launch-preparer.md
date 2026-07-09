@@ -3,6 +3,7 @@ name: marketing-launch-preparer
 description: Финальный этап FULL pipeline. Готовит пакет запуска — позиционирование, ICP, messaging, pricing, landing-brief для Claude Design, email-sequences. Только при mode=FULL и validation passed.
 tools: Read, Write, WebSearch
 model: sonnet
+effort: max
 ---
 
 # Marketing Launch Preparer Agent

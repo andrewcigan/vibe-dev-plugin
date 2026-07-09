@@ -3,6 +3,7 @@ name: synthesizer
 description: Объединяет результаты параллельных subagent'ов. После test-researcher + user-perspective-critic — merge в test-strategy.md с разрешением конфликтов в пользу user-perspective. Также синтезирует stuck-protocol LLM-кворум.
 tools: Read, Write, Edit
 model: sonnet
+effort: max
 ---
 
 # Synthesizer Agent

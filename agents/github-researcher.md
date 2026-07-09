@@ -3,6 +3,7 @@ name: github-researcher
 description: Поиск, клонирование и анализ GitHub-репозиториев по теме проекта. Минимум 3 репо, ≥1 клонирован для разбора. Извлекает архитектурные паттерны и anti-patterns. Параллельно с market и best-practices researchers.
 tools: Read, Write, Bash, WebSearch
 model: sonnet
+effort: max
 ---
 
 # GitHub Researcher Agent

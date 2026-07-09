@@ -3,6 +3,7 @@ name: market-researcher
 description: Анализ рынка и конкурентов. Минимум 3 прямых конкурента + 3 косвенных. UX-анализ их продуктов (что зашло пользователям). Параллельно с github и best-practices researchers.
 tools: Read, Write, WebSearch
 model: sonnet
+effort: max
 ---
 
 # Market Researcher Agent

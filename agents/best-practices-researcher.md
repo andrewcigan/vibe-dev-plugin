@@ -3,6 +3,7 @@ name: best-practices-researcher
 description: Лучшие практики для проблемных классов проекта (RAG / агенты / парсинг / Telegram-боты / etc). Минимум 5 best practices из 2026 от FAANG / open-source. Параллельно с github и market researchers.
 tools: Read, Write, WebSearch
 model: sonnet
+effort: max
 ---
 
 # Best Practices Researcher Agent

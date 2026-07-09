@@ -322,6 +322,22 @@ else
 fi
 
 echo ""
+echo "=== 34. Provenance-лог append-only через git pre-commit (v8 L3-F2) ==="
+if bash tests/hooks/test-provenance-append-only.sh > /tmp/vibe-paotest.out 2>&1; then
+    tail -1 /tmp/vibe-paotest.out
+else
+    echo "❌ тест provenance append-only упал:"; cat /tmp/vibe-paotest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 35. Провенанс-захват + клапан честности (engine≥8, v8 L3-F1) ==="
+if bash tests/hooks/test-provenance-capture.sh > /tmp/vibe-pctest2.out 2>&1; then
+    tail -1 /tmp/vibe-pctest2.out
+else
+    echo "❌ тест provenance-capture упал:"; cat /tmp/vibe-pctest2.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

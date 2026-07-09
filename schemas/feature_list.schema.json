@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vibe-dev/schemas/feature_list.schema.json",
+  "title": "Vibe Dev feature_list.json (v8 — провенанс)",
+  "description": "Горячая тонкая ПРОЕКЦИЯ. Источник истины истории — .harness/provenance-log.jsonl (event-sourcing). Провенанс-голова фичи фиксирована по размеру (не растёт с числом правок). Ревизия критика 2026-07-10: _internal/plans/v8-provenance-and-context.md §7.",
+  "type": "object",
+  "required": ["version", "features"],
+  "properties": {
+    "version": { "type": "string" },
+    "wip_limit": { "type": "integer" },
+    "active": { "type": ["string", "null"] },
+    "features": {
+      "type": "object",
+      "description": "Бакеты по состояниям (captured/up_next/active_list/done/…). Каждый — массив фич.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/definitions/feature" }
+      }
+    }
+  },
+  "definitions": {
+    "provenance": {
+      "type": "object",
+      "description": "Провенанс-ГОЛОВА (~6-8 полей, БЕЗ инлайн-истории). История — в provenance-log.jsonl. Пишется ТОЛЬКО через scripts/record-change.sh.",
+      "required": ["origin", "source_ref", "captured_at", "by"],
+      "additionalProperties": false,
+      "properties": {
+        "origin": {
+          "description": "Человеческое событие-источник требования (НЕ носитель — носитель в source_ref.kind). inference — честный клапан «выведено агентом».",
+          "enum": ["meeting", "call", "dialog", "owner-msg", "user-feedback", "incident", "competitor", "regulatory", "research", "critic", "inference"]
+        },
+        "source_ref": {
+          "type": "object",
+          "description": "Структурированная ссылка на первоисточник. kind=unknown — легитимный честный клапан (не выдумывать).",
+          "required": ["kind"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "enum": ["transcript", "session", "file", "url", "recording", "unknown"] },
+            "ref": { "type": "string", "description": "путь/URL/session-id; для recording — файл записи" },
+            "anchor": { "type": "string", "description": "таймкод (01:23:45) или стабильный replica-id (#u120); НИКОГДА не голый номер строки — он гниёт при переверстке" }
+          }
+        },
+        "captured_at": { "type": "string", "description": "ISO 8601 — когда требование ЗАНЕСЕНО в систему (всегда проставляется)" },
+        "occurred_at": { "type": "string", "description": "ISO 8601 — когда требование ВОЗНИКЛО. Обязателен при не-live origin (meeting/call/incident/competitor/regulatory/user-feedback); при live (dialog/owner-msg/critic/inference) = captured_at" },
+        "by": {
+          "description": "Кто внёс. ОБЯЗАТЕЛЕН: для нового требования критично отличить owner от выведенного агентом.",
+          "enum": ["owner", "agent", "critic"]
+        },
+        "seq": { "type": "integer", "minimum": 0, "description": "Монотонный per-feat номер последнего события — источник ПОРЯДКА (не wall-clock). Проставляет record-change.sh." },
+        "superseded_by": {
+          "type": "array",
+          "description": "id заменивших фич (замена один→многие). Пусто/отсутствует, если не заменена.",
+          "items": { "type": "string" }
+        },
+        "rev_cache": {
+          "type": "object",
+          "description": "КЭШ ради дешёвого чтения. Источник истины — provenance-log.jsonl. Когерентность head↔log сверяет git pre-commit.",
+          "properties": {
+            "seq": { "type": "integer" },
+            "at": { "type": "string" }
+          }
+        }
+      }
+    },
+    "feature": {
+      "type": "object",
+      "required": ["id", "name", "state", "provenance"],
+      "properties": {
+        "id": { "type": "string", "description": "НЕИЗМЕНЯЕМЫЙ вечный первичный ключ. RENAMED меняет только name, НИКОГДА id (иначе лог и superseded_by осиротеют)." },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "enum": ["infra", "data", "api", "ui", "workflow", "integration"] },
+        "surface": { "enum": ["ui", "api", "cli", "job", "service", "lib", "content", "data", "integration"] },
+        "dependencies": { "type": "array", "items": { "type": "string" } },
+        "size_estimate": { "enum": ["S", "M", "L"] },
+        "affected_files": { "type": "array", "items": { "type": "string" } },
+        "business_invariant": { "type": "string" },
+        "state": { "type": "string" },
+        "provenance": { "$ref": "#/definitions/provenance" }
+      }
+    }
+  }
+}

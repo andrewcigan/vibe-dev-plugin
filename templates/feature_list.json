@@ -9,11 +9,18 @@
         "id": "feat-001",
         "name": "Пример: Загрузка документов",
         "description": "Пользователь загружает PDF/TXT с локального диска",
-        "captured_at": "YYYY-MM-DD",
         "category": "api",
         "surface": "api",
         "size_estimate": "M",
-        "business_invariant": "ref: domain-rules.invariants[0]"
+        "business_invariant": "ref: domain-rules.invariants[0]",
+        "state": "captured",
+        "provenance": {
+          "origin": "owner-msg",
+          "source_ref": { "kind": "session", "ref": "session:2026-01-01T10:00:00Z" },
+          "captured_at": "2026-01-01T10:00:00Z",
+          "by": "owner",
+          "seq": 0
+        }
       }
     ],
     "up_next": [],
@@ -86,7 +93,18 @@
       },
       "business_invariant": "ref: domain-rules.invariants[i]",
       "budget_usd": 5.00,
-      "state": "captured | awaiting_research | up_next | awaiting_reviewer | awaiting_demo_milestone | active | awaiting_user_acceptance | blocked | paused | rollback | passing | rejected | superseded"
+      "state": "captured | awaiting_research | up_next | awaiting_reviewer | awaiting_demo_milestone | active | awaiting_user_acceptance | blocked | paused | rollback | passing | rejected | superseded",
+      "provenance": {
+        "_doc": "v8 провенанс-ГОЛОВА (event-sourcing). Обязательны origin+source_ref+captured_at+by. Пишется ТОЛЬКО через scripts/record-change.sh (не руками — иначе голова разойдётся с логом). Полная схема — schemas/feature_list.schema.json. Источник истины истории — .harness/provenance-log.jsonl.",
+        "origin": "meeting|call|dialog|owner-msg|user-feedback|incident|competitor|regulatory|research|critic|inference — человеческое событие-источник (НЕ носитель)",
+        "source_ref": "{kind: transcript|session|file|url|recording|unknown, ref, anchor?} — anchor=таймкод/стабильный replica-id, НЕ номер строки; kind=unknown — честный клапан «не помню откуда»",
+        "captured_at": "ISO — когда требование ЗАНЕСЕНО (всегда)",
+        "occurred_at": "ISO — когда ВОЗНИКЛО; обязателен при не-live origin (встреча/звонок/инцидент/конкурент/регуляторное/фидбэк)",
+        "by": "owner|agent|critic — обязателен",
+        "seq": "монотонный per-feat номер последнего события (источник ПОРЯДКА); проставляет record-change.sh",
+        "superseded_by": "[feat-id, …] — заменившие фичи (массив, замена один→многие); feat-id НЕИЗМЕНЯЕМ",
+        "rev_cache": "{seq, at} — КЭШ для дешёвого чтения; источник истины = provenance-log.jsonl"
+      }
     }
   }
 }

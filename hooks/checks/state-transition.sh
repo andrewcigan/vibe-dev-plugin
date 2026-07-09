@@ -39,11 +39,22 @@ if [ -f "$CWD/.harness/engine-version" ]; then
 fi
 [ "$IS_LEGACY" = "1" ] && SOFT_LEVEL="WARN"
 
+# Провенанс-режим (v8 L3-F1): захват-инвариант активен ТОЛЬКО при engine major ≥ 8 (провенанс —
+# контракт v8; v6/v7-проекты на старом контракте не обязаны нести provenance). До миграции спит.
+# ВАЖНО (критик C1): это BACKSTOP против ручных правок через Write — канонический путь записи
+# record-change.sh идёт через Bash, где основной гейт когерентности head↔log — git pre-commit.
+PROV_MODE=0
+if [ -f "$CWD/.harness/engine-version" ]; then
+  EVMAJ="$(tr -d '[:space:]' < "$CWD/.harness/engine-version" 2>/dev/null | cut -d. -f1)"
+  case "$EVMAJ" in ''|*[!0-9]*) : ;; *) [ "$EVMAJ" -ge 8 ] 2>/dev/null && PROV_MODE=1 ;; esac
+fi
+
 # HOOK_PAYLOAD наследуется из env (выставил dispatcher). python3 видит его через os.environ.
-python3 - "$FILE" "$SCHEMA_FILE" "$SOFT_LEVEL" "$TOOL" <<'PYEOF'
+python3 - "$FILE" "$SCHEMA_FILE" "$SOFT_LEVEL" "$TOOL" "$PROV_MODE" <<'PYEOF'
 import json, sys, re, os
 
 target, schema_path, soft_level, tool = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+prov_mode = (len(sys.argv) > 5 and sys.argv[5] == '1')
 TAB = "\t"
 
 def emit(verdict, msg):
@@ -315,6 +326,32 @@ for feat_id, state, f in all_features:
             "%s: integration-фича в active без research поставщика — нет docs/research/*.md с её id. "
             "Архитектура держит АБСТРАКЦИЮ (интерфейс), конкретный поставщик выбирается отдельной "
             "research-фазой (5-7 вариантов + матрица сравнения) ПЕРЕД реализацией. Закрывает vendor-lock (~/CLAUDE.md)." % feat_id)
+
+# --- Провенанс-захват (v8 L3-F1). Backstop против ручных Write без provenance. Клапан честности:
+# origin=inference / source_ref.kind=unknown — легитимны (не заставляем выдумывать источник —
+# иначе лог наполнится необнаружимой ложью, отказ высшего порядка). ---
+if prov_mode:
+    ORIGIN_ENUM = {"meeting","call","dialog","owner-msg","user-feedback","incident","competitor","regulatory","research","critic","inference"}
+    KIND_ENUM = {"transcript","session","file","url","recording","unknown"}
+    BY_ENUM = {"owner","agent","critic"}
+    NONLIVE = {"meeting","call","incident","competitor","regulatory","user-feedback"}
+    for feat_id, state, f in all_features:
+        prov = f.get('provenance')
+        if not isinstance(prov, dict):
+            errors_soft.append("%s: нет provenance-головы (v8 обязательна: origin+source_ref+captured_at+by). Пиши через record-change.sh; честный клапан — origin=inference, source_ref.kind=unknown." % feat_id)
+            continue
+        origin = prov.get('origin')
+        if origin not in ORIGIN_ENUM:
+            errors_soft.append("%s: provenance.origin '%s' не из словаря (meeting/call/dialog/owner-msg/user-feedback/incident/competitor/regulatory/research/critic/inference)." % (feat_id, origin))
+        sr = prov.get('source_ref')
+        if not isinstance(sr, dict) or sr.get('kind') not in KIND_ENUM:
+            errors_soft.append("%s: provenance.source_ref должен быть {kind: …} из словаря (transcript/session/file/url/recording/unknown). unknown — честный клапан «не помню откуда»." % feat_id)
+        if not str(prov.get('captured_at') or '').strip():
+            errors_soft.append("%s: provenance.captured_at пуст (ISO — когда требование занесено)." % feat_id)
+        if prov.get('by') not in BY_ENUM:
+            errors_soft.append("%s: provenance.by обязателен (owner/agent/critic)." % feat_id)
+        if origin in NONLIVE and not str(prov.get('occurred_at') or '').strip():
+            warnings.append("%s: origin=%s (не-live) без occurred_at — фиксируй, когда требование ВОЗНИКЛО, не только когда занесено." % (feat_id, origin))
 
 for e in errors_hard:
     emit("BLOCK", e)

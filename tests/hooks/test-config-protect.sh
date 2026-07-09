@@ -59,6 +59,50 @@ assert_not_contains "7. чтение конфигурации -> pass" "$OUT" '"
 OUT="$(bashcmd 'echo strict > /tmp/other-file')"
 assert_not_contains "8. запись в посторонний файл -> pass" "$OUT" '"permissionDecision":"deny"'
 
+echo ""
+echo "L5-F1 must-fix — hook-mode под защитой + расширенные глаголы записи:"
+
+# hook-mode=learn понижает структурные гейты → агент не включает (раньше НЕ было защиты)
+OUT="$(bashcmd 'echo learn > .harness/hook-mode')"
+assert_contains "9. echo learn > hook-mode -> deny (L5-F1: hook-mode под защитой)" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd 'printf learn | tee .harness/hook-mode')"
+assert_contains "10. tee learn -> hook-mode -> deny" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd "sed -i 's/strict/learn/' .harness/hook-mode")"
+assert_contains "11. sed -i ...learn hook-mode -> deny" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(write "$PROJ/.harness/hook-mode")"
+assert_contains "12. Write hook-mode -> deny" "$OUT" '"permissionDecision":"deny"'
+
+# ключевая дыра: cp файла-с-learn — значение вне текста команды → всё равно deny (любая запись)
+OUT="$(bashcmd 'cp /tmp/anyfile .harness/hook-mode')"
+assert_contains "12b. cp -> hook-mode (значение вне команды) -> deny (дыра закрыта)" "$OUT" '"permissionDecision":"deny"'
+
+# снятие learn (rm) и чтение — движение к строгости, легитимно
+OUT="$(bashcmd 'rm -f .harness/hook-mode')"
+assert_not_contains "13. rm hook-mode (снятие learn) -> pass" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd 'cat .harness/hook-mode')"
+assert_not_contains "14. чтение hook-mode -> pass" "$OUT" '"permissionDecision":"deny"'
+
+# расширенные глаголы (раньше Bash-ветка ловила только >/>>/tee → cp/mv/sed/install проходили)
+OUT="$(bashcmd 'cp /tmp/x .harness/profile')"
+assert_contains "15. cp -> profile -> deny (расширенный глагол)" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd 'mv /tmp/x .harness/profile')"
+assert_contains "16. mv -> profile -> deny" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd "sed -i 's/strict/minimal/' .harness/profile")"
+assert_contains "17. sed -i minimal profile -> deny" "$OUT" '"permissionDecision":"deny"'
+
+OUT="$(bashcmd 'install -m 644 /tmp/x .harness/hooks-disabled')"
+assert_contains "18. install -> hooks-disabled -> deny (расширенный глагол)" "$OUT" '"permissionDecision":"deny"'
+
+# pending-* через расширенный глагол всё ещё легитимен (bootstrap, слабейшее состояние)
+OUT="$(bashcmd 'cp /tmp/pending-strict-src .harness/profile')"
+assert_not_contains "19. cp c pending- в имени -> pass (bootstrap не ломаем)" "$OUT" '"permissionDecision":"deny"'
+
 rm -rf "$PROJ"
 echo ""
 echo "Итог: PASS=$PASS FAIL=$FAIL"

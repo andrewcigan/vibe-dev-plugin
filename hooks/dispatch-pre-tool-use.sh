@@ -111,7 +111,7 @@ fi
 if [ -n "$BLOCKS" ]; then
   hook_emit_block "Vibe Dev заблокировал действие (профиль строгости: ${PROFILE}):
 ${BLOCKS}
-Если блок ошибочен: для state-machine — осознанная миграция legacy через 'echo learn > .harness/hook-mode'; для bulk-API — пройди .harness/pre-launch-checklist.yaml (decision.status: approved)."
+Если блок ошибочен: для state-machine — это структурный инвариант (переход/JSON/UI-evidence); почини намерение, а если проект действительно legacy — переведи его на актуальный движок командой /upgrade-project. Для bulk-API — пройди .harness/pre-launch-checklist.yaml (decision.status: approved)."
 fi
 if [ -n "$WARNS" ]; then
   hook_emit_warn "Vibe Dev — предупреждения (действие разрешено):

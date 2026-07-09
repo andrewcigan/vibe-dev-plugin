@@ -75,4 +75,26 @@ if [ -f "$SCOPE_CHECK" ]; then
   bash "$SCOPE_CHECK" || exit 1
 fi
 
+# --- 3. PROVENANCE LOG append-only (v8 L3-F2) ---
+# .harness/provenance-log.jsonl — источник истины истории требований. Разрешены ТОЛЬКО
+# добавленные строки; удаление/правка прошлой строки = фальсификация истории → reject.
+# Детерминированно (не зависит от heartbeat/плагина — независимый git-канал). Исключение —
+# легитимная компакция/снапшот старых событий: маркер .harness/locks/provenance-snapshot
+# (ставит скрипт снапшота, агенту запись в locks/ запрещена) разрешает переписать в этом коммите.
+LOG_REL=".harness/provenance-log.jsonl"
+if [ ! -f "$HARNESS/locks/provenance-snapshot" ] \
+   && git diff --cached --name-only 2>/dev/null | grep -qx "$LOG_REL"; then
+  REMOVED="$(git diff --cached --unified=0 -- "$LOG_REL" 2>/dev/null | grep -cE '^-[^-]' || true)"
+  if [ "${REMOVED:-0}" -gt 0 ]; then
+    cat >&2 <<EOF
+🚨 КОММИТ ОСТАНОВЛЕН: .harness/provenance-log.jsonl — append-only (v8 L3-F2).
+В staged-диффе ${REMOVED} удалённых/изменённых строк лога. История требований не переписывается —
+только добавляется. Верни прошлые строки; новое состояние фиксируй НОВЫМ событием через
+scripts/record-change.sh. (Легитимная компакция старых событий — через снапшот-скрипт, он ставит
+маркер .harness/locks/provenance-snapshot.)
+EOF
+    exit 1
+  fi
+fi
+
 exit 0

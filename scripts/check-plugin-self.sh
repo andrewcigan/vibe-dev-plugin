@@ -53,7 +53,7 @@ for s in skills/*/; do
 done
 
 echo ""
-echo "=== 4. Все agents: frontmatter + контракт model/effort (v8 L1-F1) ==="
+echo "=== 4. Все agents: frontmatter + контракт model/effort + сверка тиров (v8 L1-F1/F2) ==="
 for a in agents/*.md; do
     if ! head -1 "$a" | grep -q "^---$"; then
         echo "❌ No frontmatter: $a"
@@ -68,6 +68,31 @@ for a in agents/*.md; do
         echo "❌ Нет 'effort:' во фронтматтере (L1-F1): $a"; ERRORS=$((ERRORS + 1))
     fi
 done
+# L1-F2: реестр docs/agent-registry.md — источник истины роль↔тир. Модель во фронтматтере
+# обязана совпадать с колонкой «Модель» таблицы. Расхождение = self-check red (реестр правит
+# тир «одним движением», фронтматтер обязан следовать).
+REG="docs/agent-registry.md"
+TIER_MISMATCH=0
+if [ -f "$REG" ]; then
+    while IFS='|' read -r _ c_name c_desc c_model c_rest; do
+        name="$(printf '%s' "$c_name" | tr -d '[:space:]')"
+        model="$(printf '%s' "$c_model" | tr -d '[:space:]')"
+        case "$name" in ''|"Агент"|-*) continue ;; esac
+        [ -f "agents/$name.md" ] || continue
+        if ! head -20 "agents/$name.md" | grep -q "^model: ${model}$"; then
+            actual="$(head -20 "agents/$name.md" | grep -m1 '^model:' | sed 's/model: *//')"
+            echo "❌ Тир не совпал с реестром: agents/$name.md='$actual', реестр='$model'"
+            TIER_MISMATCH=$((TIER_MISMATCH + 1))
+        fi
+    done < <(grep '^| ' "$REG")
+    if [ "$TIER_MISMATCH" -gt 0 ]; then
+        ERRORS=$((ERRORS + TIER_MISMATCH))
+    else
+        echo "✓ роль↔тир: 24 агента совпали с реестром (L1-F2)"
+    fi
+else
+    echo "❌ Нет реестра $REG (L1-F2)"; ERRORS=$((ERRORS + 1))
+fi
 
 echo ""
 echo "=== 5. Hooks executable ==="

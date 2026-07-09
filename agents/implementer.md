@@ -2,7 +2,7 @@
 name: implementer
 description: Автономная реализация фичи. TDD по test-strategy.md, Карпати-принципы (think + simplicity + surgical + goal-driven), auto-commits, периодические progress reports в SESSION.md. Работает в worktree для L-фичей.
 tools: Read, Write, Edit, Bash, Glob, Grep
-model: opus
+model: sonnet
 effort: max
 ---
 

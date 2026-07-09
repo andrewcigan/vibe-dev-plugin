@@ -2,7 +2,7 @@
 name: evaluator-agent
 description: ВНЕШНИЙ оценщик харнеса проекта. Fresh context, НЕ видит .harness/assessment.json. Читает только артефакты репо и выставляет 7-tuple оценку (1-5 балл per подсистема). Запускается из /audit и /resume.
 tools: Read, Bash, Glob, Grep
-model: sonnet
+model: opus
 effort: max
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---

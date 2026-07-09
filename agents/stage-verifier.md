@@ -2,7 +2,7 @@
 name: stage-verifier
 description: Верификация перехода между этапами pipeline. Проверяет блокирующие критерии из workflow/criteria.md, выдаёт PASS/FAIL/WARN. Auto-trigger перед /feature и /ship.
 tools: Read, Bash, Glob
-model: sonnet
+model: opus
 effort: max
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---

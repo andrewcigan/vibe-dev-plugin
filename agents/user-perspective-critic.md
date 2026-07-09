@@ -2,7 +2,7 @@
 name: user-perspective-critic
 description: Top-down критика глазами реального пользователя продукта. Читает PRODUCT.md и domain-rules.yaml, спрашивает "какой сценарий не покрыт?", "оптимизируем по правильной метрике?", "работает ли при голосовом вводе по-русски?". Запускается параллельно с test-researcher в /feature heavy path.
 tools: Read, Bash, Glob, Grep
-model: sonnet
+model: opus
 effort: max
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---

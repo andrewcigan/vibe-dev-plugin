@@ -2,7 +2,7 @@
 name: idea-critic
 description: Автономный критический анализ — long-list идей → critique → отсев. Не спрашивает пользователя про каждую — решает сам по критериям. Возвращает топ-3-5 с обоснованием отсева остальных.
 tools: Read, Write
-model: sonnet
+model: opus
 effort: max
 ---
 

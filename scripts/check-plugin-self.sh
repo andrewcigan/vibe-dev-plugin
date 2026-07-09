@@ -338,6 +338,22 @@ else
 fi
 
 echo ""
+echo "=== 36. record-change.sh crash-safe: append+seq+идемпотентность+recovery (v8 L3-F3) ==="
+if bash tests/hooks/test-record-change.sh > /tmp/vibe-rctest.out 2>&1; then
+    tail -1 /tmp/vibe-rctest.out
+else
+    echo "❌ тест record-change упал:"; cat /tmp/vibe-rctest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
+echo "=== 37. Провенанс head↔log когерентность через git pre-commit (v8 L3-F3 M1) ==="
+if bash tests/hooks/test-provenance-coherence.sh > /tmp/vibe-cohtest.out 2>&1; then
+    tail -1 /tmp/vibe-cohtest.out
+else
+    echo "❌ тест provenance-coherence упал:"; cat /tmp/vibe-cohtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -97,4 +97,51 @@ EOF
   fi
 fi
 
+# --- 4. PROVENANCE head↔log когерентность (v8 L3-F3, критик M1) ---
+# ОСНОВНОЙ детерминированный гейт провенанса: голова не должна быть ВПЕРЕДИ лога (seq головы >
+# max seq в логе при наличии правок = правка мимо record-change.sh / потеря события). Это
+# единственный канал, видящий результат ОБОИХ путей записи (Write и Bash-record-change), и он
+# не зависит от heartbeat/профиля. НЕ понижается в learn/legacy (иначе провенанс мягкий на legacy).
+if git diff --cached --name-only 2>/dev/null | grep -qx "feature_list.json" && [ -f "$ROOT_DIR/feature_list.json" ]; then
+  if ! COH="$(python3 - "$ROOT_DIR/feature_list.json" "$HARNESS/provenance-log.jsonl" 2>&1 <<'PY'
+import json, sys, os
+fl, log = sys.argv[1], sys.argv[2]
+events = []
+if os.path.exists(log):
+    for ln in open(log, encoding="utf-8"):
+        ln = ln.strip()
+        if ln:
+            try: events.append(json.loads(ln))
+            except Exception: pass  # рваный хвост терпим
+def logmax(feat):
+    s = [e.get("seq", -1) for e in events if e.get("feat") == feat and isinstance(e.get("seq"), int)]
+    return max(s) if s else -1
+try:
+    data = json.load(open(fl, encoding="utf-8"))
+except Exception:
+    sys.exit(0)  # битый JSON ловит блок state-transition, не этот
+bad = []
+for b, feats in (data.get("features") or {}).items():
+    if not isinstance(feats, list): continue
+    for f in feats:
+        if not isinstance(f, dict): continue
+        prov = f.get("provenance")
+        if not isinstance(prov, dict): continue
+        hs = prov.get("seq", 0)
+        if not isinstance(hs, int): hs = 0
+        lm = logmax(f.get("id"))
+        if hs >= 1 and lm < hs:
+            bad.append("  %s: голова seq=%d впереди лога (max %d)" % (f.get("id"), hs, lm))
+if bad:
+    print("\n".join(bad)); sys.exit(1)
+PY
+  )"; then
+    echo "🚨 КОММИТ ОСТАНОВЛЕН: провенанс — голова впереди лога (v8 L3-F3):" >&2
+    echo "$COH" >&2
+    echo "Бизнес-правку требования делай через scripts/record-change.sh (лог+голова синхронно), не руками." >&2
+    echo "Расхождение «голова позади лога» после обрыва — почини: scripts/record-change.sh --recover." >&2
+    exit 1
+  fi
+fi
+
 exit 0

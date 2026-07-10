@@ -378,6 +378,14 @@ else
 fi
 
 echo ""
+echo "=== 41. Управляемый /checkpoint: cold-start gate + ротация (v8 L4-F2) ==="
+if bash tests/hooks/test-checkpoint.sh > /tmp/vibe-cptest.out 2>&1; then
+    tail -1 /tmp/vibe-cptest.out
+else
+    echo "❌ тест checkpoint упал:"; cat /tmp/vibe-cptest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

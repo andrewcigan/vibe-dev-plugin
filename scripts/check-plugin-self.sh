@@ -410,6 +410,14 @@ else
 fi
 
 echo ""
+echo "=== 43. Единая цифра /audit: объективные метрики провенанс/архив (v8 L5-F5) ==="
+if bash tests/hooks/test-audit-health.sh > /tmp/vibe-ahtest.out 2>&1; then
+    tail -1 /tmp/vibe-ahtest.out
+else
+    echo "❌ тест audit-health упал:"; cat /tmp/vibe-ahtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

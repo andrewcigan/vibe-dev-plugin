@@ -88,6 +88,22 @@ Per-feature avg: $X
 Trend: ↑ / ↓ / flat
 ```
 
+## Единая цифра готовности харнеса (v8 L5-F5, c11)
+
+Сведи здоровье в ОДИН показатель — чтобы владелец видел готовность одним взглядом, а не читал 7 баллов.
+
+1. Запусти объективные метрики (детерминированы из файлов, без LLM):
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/audit-health.sh"
+```
+Печатает `provenance_integrity` / `archive_evidence` / `budget_coverage` / `health_objective`.
+
+2. **Единая цифра = МИНИМУМ** (узкое место, не среднее) двух осей:
+   - `bottleneck 7-tuple × 20` (субъективная — мин. балл подсистемы от evaluator);
+   - `health_objective` (объективная — провенанс/архив-целостность).
+
+Провал provenance-integrity (дырявая история требований, c4) или отсутствие evidence у архивной фичи (c10) штрафует цифру напрямую. Экранные детекторы (clarity/secret-mask) — display-only, честно НЕ в enforcement-счёт и НЕ в эту цифру. **Диагностика, не гейт** — /audit не блокирует, а показывает.
+
 ## Output
 
 ### File: SESSION.md → секция "Last Audit"

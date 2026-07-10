@@ -130,6 +130,19 @@ disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 **Bottleneck**: <subsystem с минимальным баллом>
 **Recommendation**: [конкретно что улучшить — 2-3 предложения]
 
+**Единая цифра готовности харнеса (v8 L5-F5, c11)**: NN/100
+
+Один показатель здоровья = **МИНИМУМ** (узкое место, не среднее) двух осей:
+- субъективная: `bottleneck 7-tuple × 20` (мин. балл подсистемы, ×20 → шкала 0-100);
+- объективная: `health_objective` из `bash scripts/audit-health.sh` (детерминированно из файлов).
+
+Обязательно запусти `bash scripts/audit-health.sh` и впиши его метрики (провал любой штрафует цифру):
+- provenance_integrity: X% (доля фич с валидной провенанс-головой + когерентны с логом — c4)
+- archive_evidence: X% (доля архивных с совпадающим evidence_hash — c10)
+- budget_coverage: X% (доля рабочих фич с tool_call_budget — L5-F6, информативно)
+
+⚠️ Экранные детекторы (clarity, secret-mask) — display-only, честно НЕ в enforcement-счёт и НЕ в эту цифру.
+
 **Recurrence rate**: X%
 **Error velocity**: Y errors/week
 **Cost trend**: <up / flat / down>

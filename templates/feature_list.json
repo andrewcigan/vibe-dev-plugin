@@ -59,6 +59,7 @@
       "surface": "ui|api|cli|job|service|lib|content — ПОВЕРХНОСТЬ: где фичу видит пользователь (v6.2 F5). Определяет ТИП обязательного evidence (rules/verification-lanes.md). Монотонность: файловая эвристика — пол, заявленное поле может только УЖЕСТОЧИТЬ (lib при .tsx в affected не отключит UI-gate); ui — критик пользовательской перспективы обязателен при любом размере.",
       "dependencies": ["feat-XXX", "..."],
       "size_estimate": "S (<1h work, light path) / M / L (heavy path with dual critique)",
+      "detail_required": "true (опц.) — форсит стадию детализации docs/changes/<id>/proposal.md с P1-US даже на S. M/L требуют детализацию автоматически (L2-F2). Backlog-фича детали НЕ несёт — ленивая, рождается при взятии в работу (L2-F4).",
       "affected_files": ["src/...", "tests/..."],
       "verification": {
         "layer_1_syntax": ["npm run check", "npm run lint"],

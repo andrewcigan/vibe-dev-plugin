@@ -269,6 +269,10 @@ assert_contains "27d. S + detail_required без детализации -> deny 
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_S")")"
 assert_empty "27e. S без detail_required -> pass (детализация не форсится)" "$OUT"
 rm -rf "$PROJ/docs"
+# 27f. L2-F4: M-фича в backlog (up_next, НЕ active) без детализации -> pass (деталь ленивая)
+BACKLOG_M='{"features":{"up_next":[{"id":"feat-55","state":"up_next","category":"api","size_estimate":"M","affected_files":["src/api/b.ts"]}]}}'
+OUT="$(run "$(write_payload "$FL" "$BACKLOG_M")")"
+assert_empty "27f. M в backlog без детализации -> pass (L2-F4, деталь ленивая до active)" "$OUT"
 
 # --- регрессия: поле verification/evidence как СТРОКА или СПИСОК не должно ронять хук ---
 # Реальные проекты пишут проверку человеческим текстом ("e2e: проверил руками") или

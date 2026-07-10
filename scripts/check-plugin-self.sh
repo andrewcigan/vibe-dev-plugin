@@ -362,6 +362,14 @@ else
 fi
 
 echo ""
+echo "=== 39. Архив фич по ссылке + evidence-hash (v8 L3-F5) ==="
+if bash tests/hooks/test-provenance-archive.sh > /tmp/vibe-artest.out 2>&1; then
+    tail -1 /tmp/vibe-artest.out
+else
+    echo "❌ тест provenance-archive упал:"; cat /tmp/vibe-artest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

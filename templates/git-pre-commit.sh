@@ -215,4 +215,49 @@ PY
   fi
 fi
 
+# --- 6. ARCHIVE evidence-hash целостность (v8 L3-F5, c10) ---
+# Индекс-стаб в горячем (фича с evidence_hash) обязан иметь тело в feature_list.archive.json с
+# совпадающим hash. Ловит подделку/потерю доказательства архивной фичи. Проверка по hash — тело
+# архива в постоянный контекст НЕ грузится (c10).
+if git diff --cached --name-only 2>/dev/null | grep -qxE "feature_list\.json|feature_list\.archive\.json" && [ -f "$ROOT_DIR/feature_list.json" ]; then
+  if ! ARCHK="$(python3 - "$ROOT_DIR/feature_list.json" "$ROOT_DIR/feature_list.archive.json" 2>&1 <<'PY'
+import json, sys, os, hashlib
+fl, arch = sys.argv[1], sys.argv[2]
+def bhash(f):
+    return "sha256:" + hashlib.sha256(json.dumps(f, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()
+try:
+    data = json.load(open(fl, encoding="utf-8"))
+except Exception:
+    sys.exit(0)
+archived = {}
+if os.path.exists(arch):
+    try:
+        for a in json.load(open(arch, encoding="utf-8")).get("archived", []):
+            if isinstance(a, dict):
+                archived[a.get("id")] = a
+    except Exception:
+        pass
+bad = []
+for b, fs in (data.get("features") or {}).items():
+    if not isinstance(fs, list):
+        continue
+    for f in fs:
+        if not isinstance(f, dict) or "evidence_hash" not in f:
+            continue
+        aid = f.get("id"); body = archived.get(aid)
+        if not body:
+            bad.append("  %s: стаб ссылается на архив, но тела в archive.json нет" % aid)
+        elif bhash(body) != f.get("evidence_hash"):
+            bad.append("  %s: evidence_hash стаба не совпал с телом архива (доказательство изменено)" % aid)
+if bad:
+    print("\n".join(bad)); sys.exit(1)
+PY
+  )"; then
+    echo "🚨 КОММИТ ОСТАНОВЛЕН: архив — доказательство фичи не сходится (v8 L3-F5):" >&2
+    echo "$ARCHK" >&2
+    echo "Стаб в горячем должен ссылаться на реальное тело в feature_list.archive.json. Ротация — scripts/archive-features.sh." >&2
+    exit 1
+  fi
+fi
+
 exit 0

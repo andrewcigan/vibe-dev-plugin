@@ -1,0 +1,6 @@
+{
+  "$schema": "./feature_list.schema.json",
+  "version": "8.0",
+  "_doc": "Холодный архив завершённых фич (v8 L3-F5). done/superseded/rejected выносятся сюда ПОЛНЫМ телом (с evidence-блоком и provenance-головой); в горячем feature_list.json остаётся однострочный индекс-стаб {id,name,state,evidence_ref,history_ref,evidence_hash}. Так постоянный контекст видит карту скоупа как индекс, но грузит тело/доказательство только по требованию. evidence_hash = sha256 тела архивной фичи — /audit проверяет доказательство БЕЗ загрузки тела (c10). Пишется ТОЛЬКО через scripts/archive-features.sh. НЕ грузится в CLAUDE.md-контекст.",
+  "archived": []
+}

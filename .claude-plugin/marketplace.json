@@ -9,7 +9,7 @@
       "name": "vibe-dev",
       "source": "./",
       "description": "Vibe Dev v8 — harness-first pipeline от бизнес-идеи до работающего продукта. Провенанс фич (event-sourcing + crash-safe запись + git-гейты), стадия детализации M/L, управляемый /checkpoint вместо рулетки авто-сжатия, пины моделей по стадиям + adversarial verifier, evidence на logic + negative-gate, единая цифра готовности в /audit. Актуальное число enforcement-механизмов и живой статус — docs/traceability.md. Плюс: активация хуков с backstop, fail-loud, clarity-gate финальных сообщений, evidence по поверхности, research-гейт архитектуры, closing-mode, секрет-гигиена, config-protect + онбординг (/setup) и трассировка с self-check.",
-      "version": "8.0.0",
+      "version": "8.0.1",
       "category": "development",
       "tags": [
         "harness",

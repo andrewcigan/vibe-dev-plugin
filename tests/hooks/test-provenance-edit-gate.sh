@@ -57,6 +57,28 @@ python3 -c "import json;d=json.load(open('feature_list.json'));d['features']['ac
 printf '%s\n' '{"v":1,"at":"2026-07-10T03:00:00Z","feat":"feat-001","seq":2,"op":"REJECTED","by":"owner"}' >> "$LOG"
 git add -A
 if git commit -q -m "reject via op" 2>/dev/null; then ok "4. state→rejected + op=REJECTED → pass (op покрывает state)"; else bad "4. op покрывает state → pass" "reject"; fi
+git reset -q --hard "$SEED" 2>/dev/null
+
+# 5. lifecycle active→passing БЕЗ события → pass (C3-фикс: статус реализации ≠ правка требования)
+wfeat "старое" 1 '["a.ts"]'
+python3 -c "import json;d=json.load(open('feature_list.json'));d['features']['active_list'][0]['state']='passing';json.dump(d,open('feature_list.json','w'))"
+git add feature_list.json
+if git commit -q -m "verify → passing" 2>/dev/null; then ok "5. lifecycle active→passing без события → pass (C3: /verify не встаёт)"; else bad "5. lifecycle → pass" "reject прогресса реализации"; fi
+git reset -q --hard "$SEED" 2>/dev/null
+
+# 6. lifecycle active→done БЕЗ события → pass (как /ship)
+wfeat "старое" 1 '["a.ts"]'
+python3 -c "import json;d=json.load(open('feature_list.json'));d['features']['active_list'][0]['state']='done';json.dump(d,open('feature_list.json','w'))"
+git add feature_list.json
+if git commit -q -m "ship → done" 2>/dev/null; then ok "6. lifecycle active→done без события → pass (C3: /ship не встаёт)"; else bad "6. lifecycle → pass" "reject"; fi
+git reset -q --hard "$SEED" 2>/dev/null
+
+# 7. терминальная судьба active→rejected БЕЗ события → reject (судьба требования требует историю)
+wfeat "старое" 1 '["a.ts"]'
+python3 -c "import json;d=json.load(open('feature_list.json'));d['features']['active_list'][0]['state']='rejected';json.dump(d,open('feature_list.json','w'))"
+git add feature_list.json
+if git commit -q -m "silent reject" 2>/dev/null; then bad "7. rejected без события → reject" "коммит прошёл"; else ok "7. state→rejected без события → reject (терминальная судьба защищена)"; fi
+git reset -q --hard "$SEED" 2>/dev/null
 
 cd /; rm -rf "$REPO"
 echo ""

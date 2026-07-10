@@ -145,9 +145,11 @@ PY
 fi
 
 # --- 5. PROVENANCE правка бизнес-поля требует событие лога (v8 L3-F4, критик b/Q9) ---
-# Если у СУЩЕСТВУЮЩЕЙ фичи изменилось бизнес-поле (name/description/size_estimate/
-# business_invariant/state) — в этом коммите обязано быть новое событие лога для feat,
-# покрывающее изменённые поля (set-based: объединение changes-полей + подразумеваемых op→state).
+# Если у СУЩЕСТВУЮЩЕЙ фичи изменилось поле ТРЕБОВАНИЯ (name/description/size_estimate/
+# business_invariant) ИЛИ state ушёл в терминальную судьбу (rejected/superseded/reopened) —
+# в этом коммите обязано быть новое событие лога для feat, покрывающее изменённые поля
+# (set-based: объединение changes-полей + подразумеваемых op→state). Обычный lifecycle-прогресс
+# state (active→passing→done) требованием НЕ считается — событие не нужно (иначе /verify встаёт).
 # Ловит тихую правку требования в обход record-change.sh. git pre-commit — единственный, кто
 # видит и старую версию (HEAD), и новую, и добавленные строки лога. Технические поля
 # (affected_files/verification) — ВНЕ провенанса (не шумим).
@@ -156,7 +158,13 @@ if git diff --cached --name-only 2>/dev/null | grep -qx "feature_list.json" && [
   NEW_LOG_ADDED="$(git diff --cached --unified=0 -- "$HARNESS/provenance-log.jsonl" 2>/dev/null | grep -E '^\+[^+]' | sed 's/^+//' || true)"
   if ! BIZ="$(OLD_FL="$OLD_FL" NEW_LOG_ADDED="$NEW_LOG_ADDED" python3 - "$ROOT_DIR/feature_list.json" 2>&1 <<'PY'
 import json, sys, os
-BIZ = {"name", "description", "size_estimate", "business_invariant", "state"}
+# Правки ТРЕБОВАНИЯ (что хотим / откуда пришло) требуют событие истории. Статус РЕАЛИЗАЦИИ
+# (lifecycle-state: up_next/active/passing/done/blocked/paused/rollback/…) — рабочий процесс,
+# НЕ изменение требования → событие НЕ требуется (иначе /verify active→passing и /ship
+# passing→done ломаются о собственный гейт — дефект C3). Событие для state нужно ТОЛЬКО на
+# ТЕРМИНАЛЬНОЙ судьбе требования: rejected/superseded (и reopened обратно из них).
+BIZ_REQ = {"name", "description", "size_estimate", "business_invariant"}
+TERMINAL_STATE = {"rejected", "superseded"}
 STATE_OPS = {"REJECTED": "state", "SUPERSEDED": "state", "REOPENED": "state", "RENAMED": "name"}
 def feats(d):
     out = {}
@@ -200,7 +208,12 @@ for fid, f in nf.items():
     of = ofs.get(fid)
     if not of:
         continue  # новая фича = захват (L3-F1), не правка
-    changed = {k for k in BIZ if of.get(k) != f.get(k)}
+    changed = {k for k in BIZ_REQ if of.get(k) != f.get(k)}
+    # state: событие требуется только на терминальной судьбе (rejected/superseded/reopened),
+    # НЕ на обычном lifecycle-прогрессе (active→passing→done) — иначе /verify и /ship встают (C3).
+    os_, ns = of.get("state"), f.get("state")
+    if os_ != ns and (ns in TERMINAL_STATE or os_ in TERMINAL_STATE):
+        changed.add("state")
     uncovered = changed - cover.get(fid, set())
     if uncovered:
         bad.append("  %s: изменены %s без нового события лога" % (fid, ",".join(sorted(uncovered))))
@@ -210,7 +223,7 @@ PY
   )"; then
     echo "🚨 КОММИТ ОСТАНОВЛЕН: провенанс — правка требования без события истории (v8 L3-F4):" >&2
     echo "$BIZ" >&2
-    echo "Бизнес-поля требования (name/description/size/invariant/state) меняй через scripts/record-change.sh — оно фиксирует откуда/когда/факт замены. Технические поля (affected_files/verification) — свободно." >&2
+    echo "Правку ТРЕБОВАНИЯ (name/description/size/invariant) и отмену/замену (rejected/superseded) делай через scripts/record-change.sh — оно фиксирует откуда/когда/факт. Статус реализации (active→passing→done) и технические поля (affected_files/verification) — свободно." >&2
     exit 1
   fi
 fi

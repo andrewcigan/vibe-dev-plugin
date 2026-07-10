@@ -76,6 +76,11 @@ case "$TOOL" in
     # ЛЮБАЯ запись/создание агентом → block независимо от значения — иначе `cp файл-с-learn
     # .harness/hook-mode` обходил бы проверку (значение в исходнике, не в тексте команды).
     # Снятие (rm) — не writes_to, проходит: движение к строгости безопасно (как locks-protect).
+    # ПРИМЕЧАНИЕ (v8.0.1): санкционированные setter'ы upgrade-project.sh/patch-projects.sh ставят
+    # learn ОСОЗНАННО — им исключение НЕ нужно: они пишут hook-mode дочерним процессом внутри
+    # скрипта, а PreToolUse видит только внешнюю команду `bash …/patch-projects.sh` (без литерала
+    # hook-mode) → writes_to не срабатывает, запись проходит естественно. Именованный whitelist был
+    # бы тривиально обходим комментарием (`echo learn>hook-mode # patch-projects.sh`) → безусловный BLOCK.
     if writes_to "$CMD" '\.harness/hook-mode'; then
       printf 'BLOCK%s%s\n' "$TAB" "$MSG_HOOKMODE"
     fi

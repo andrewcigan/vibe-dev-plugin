@@ -429,6 +429,14 @@ else
 fi
 
 echo ""
+echo "=== 44. Патч-механизм: мягкое включение + защита H1 + грязное дерево (v8.0.1) ==="
+if bash tests/hooks/test-upgrade-soft.sh > /tmp/vibe-ustest.out 2>&1; then
+    tail -1 /tmp/vibe-ustest.out
+else
+    echo "❌ тест upgrade-soft упал:"; cat /tmp/vibe-ustest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

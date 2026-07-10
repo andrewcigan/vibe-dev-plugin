@@ -47,7 +47,7 @@ for bucket, feats in (data.get('features') or {}).items():
         cap = str(f.get('captured_at') or '').strip() or mt
         f['provenance'] = {
             "origin": "inference",              # честно: источник реконструирован, не known
-            "source_ref": {"kind": "unknown"},  # не выдумываем ссылку
+            "source_ref": {"kind": "unknown", "ref": "retro-migration"},  # M1: отличимо от живой inference
             "captured_at": cap,
             "by": "agent",
             "seq": 0

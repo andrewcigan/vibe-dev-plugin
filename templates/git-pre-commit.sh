@@ -144,4 +144,75 @@ PY
   fi
 fi
 
+# --- 5. PROVENANCE правка бизнес-поля требует событие лога (v8 L3-F4, критик b/Q9) ---
+# Если у СУЩЕСТВУЮЩЕЙ фичи изменилось бизнес-поле (name/description/size_estimate/
+# business_invariant/state) — в этом коммите обязано быть новое событие лога для feat,
+# покрывающее изменённые поля (set-based: объединение changes-полей + подразумеваемых op→state).
+# Ловит тихую правку требования в обход record-change.sh. git pre-commit — единственный, кто
+# видит и старую версию (HEAD), и новую, и добавленные строки лога. Технические поля
+# (affected_files/verification) — ВНЕ провенанса (не шумим).
+if git diff --cached --name-only 2>/dev/null | grep -qx "feature_list.json" && [ -f "$ROOT_DIR/feature_list.json" ]; then
+  OLD_FL="$(git show HEAD:feature_list.json 2>/dev/null || echo '')"
+  NEW_LOG_ADDED="$(git diff --cached --unified=0 -- "$HARNESS/provenance-log.jsonl" 2>/dev/null | grep -E '^\+[^+]' | sed 's/^+//' || true)"
+  if ! BIZ="$(OLD_FL="$OLD_FL" NEW_LOG_ADDED="$NEW_LOG_ADDED" python3 - "$ROOT_DIR/feature_list.json" 2>&1 <<'PY'
+import json, sys, os
+BIZ = {"name", "description", "size_estimate", "business_invariant", "state"}
+STATE_OPS = {"REJECTED": "state", "SUPERSEDED": "state", "REOPENED": "state", "RENAMED": "name"}
+def feats(d):
+    out = {}
+    for b, fs in (d.get("features") or {}).items():
+        if isinstance(fs, list):
+            for f in fs:
+                if isinstance(f, dict) and f.get("id"):
+                    out[f["id"]] = f
+    return out
+try:
+    new = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    sys.exit(0)
+old_raw = os.environ.get("OLD_FL", "").strip()
+if not old_raw:
+    sys.exit(0)  # новый файл — все фичи захват, (b) не применяется
+try:
+    old = json.loads(old_raw)
+except Exception:
+    sys.exit(0)
+nf, ofs = feats(new), feats(old)
+cover = {}
+for ln in os.environ.get("NEW_LOG_ADDED", "").splitlines():
+    ln = ln.strip()
+    if not ln:
+        continue
+    try:
+        e = json.loads(ln)
+    except Exception:
+        continue
+    feat = e.get("feat")
+    if not feat:
+        continue
+    s = cover.setdefault(feat, set())
+    for k in (e.get("changes") or {}):
+        s.add(k)
+    if e.get("op") in STATE_OPS:
+        s.add(STATE_OPS[e["op"]])
+bad = []
+for fid, f in nf.items():
+    of = ofs.get(fid)
+    if not of:
+        continue  # новая фича = захват (L3-F1), не правка
+    changed = {k for k in BIZ if of.get(k) != f.get(k)}
+    uncovered = changed - cover.get(fid, set())
+    if uncovered:
+        bad.append("  %s: изменены %s без нового события лога" % (fid, ",".join(sorted(uncovered))))
+if bad:
+    print("\n".join(bad)); sys.exit(1)
+PY
+  )"; then
+    echo "🚨 КОММИТ ОСТАНОВЛЕН: провенанс — правка требования без события истории (v8 L3-F4):" >&2
+    echo "$BIZ" >&2
+    echo "Бизнес-поля требования (name/description/size/invariant/state) меняй через scripts/record-change.sh — оно фиксирует откуда/когда/факт замены. Технические поля (affected_files/verification) — свободно." >&2
+    exit 1
+  fi
+fi
+
 exit 0

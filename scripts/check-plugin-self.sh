@@ -354,6 +354,14 @@ else
 fi
 
 echo ""
+echo "=== 38. Провенанс инвариант правки бизнес-поля (v8 L3-F4) ==="
+if bash tests/hooks/test-provenance-edit-gate.sh > /tmp/vibe-egtest.out 2>&1; then
+    tail -1 /tmp/vibe-egtest.out
+else
+    echo "❌ тест provenance-edit-gate упал:"; cat /tmp/vibe-egtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -68,6 +68,22 @@ for a in agents/*.md; do
         echo "❌ Нет 'effort:' во фронтматтере (L1-F1): $a"; ERRORS=$((ERRORS + 1))
     fi
 done
+# L5-F4: read-only роли (верификаторы/критики) ОБЯЗАНЫ нести disallowedTools с Write+Edit —
+# движок физически запрещает им писать код (гарантия «adversarial-верификатор не подгонит код
+# под свой тест, критик не чинит»). Обход = self-check red.
+READONLY_ROLES="data-model-reviewer user-perspective-critic test-researcher stage-verifier evaluator-agent browser-tester"
+RO_OK=0
+for role in $READONLY_ROLES; do
+    f="agents/$role.md"
+    if [ ! -f "$f" ]; then echo "❌ read-only роль отсутствует: $f (L5-F4)"; ERRORS=$((ERRORS + 1)); continue; fi
+    dt="$(head -20 "$f" | grep -m1 '^disallowedTools:')"
+    if printf '%s' "$dt" | grep -q 'Write' && printf '%s' "$dt" | grep -q 'Edit'; then
+        RO_OK=$((RO_OK + 1))
+    else
+        echo "❌ read-only роль $role без disallowedTools Write+Edit (L5-F4: верификатор/критик не пишет код)"; ERRORS=$((ERRORS + 1))
+    fi
+done
+[ "$RO_OK" -gt 0 ] && echo "✓ read-only роли с disallowedTools Write/Edit: $RO_OK/6 (L5-F4)"
 # L1-F2: реестр docs/agent-registry.md — источник истины роль↔тир. Модель во фронтматтере
 # обязана совпадать с колонкой «Модель» таблицы. Расхождение = self-check red (реестр правит
 # тир «одним движением», фронтматтер обязан следовать).

@@ -62,8 +62,8 @@ case "$TOOL" in
     # secret-scan (v7 P14): хардкод ЖИВОГО ключа в src -> block. Все профили (safety, как bulk-api).
     # Escape: цель .env-семейство ИЛИ маркер secret-scan-off (фраза «ключ тестовый/забей»).
     add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "secret-scan" verdict "$ROOT/hooks/checks/secret-scan-write.sh" "$CWD" "$FILE" "$TOOL")"
-    # folder-scope (v7 P9): запись ВНЕ корня -> ТОЛЬКО-ЛОГ (warn лишь при маркере folder-scope-warn).
-    # Все профили, безвредно: собирает корпус реальных внешних путей перед включением warn.
+    # folder-scope (v7 P9 → v8 L5-F3): запись ВНЕ корня -> WARN по умолчанию (промоушн из log-only).
+    # Все профили, безвредно (warn, не block; block отложен до замера % ложных на корпусе).
     add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "folder-scope" verdict "$ROOT/hooks/checks/folder-scope.sh" "$CWD" "$FILE")"
     # concurrent-write advisory для shared-форматов (json/csv/jsonl/yaml), standard/strict
     if profile_in "standard,strict" "$PROFILE"; then

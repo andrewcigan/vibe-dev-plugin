@@ -36,15 +36,18 @@ HOOK_PAYLOAD="$LP" bash hooks/checks/secret-skip-listener.sh "$PROJ" >/dev/null
 # 5. folder-scope: вне корня → лог (несистемный путь вне whitelist)
 fscope "/opt/foreign-project/proto.html" >/dev/null
 grep -q 'foreign-project/proto.html' "$PROJ/.harness/folder-scope.log" 2>/dev/null && ok "5. вне корня → логируется" || bad "5. вне корня → логируется"
-# 6. folder-scope: log-only по умолчанию (нет WARN на stdout)
+# 6. folder-scope: WARN по умолчанию (v8 L5-F3 — промоушн log-only → warn)
 rm -f "$PROJ/.harness/folder-scope.log"
-[ -z "$(fscope "/opt/foreign-project/x.txt")" ] && ok "6. log-only (нет warn по умолчанию)" || bad "6. log-only по умолчанию"
-# 7. folder-scope: внутри корня → без лога
-rm -f "$PROJ/.harness/folder-scope.log"; fscope "src/app.ts" >/dev/null
-[ ! -f "$PROJ/.harness/folder-scope.log" ] && ok "7. внутри корня → без лога" || bad "7. внутри корня → без лога"
-# 8. folder-scope: /tmp whitelist
-rm -f "$PROJ/.harness/folder-scope.log"; fscope "/private/tmp/scratch/x.png" >/dev/null
-[ ! -f "$PROJ/.harness/folder-scope.log" ] && ok "8. /tmp whitelisted" || bad "8. /tmp whitelisted"
+printf '%s' "$(fscope "/opt/foreign-project/x.txt")" | grep -q '^WARN' && ok "6. вне корня → warn по умолчанию (L5-F3)" || bad "6. warn по умолчанию (L5-F3)"
+# 7. folder-scope: внутри корня → без лога, без warn
+rm -f "$PROJ/.harness/folder-scope.log"; OUT7="$(fscope "src/app.ts")"
+{ [ ! -f "$PROJ/.harness/folder-scope.log" ] && [ -z "$OUT7" ]; } && ok "7. внутри корня → тихо (без лога/warn)" || bad "7. внутри корня → тихо"
+# 8. folder-scope: /tmp whitelist → тихо
+rm -f "$PROJ/.harness/folder-scope.log"; OUT8="$(fscope "/private/tmp/scratch/x.png")"
+{ [ ! -f "$PROJ/.harness/folder-scope.log" ] && [ -z "$OUT8" ]; } && ok "8. /tmp whitelisted → тихо" || bad "8. /tmp whitelisted"
+# 8b. L5-F3: легитимная ротация архива (feature_list.archive.json в корне) НЕ предупреждается
+rm -f "$PROJ/.harness/folder-scope.log"
+[ -z "$(fscope "$PROJ/feature_list.archive.json")" ] && ok "8b. архив в корне (ротация L3-F5) → тихо" || bad "8b. архив в корне → тихо"
 
 rm -rf "$PROJ" 2>/dev/null
 echo "Итог: PASS=$PASS FAIL=$FAIL"

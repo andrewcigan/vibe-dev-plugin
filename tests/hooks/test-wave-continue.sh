@@ -34,6 +34,30 @@ listen "стоп, погоди"
 # 5. нет go-mode + вопрос в конце → тишина (не пушим без явной просьбы)
 [ -z "$(wc_run "$TRQ")" ] && ok "5. без go-mode не пушит (даже если вопрос)" || bad "5. без go-mode молчит"
 
+# --- L4-F5: нудж на /checkpoint по числу ходов (independent от go-mode) ---
+TRL="$PROJ/long.jsonl"
+python3 -c "
+import json
+out=[]
+for i in range(55):
+    out.append(json.dumps({'type':'user','message':{'content':'go'}}))
+    out.append(json.dumps({'type':'assistant','message':{'content':[{'type':'text','text':'шаг %d готов.'%i}]}}))
+open('$TRL','w').write('\n'.join(out)+'\n')
+"
+rm -f "$PROJ/.harness/checkpoint-nudge-at"
+# go-mode маркера сейчас НЕТ (снят тестом 4) → проверяем НЕЗАВИСИМОСТЬ нуджа от go-режима
+[ ! -f "$PROJ/.harness/locks/go-mode" ] || rm -f "$PROJ/.harness/locks/go-mode"
+OUTL="$(wc_run "$TRL")"
+printf '%s' "$OUTL" | grep -q '^WARN' && printf '%s' "$OUTL" | grep -q 'checkpoint' \
+  && ok "6. длинная сессия (55 ходов) без go-mode → нудж /checkpoint" || bad "6. нудж /checkpoint на длинной сессии"
+[ -f "$PROJ/.harness/checkpoint-nudge-at" ] && ok "7. веха нуджа записана (.harness/checkpoint-nudge-at)" || bad "7. веха нуджа записана"
+
+# 8. повторный вызов на том же транскрипте (веха=55, 55-55<50) → тишина (не долбит каждый ход)
+[ -z "$(wc_run "$TRL")" ] && ok "8. после нуджа — тишина до следующей вехи" || bad "8. нудж не долбит каждый ход"
+
+# 9. короткая сессия (<50 ходов) → нудж молчит
+[ -z "$(wc_run "$TRN")" ] && ok "9. короткая сессия → без нуджа" || bad "9. короткая сессия молчит"
+
 rm -rf "$PROJ" 2>/dev/null
 echo "Итог: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" = "0" ]

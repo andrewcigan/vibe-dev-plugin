@@ -74,6 +74,7 @@
         "dependencies": { "type": "array", "items": { "type": "string" } },
         "size_estimate": { "enum": ["S", "M", "L"] },
         "detail_required": { "type": "boolean", "description": "v8 L2-F2: форсит стадию детализации (docs/changes/<id>/proposal.md с P1-US в Given/When/Then) даже для S-фичи. M/L требуют детализацию автоматически. Backlog-фича деталь НЕ несёт — она ленивая, создаётся при взятии в работу (L2-F4)." },
+        "tool_call_budget": { "type": "integer", "description": "v8 L5-F6: ориентир числа tool-call на фичу (S~30-50, M~80-120, L~150-250). Превышение → нудж /checkpoint|/stuck (discipline, warn, не блок). Не задано — дефолт 150." },
         "affected_files": { "type": "array", "items": { "type": "string" } },
         "business_invariant": { "type": "string" },
         "state": { "type": "string" },

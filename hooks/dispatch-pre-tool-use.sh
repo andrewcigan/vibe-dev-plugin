@@ -107,6 +107,12 @@ if profile_in "standard,strict" "$PROFILE"; then
   add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "user-rules" verdict "$ROOT/hooks/checks/user-rules.sh" "$CWD")"
 fi
 
+# feature-budget (v8 L5-F6): счётчик tool-call на активную фичу; превышение бюджета -> нудж
+# /checkpoint|/stuck. ЧЕСТНО discipline+nudge (число tool-call — прокси усилия), warn, не block.
+if profile_in "standard,strict" "$PROFILE"; then
+  add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "feature-budget" verdict "$ROOT/hooks/checks/feature-budget.sh" "$CWD")"
+fi
+
 # --- Единый вывод. Block приоритетнее warn. ---
 if [ -n "$BLOCKS" ]; then
   hook_emit_block "Vibe Dev заблокировал действие (профиль строгости: ${PROFILE}):

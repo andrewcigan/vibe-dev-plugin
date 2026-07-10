@@ -94,6 +94,7 @@
       },
       "business_invariant": "ref: domain-rules.invariants[i]",
       "budget_usd": 5.00,
+      "tool_call_budget": "число (опц., v8 L5-F6): ориентир tool-call на фичу (S~30-50, M~80-120, L~150-250); превышение → нудж /checkpoint|/stuck (discipline, warn, не блок). Не задано — дефолт 150.",
       "state": "captured | awaiting_research | up_next | awaiting_reviewer | awaiting_demo_milestone | active | awaiting_user_acceptance | blocked | paused | rollback | passing | rejected | superseded",
       "provenance": {
         "_doc": "v8 провенанс-ГОЛОВА (event-sourcing). Обязательны origin+source_ref+captured_at+by. Пишется ТОЛЬКО через scripts/record-change.sh (не руками — иначе голова разойдётся с логом). Полная схема — schemas/feature_list.schema.json. Источник истины истории — .harness/provenance-log.jsonl.",

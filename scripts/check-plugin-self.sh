@@ -402,6 +402,14 @@ else
 fi
 
 echo ""
+echo "=== 42. Бюджет tool-call на фичу: счётчик + нудж (v8 L5-F6) ==="
+if bash tests/hooks/test-feature-budget.sh > /tmp/vibe-fbtest.out 2>&1; then
+    tail -1 /tmp/vibe-fbtest.out
+else
+    echo "❌ тест feature-budget упал:"; cat /tmp/vibe-fbtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

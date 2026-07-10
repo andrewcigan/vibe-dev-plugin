@@ -1,5 +1,55 @@
 # Changelog
 
+## v8.0.0 (2026-07-10) — Провенанс фич, управляемый контекст, пины моделей, усиленная проверка
+
+Девять волн (0–8), **26 фич**, реализовано по решениям владельца (карточки c1-c12 из отчёта
+vibe-dev-report.vercel.app) + паттернам доноров pilotfish / OpenSpec / spec-kit /
+agents-best-practices. Корневой курс: авто-сжатие контекста — крайняя мера, не инструмент;
+состояние фич живёт в файлах под провенансом, а не в раздувающемся контексте; «готово» = проверенное
+поведение, а зелёные тесты умеют лгать. Пять линий:
+
+- **Линия 1 — Модели.** Контракт фронтматтера агентов (`model` / `effort: max` / `disallowedTools`) —
+  enforced-поля движка, не декларация. Пины: 12 opus (план / критика / проверка) + 12 sonnet
+  (код / чтение / рутина); реестр `docs/agent-registry.md` = источник истины, self-check сверяет
+  фронтматтер с реестром. Эскалация по тиру при залипании (circuit breaker: 2 провала на тире →
+  поднять тир, не ретрай; LLM-кворум только если высший тир провалил). Защитную работу — на Opus,
+  не на свежайшую frontier (её safety-классификатор рвёт benign defensive mid-task).
+- **Линия 2 — Детализация.** Единый резолвер путей харнеса (`hooks/lib/resolve-paths.sh`): один
+  источник имён артефактов + поиск корня вверх по дереву, STRICT-режим при неоднозначном корне →
+  hard-error вместо тихого фолбэка на cwd (лечит «запись не в тот проект»). Стадия детализации:
+  M/L-фича (или `detail_required`) не входит в active без `docs/changes/<id>/proposal.md` с ≥1
+  приоритизированной P1 user story в Given/When/Then (OpenSpec + spec-kit) — основа
+  verification_command. Backlog ленивый: детали рождаются при взятии в работу, не грузятся заранее.
+- **Линия 3 — Провенанс (event-sourcing).** Схема головы (origin/medium разделены, source_ref,
+  occurred_at, seq, superseded_by, неизменяемый feat-id) + честная миграция. Append-only лог (git
+  pre-commit reject на правку прошлой строки). `record-change.sh` — единственный crash-safe путь
+  записи (append лога → temp+mv головы; обрыв → голова позади = восстановимо; идемпотентность по
+  change_id). Инвариант правки бизнес-поля (изменено без события лога → reject). Архив по ссылке:
+  done/superseded/rejected с evidence → `feature_list.archive.json` (тело + hash), в горячем стаб;
+  git pre-commit сверяет evidence_hash БЕЗ загрузки тела в контекст. Delta-мёрж спеки в
+  `docs/ARCHITECTURE.md` + гейт незакрытых tasks.
+- **Линия 4 — Анти-сжатие контекста.** Трёхуровневая модель (горячий CLAUDE.md ≤200 строк = голова +
+  индекс / по требованию grep / холод = архив + лог) + warn на раздутый горячий. Управляемый
+  `/checkpoint` (`scripts/checkpoint.sh`): recovery провенанса → ротация завершённого в архив →
+  **cold-start gate (block)**: шаблонный/отсутствующий SESSION.md ИЛИ некогерентный провенанс →
+  exit 1. PreCompact-слепок демотирован до страховки (основной носитель — /checkpoint). Нудж на
+  /checkpoint по длине сессии (честно discipline). Сужение возврата 4 читающих агентов: полный
+  результат в файл, в главный поток — дайджест ≤2 КБ + путь (критиков не режем — whitelist).
+- **Линия 5 — Проверка.** Закрыт fail-open защиты границ правок (`.harness/hook-mode` под защитой;
+  Bash-детект расширен на cp/mv/install/ln/sed -i). Evidence на logic-фиче: passing для surface=lib/
+  logic требует runtime/e2e (не только typecheck+lint); M/L passing без negative-gate
+  (mutation/leak) → block. Adversarial fresh-context verifier (`stage-verifier` в режиме assume
+  broken; disallowedTools физически запрещает ему Write/Edit — верификатор не подгонит код под свой
+  тест). Бюджет tool-call на фичу (нудж). Единая цифра готовности `/audit` = min по узкому месту
+  (bottleneck 7-tuple × детерминированные метрики provenance/archive). Folder-scope log-only → warn.
+
+Все механизмы — строкой в `docs/traceability.md` с датой живой проверки (**67 отслеживаемых** —
+единственный источник числа; экранные детекторы clarity/secret-mask честно НЕ в счёт). self-check
+вырос до **43 разделов**, все PASS; `plugin validate --strict` зелёный. **Осознанно НЕ в ядро**
+(честность деклараций): headroom-датчик размера окна (нет надёжного сигнала контекста в Claude Code →
+только неразрушающий эксперимент с авто-эвикцией, строки-механизма нет намеренно); нудж /checkpoint и
+бюджеты tool-call помечены discipline, не enforcement.
+
 ## v7.0.0 (2026-07-02) — Пять волн: доставка, честность, автопамять, замки, поведение
 
 Собрано по аудиту 9 боевых журналов недели (24.06–02.07) + план `_internal/plans/START-HERE-v7.md`

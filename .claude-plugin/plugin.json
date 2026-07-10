@@ -1,6 +1,6 @@
 {
   "name": "vibe-dev",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "description": "Harness-first pipeline для Claude Code: бизнес-идея → работающий продукт. v8 (5 линий, 26 фич): провенанс фич как event-sourcing (горячая проекция + append-only лог + архив по ссылке, crash-safe запись record-change, git-гейты когерентности/append-only/архива); стадия детализации M/L-фичи (docs/changes/<id>/proposal.md с P1 user story в Given/When/Then), backlog ленивый; управляемый /checkpoint вместо рулетки авто-сжатия (cold-start gate) + трёхуровневая модель контекста + сужение возврата читающих агентов; контракт фронтматтера агентов (пины моделей по стадиям + effort/disallowedTools; adversarial fresh-context verifier физически не пишет код); evidence на logic-фиче (runtime/e2e) + negative-gate M/L, бюджеты tool-call, единая цифра готовности в /audit. Механизмы с живой таблицей статуса (docs/traceability.md — единственный источник числа и статуса): активация хуков с независимым backstop (heartbeat + двухфазный профиль + git pre-commit), fail-loud (краш сторожа не молчит), clarity-gate на финальное сообщение (Stop block с precision-гейтом на реальном корпусе), evidence по поверхности фичи (монотонная строгость), обязательный research перед архитектурой (lock-паттерн), closing-mode, секрет-гигиена, config-protect + онбординг (/setup) и таблица трассировки с self-check.",
   "author": {
     "name": "Andrei Tsyhan"

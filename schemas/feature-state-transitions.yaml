@@ -1,5 +1,8 @@
 # Vibe Dev — Feature State Machine
-# Источник правды для allowed transitions. Hook hooks/checks/state-transition.sh читает этот файл.
+# Справочник состояний и переходов для агентов/людей. Hook hooks/checks/state-transition.sh
+# валидирует ТОЛЬКО имя состояния (state ∈ states) + согласованность bucket↔state.
+# Граф allowed_transitions НЕ enforced хуком (справочный): нестандартные переходы при ретрофите
+# на живой проект (напр. passing→awaiting_user_acceptance) легитимны и не блокируются (v8.0.2).
 
 version: "7.0.0"
 

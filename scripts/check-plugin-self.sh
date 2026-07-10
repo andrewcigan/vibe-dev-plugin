@@ -437,6 +437,14 @@ else
 fi
 
 echo ""
+echo "=== 45. Dogfooding-фиксы: model-swap по типу файла + .gitignore рантайма + граф справочный (v8.0.2) ==="
+if bash tests/hooks/test-dogfooding-fixes.sh > /tmp/vibe-dftest.out 2>&1; then
+    tail -1 /tmp/vibe-dftest.out
+else
+    echo "❌ тест dogfooding-fixes упал:"; cat /tmp/vibe-dftest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

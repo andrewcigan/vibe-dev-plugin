@@ -21,6 +21,18 @@ TAB="$(printf '\t')"
 tool="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_name // empty' 2>/dev/null)"
 file="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.file_path // empty' 2>/dev/null)"
 
+# Находка №9 (dogfooding LinX, v8.0.2): документация/логи/отчёты ЕСТЕСТВЕННО упоминают модели и
+# версии как ТЕМУ (CHANGELOG, README, SESSION, отчёты), а не как правку контракта вызова. Раньше
+# guard матчил по содержимому для ЛЮБОГО файла → 100% ложные срабатывания на каждый MD-отчёт.
+# Сужаем по типу файла: смена контракта модели живёт в КОДЕ/КОНФИГЕ вызова, не в прозе.
+# ГРАНИЦА (осознанная, критик v8.0.2): ценой этого — слепая зона на model:-фронтматтер агентов в
+# .md и промпт-шаблоны в .txt (правило #12 «смена системного промпта целиком»). Компромисс принят:
+# 100% ложные на каждой прозе хуже редкого пропуска, а guard — WARN-нудж, не блок (не критично).
+case "$file" in
+  *.md|*.mdx|*.markdown|*.txt|*.rst|*.adoc|*.html|*/CHANGELOG*|*/README*|*SESSION.md|*ROADMAP.md|*.harness/*|*.log|*.csv)
+    exit 0 ;;
+esac
+
 # Вносимое содержимое (намерение, не диск): Write→content, Edit→new_string, MultiEdit→все new_string.
 case "$tool" in
   Write)     subj="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.content // empty' 2>/dev/null)" ;;

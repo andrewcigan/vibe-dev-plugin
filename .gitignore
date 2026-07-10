@@ -7,6 +7,20 @@ node_modules/
 *.pem
 *.key
 secrets/
+# Рантайм-состояние хуков (счётчики/логи/heartbeat — меняются от рутинных операций, НЕ коммитить).
+# Конфиг проекта (engine-version, profile, hook-mode) — НЕ здесь, он отслеживается git.
+.harness/hooks-heartbeat
+.harness/bash-repeat-state
+.harness/feature-budget-state
+.harness/checkpoint-nudge-at
+.harness/stop-chain-count
+.harness/stop-cap-log
+.harness/clarity-stop-count
+.harness/clarity-cap-log
+.harness/handoff-pending
+.harness/stuck-watcher.pid
+.harness/*.log
+.harness/hook-crashes/
 .harness/cost-log.json
 .harness/tools-audit.jsonl
 .harness/locks/

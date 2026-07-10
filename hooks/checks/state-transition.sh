@@ -178,6 +178,11 @@ for state_bucket, feats in features.items():
                 warnings.append("%s: bucket=%s но state=%s — рассогласование" % (feat_id, state_bucket, feat_state))
         all_features.append((feat_id, feat_state, f))
 
+# ЧЕСТНОСТЬ ДЕКЛАРАЦИЙ (v8.0.2 dogfooding LinX): валидируем ИМЯ состояния (∈ valid_states) и
+# согласованность bucket↔state (выше). Граф schema["allowed_transitions"] загружается
+# load_schema_simple, но переход old→new НАМЕРЕННО НЕ enforced — он неполон для ретрофита
+# (passing→awaiting_user_acceptance легитимен при установке харнеса на живой проект, но не в графе;
+# enforce дал бы ложные блокировки). Граф = справочник для агентов/людей, не механизм.
 valid_states = set(schema["states"])
 for feat_id, state, f in all_features:
     if state not in valid_states and state not in ('done',):

@@ -117,9 +117,38 @@ EOF
   fi
 fi
 
-# --- H5: бэкап + предупреждение о грязном дереве перед записью ---
+# --- .gitignore рантайма + H5 бэкап/чистое-дерево (только для git-проектов; в не-git .gitignore
+#     бесполезен). Рантайм-файлы харнеса (счётчики/логи/heartbeat) шумят в git у КАЖДОГО проекта
+#     (находка dogfooding LinX, v8.0.2). upgrade требует чистое дерево — дописываем игнор ДО проверки,
+#     а из проверки исключаем РОВНО корневой .gitignore (pathspec, не суффикс — иначе грязный
+#     sub/.gitignore / app.gitignore проскочил бы мимо гейта, критик v8.0.2). ---
 if [ -d "$PROJ/.git" ]; then
-  if [ -n "$(git -C "$PROJ" status --porcelain 2>/dev/null)" ]; then
+  GI="$PROJ/.gitignore"
+  if ! { [ -f "$GI" ] && grep -qF "Vibe Dev — рантайм-состояние хуков" "$GI" 2>/dev/null; }; then
+    { [ -f "$GI" ] && [ -s "$GI" ] && echo ""; cat <<'IGN'
+# Vibe Dev — рантайм-состояние хуков (счётчики/логи/heartbeat/маркеры, НЕ коммитить)
+.harness/hooks-heartbeat
+.harness/bash-repeat-state
+.harness/feature-budget-state
+.harness/checkpoint-nudge-at
+.harness/stop-chain-count
+.harness/stop-cap-log
+.harness/clarity-stop-count
+.harness/clarity-cap-log
+.harness/handoff-pending
+.harness/stuck-watcher.pid
+.harness/*.log
+.harness/hook-crashes/
+.harness/cost-log.json
+.harness/tools-audit.jsonl
+.harness/locks/
+IGN
+    } >> "$GI"
+    echo "→ .gitignore: добавлен игнор рантайм-файлов харнеса (чтобы дерево не «грязнилось» от хуков)"
+  fi
+  # H5: чистое дерево. Свою правку .gitignore исключаем pathspec'ом ровно корневого файла
+  # (':!.gitignore' относительно корня репо — НЕ трогает sub/.gitignore и прочие *.gitignore).
+  if [ -n "$(git -C "$PROJ" status --porcelain -- ':!.gitignore' 2>/dev/null)" ]; then
     echo "⚠️  Рабочее дерево $(basename "$PROJ") не чистое — миграция провенанса смешается с текущими правками."
     echo "    Закоммить/спрячь изменения и повтори. (Прерываю, чтобы не запутать историю.)"
     exit 2

@@ -41,6 +41,19 @@ CNT2="$(python3 -c "import json;print(len(json.load(open('$SB/feature_list.archi
 eq "5. идемпотентность (повтор не дублирует архив)" "$CNT1" "$CNT2"
 rm -rf "$SB"
 
+echo "Гейт незакрытых tasks (L3-F6):"
+SB2="$(mktemp -d)"; mkdir -p "$SB2/.harness" "$SB2/docs/changes/feat-010"
+cat > "$SB2/feature_list.json" <<'JSON'
+{"version":"8.0","features":{"done":[{"id":"feat-010","name":"С tasks","state":"done","description":"D","evidence":{"layer_1_syntax_at":"2026-07-10T00:00:00Z"},"provenance":{"origin":"owner-msg","source_ref":{"kind":"session","ref":"s"},"captured_at":"2026-07-10T00:00:00Z","by":"owner","seq":1}}]}}
+JSON
+printf -- '- [ ] не сделано\n- [x] сделано\n' > "$SB2/docs/changes/feat-010/tasks.md"
+bash "$ARCHSH" "$SB2" >/dev/null 2>&1
+eq "6. done с незакрытыми tasks → НЕ архивирован" "True" "$(python3 -c "import json;d=json.load(open('$SB2/feature_list.json'));f=[x for x in d['features']['done'] if x['id']=='feat-010'][0];print('evidence_hash' not in f)")"
+printf -- '- [x] сделано\n- [x] и это\n' > "$SB2/docs/changes/feat-010/tasks.md"
+bash "$ARCHSH" "$SB2" >/dev/null 2>&1
+eq "7. tasks закрыты → архивирован" "True" "$(python3 -c "import json;d=json.load(open('$SB2/feature_list.json'));f=[x for x in d['features']['done'] if x['id']=='feat-010'][0];print('evidence_hash' in f)")"
+rm -rf "$SB2"
+
 echo "Архив фич (L3-F5) — часть B: hash-целостность (git pre-commit)"
 REPO="$(mktemp -d)"; cd "$REPO" || exit 1
 git init -q; git config user.email t@t.t; git config user.name t

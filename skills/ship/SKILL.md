@@ -120,6 +120,22 @@ Features shipped: N (из N запланированных в Roadmap)
 
 Подтвердить с пользователем 1-2 ключевых решения (pricing, ICP) — ОДНО за раз.
 
+## Delta-мёрж спеки + архивация (v8 L3-F6, OpenSpec archive)
+
+Когда фичи завершены (passing → done) — влить их изменения в спеку и вынести в архив, чтобы «что зафиксировано» догоняло «что задумано», а горячий контекст оставался тонким.
+
+### Шаг 1: Delta-мёрж в docs/ARCHITECTURE.md
+Для каждой завершённой фичи собрать delta из провенанс-лога (`op`: ADDED/MODIFIED/REMOVED/RENAMED) и влить в `docs/ARCHITECTURE.md` в порядке **RENAMED → REMOVED → MODIFIED → ADDED** с валидацией конфликтов (одно требование не может быть в одной волне и MODIFIED, и REMOVED). Спека растёт органически.
+
+### Шаг 2: Change-контекст в decisions
+Папку детализации `docs/changes/<feat-id>/` (proposal/design/tasks) перенести в `docs/decisions/<YYYY-MM-DD>-<feat-id>/` — история решения сохраняется.
+
+### Шаг 3: Ротация в архив (гейт)
+```bash
+bash scripts/archive-features.sh   # done/superseded/rejected с evidence → архив + индекс-стаб
+```
+**Гейт (block-архивации):** фича с незакрытыми tasks (`docs/changes/<id>/tasks.md` содержит `- [ ]`) НЕ архивируется — доделай задачи (OpenSpec `archive_tasks_incomplete`). done без evidence тоже не архивируется (доказательство обязательно, c10). Горячий `feature_list.json` остаётся тонким (индекс-стабы), тела — в `feature_list.archive.json`. git pre-commit блок 6 сверяет `evidence_hash` стаба с телом архива.
+
 ## Final commit
 
 ```bash

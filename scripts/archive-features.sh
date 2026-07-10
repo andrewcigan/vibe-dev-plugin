@@ -22,7 +22,7 @@ ARCH="$(vibe_path_archive "$ROOT")"
 [ -f "$FL" ] || { echo "❌ Нет feature_list.json в $ROOT" >&2; exit 1; }
 
 FL="$FL" ARCH="$ARCH" python3 <<'PYEOF'
-import json, os, hashlib
+import json, os, hashlib, re
 
 FL = os.environ["FL"]; ARCH = os.environ["ARCH"]
 ARCHIVE_STATES = {"done", "superseded", "rejected"}
@@ -41,7 +41,7 @@ arch.setdefault("version", data.get("version", "8.0"))
 arch.setdefault("archived", [])
 arch_ids = {a.get("id") for a in arch["archived"] if isinstance(a, dict)}
 
-moved = skipped = 0
+moved = skipped = skipped_tasks = 0
 for bucket, feats in (data.get("features") or {}).items():
     if not isinstance(feats, list):
         continue
@@ -60,6 +60,15 @@ for bucket, feats in (data.get("features") or {}).items():
         if state == "done" and not has_ev:
             keep.append(f); skipped += 1     # без доказательства не прячем — оставляем на виду
             continue
+        # L3-F6 (OpenSpec archive_tasks_incomplete): незакрытые tasks детализации → не архивируем
+        tasks_p = os.path.join(os.path.dirname(FL), "docs", "changes", str(f.get("id")), "tasks.md")
+        if os.path.exists(tasks_p):
+            try:
+                if re.search(r'^\s*[-*]\s*\[ \]', open(tasks_p, encoding="utf-8").read(), re.M):
+                    keep.append(f); skipped_tasks += 1
+                    continue
+            except Exception:
+                pass
         h = body_hash(f)
         if f.get("id") not in arch_ids:
             arch["archived"].append(f)
@@ -84,6 +93,10 @@ def atomic(path, obj):
 if moved:
     atomic(ARCH, arch)      # сначала архив (тело durable), потом горячий стаб
     atomic(FL, data)
-warn = (" (пропущено %d done без evidence — оставлены в горячем, добавь доказательство)" % skipped) if skipped else ""
+warn = ""
+if skipped:
+    warn += " (пропущено %d done без evidence — добавь доказательство)" % skipped
+if skipped_tasks:
+    warn += " (пропущено %d с незакрытыми tasks детализации — доделай)" % skipped_tasks
 print("✓ архивировано %d, всего в архиве %d%s" % (moved, len(arch["archived"]), warn))
 PYEOF

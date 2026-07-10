@@ -362,7 +362,7 @@ else
 fi
 
 echo ""
-echo "=== 39. Архив фич по ссылке + evidence-hash (v8 L3-F5) ==="
+echo "=== 39. Архив по ссылке + evidence-hash + гейт tasks (v8 L3-F5/F6) ==="
 if bash tests/hooks/test-provenance-archive.sh > /tmp/vibe-artest.out 2>&1; then
     tail -1 /tmp/vibe-artest.out
 else

@@ -260,4 +260,73 @@ PY
   fi
 fi
 
+# --- 7. КОНТЕКСТ: тело завершённой фичи в горячем вместо ссылки (v8 L4-F1, c3) ---
+# Трёхуровневая модель контекста: горячий CLAUDE.md/SESSION.md держит только активное+up_next и
+# ИНДЕКС архива (одна строка на фичу); тело/история/доказательства завершённой фичи — по ссылке
+# (feature_list.archive.json / provenance-log), НЕ в горячем. Если фича УЖЕ вынесена в архив
+# (стаб с evidence_hash или запись в archive.json), но её развёрнутое тело всё ещё лежит в
+# CLAUDE.md/SESSION.md — горячий контекст раздут завершённым. Триггер = только АРХИВНЫЕ id
+# (устойчивый сигнал: passing в текущей сессии легитимна до ротации, её не трогаем).
+# warn, НЕ block — не рвём поток (спека L4-F1); эвристика: заголовочная секция с id + тело ≥3 строк.
+if git diff --cached --name-only 2>/dev/null | grep -qE '(^|/)(CLAUDE|SESSION)\.md$'; then
+  CTX_WARN="$(ROOT_DIR="$ROOT_DIR" python3 - <<'PY' 2>/dev/null
+import json, os, re, sys
+root = os.environ["ROOT_DIR"]
+def load(p):
+    try: return json.load(open(p, encoding="utf-8"))
+    except Exception: return None
+# архивные id: стабы (evidence_hash) в горячем + тела в archive.json
+arch_ids = set()
+fl = load(os.path.join(root, "feature_list.json"))
+if isinstance(fl, dict):
+    for _b, feats in (fl.get("features") or {}).items():
+        if isinstance(feats, list):
+            for f in feats:
+                if isinstance(f, dict) and "evidence_hash" in f and f.get("id"):
+                    arch_ids.add(str(f["id"]))
+arch = load(os.path.join(root, "feature_list.archive.json"))
+if isinstance(arch, dict):
+    for a in arch.get("archived", []):
+        if isinstance(a, dict) and a.get("id"):
+            arch_ids.add(str(a["id"]))
+if not arch_ids:
+    sys.exit(0)
+HDR = re.compile(r'^#{1,6}\s')
+hits = []
+for fname in ("CLAUDE.md", "SESSION.md"):
+    p = os.path.join(root, fname)
+    if not os.path.exists(p):
+        continue
+    try:
+        lines = open(p, encoding="utf-8").read().splitlines()
+    except Exception:
+        continue
+    # разбить на заголовочные секции; для секции, чей ЗАГОЛОВОК содержит архивный id,
+    # считать непустые строки тела до следующего заголовка
+    i = 0; n = len(lines)
+    while i < n:
+        if HDR.match(lines[i]):
+            head = lines[i]; ids = [x for x in arch_ids if x in head]
+            j = i + 1; body = 0
+            while j < n and not HDR.match(lines[j]):
+                if lines[j].strip():
+                    body += 1
+                j += 1
+            if ids and body >= 3:
+                for x in sorted(set(ids)):
+                    hits.append("  %s: тело фичи %s (~%d строк) — вынесено в архив, оставь строку-ссылку" % (fname, x, body))
+            i = j
+        else:
+            i += 1
+if hits:
+    print("\n".join(hits))
+PY
+)"
+  if [ -n "$CTX_WARN" ]; then
+    echo "⚠️  Горячий контекст раздут завершённым (v8 L4-F1) — коммит НЕ остановлен:" >&2
+    echo "$CTX_WARN" >&2
+    echo "Завершённое → архив (тело в feature_list.archive.json), в CLAUDE.md/SESSION.md — одна строка-индекс. См. rules/context-tiers.md. Разгрузить: /checkpoint или scripts/archive-features.sh." >&2
+  fi
+fi
+
 exit 0

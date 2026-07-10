@@ -370,6 +370,14 @@ else
 fi
 
 echo ""
+echo "=== 40. Трёхуровневый контекст: warn на тело архивной фичи в горячем (v8 L4-F1) ==="
+if bash tests/hooks/test-context-tiers.sh > /tmp/vibe-cttest.out 2>&1; then
+    tail -1 /tmp/vibe-cttest.out
+else
+    echo "❌ тест context-tiers упал:"; cat /tmp/vibe-cttest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

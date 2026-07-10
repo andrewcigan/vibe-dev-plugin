@@ -188,7 +188,7 @@ for feat_id, state, f in all_features:
 # category) может только УЖЕСТОЧИТЬ проверку, никогда не смягчить. Иначе declared=lib
 # отключал бы существующий UI-gate (регрессия механизма 2).
 SURFACE_RANK = {'ui': 3, 'api': 2, 'service': 2, 'job': 2, 'cli': 2,
-                'lib': 1, 'content': 1, 'data': 1, 'integration': 1, '': 0}
+                'lib': 1, 'logic': 1, 'content': 1, 'data': 1, 'integration': 1, '': 0}
 
 def heuristic_surface(affected):
     best = ''
@@ -232,6 +232,7 @@ for feat_id, state, f in all_features:
                     "%s: surface='%s', но по affected_files похоже на '%s' — заявленное поле может только "
                     "УЖЕСТОЧАТЬ проверку (эвристика остаётся полом); проверь surface или файлы" % (feat_id, declared, heur))
 
+        size_p = str(f.get('size_estimate') or '').upper()
         if eff == 'ui':
             if not (evidence.get('layer_4_user_at') or evidence.get('layer_5_user_at')):
                 # UI-evidence — критичный инвариант B2/feat-204: hard BLOCK всегда (не понижается)
@@ -245,9 +246,34 @@ for feat_id, state, f in all_features:
                     "%s: surface=%s в passing БЕЗ evidence. Нужен след реального вызова: api — curl+статус; "
                     "job — лог реального прогона; cli — команда+exit code; service — behavior-probe "
                     "(не pgrep). Заполни evidence." % (feat_id, eff))
+        elif eff in ('lib', 'logic'):
+            # v8 L5-F2 (c9, монотонная строгость): бизнес-логику typecheck+lint НЕ ловят —
+            # разъехавшееся ПОВЕДЕНИЕ ловит только прогон. passing logic-фичи требует след
+            # runtime/e2e (layer_2/3/4 timestamp ИЛИ evidence-строка «прогнал X»), НЕ только
+            # layer_1_syntax. Это BLOCK (soft_level — понижается в legacy/learn, как структурные).
+            has_runtime = bool(evidence.get('layer_2_runtime_at') or evidence.get('layer_3_integration_smoke_at')
+                               or evidence.get('layer_4_e2e_at'))
+            ev_prose = isinstance(evidence_raw, str) and bool(evidence_raw.strip())
+            if not (has_runtime or ev_prose):
+                errors_soft.append(
+                    "%s: logic-фича в passing без runtime/e2e evidence — typecheck+lint не ловят "
+                    "разъехавшееся поведение. Нужен след прогона (layer_2_runtime/e2e timestamp или "
+                    "описание реальной проверки), не только layer_1_syntax. (L5-F2)" % feat_id)
         else:
             if not evidence_raw and not has_layer1:
                 warnings.append("%s: state=passing, но evidence отсутствует (нужны layer_1..N timestamps)" % feat_id)
+
+        # v8 L5-F2 (c9): negative-gate ОБЯЗАТЕЛЕН на M/L в passing — искусственный баг должен
+        # ронять тест (mutation), а expected не должен лежать в одном файле с input (leak). Без
+        # него «зелёные тесты лгут». BLOCK (soft_level). S — освобождена (light path).
+        if size_p in ('M', 'L'):
+            vsc = f.get('verification_self_check')
+            vsc = vsc if isinstance(vsc, dict) else {}
+            if not (vsc.get('negative_test_at') or vsc.get('leak_check_at')):
+                errors_soft.append(
+                    "%s: M/L-фича в passing без negative-gate — нет verification_self_check.negative_test_at "
+                    "(mutation: искусственный баг → тест падает) или leak_check_at (expected не в одном файле "
+                    "с input). Typecheck+lint зелёные ≠ поведение верно. (L5-F2)" % feat_id)
 
 # Active-gate: фича в active требует артефакты, которые должны родиться ДО реализации.
 # Нет артефакта = этап пропущен = нельзя в active. Закрывает H7 (критику/ревью просили

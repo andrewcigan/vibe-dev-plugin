@@ -80,6 +80,25 @@ assert_contains "7. category=api без evidence -> WARN (legacy-поле учи
 OUT="$(write_fl '{"id":"f8","state":"passing","surface":"ui","affected_files":["src/components/Card.tsx"],"evidence":{"layer_4_user_at":"2026-06-10 12:00"}}')"
 assert_empty "8. ui с layer_4 -> тихо" "$OUT"
 
+# --- L5-F2: logic-lane (runtime/e2e, не только syntax) + negative-gate M/L ---
+# 9. logic passing с ТОЛЬКО layer_1_syntax -> BLOCK (typecheck+lint не ловят поведение)
+OUT="$(write_fl '{"id":"f9","state":"passing","surface":"logic","affected_files":["src/calc.py"],"evidence":{"layer_1_syntax_at":"2026-07-10"}}')"
+assert_contains "9a. logic только syntax -> deny (L5-F2)" "$OUT" '"permissionDecision":"deny"'
+assert_contains "9b. причина — runtime/e2e" "$OUT" "runtime/e2e"
+# 10. logic passing с layer_2_runtime -> тихо (есть след прогона)
+OUT="$(write_fl '{"id":"f10","state":"passing","surface":"logic","affected_files":["src/calc.py"],"evidence":{"layer_2_runtime_at":"2026-07-10 12:00"}}')"
+assert_empty "10. logic + layer_2_runtime -> тихо" "$OUT"
+# 11. logic passing с evidence-строкой (реальная форма) -> тихо
+OUT="$(write_fl '{"id":"f11","state":"passing","surface":"logic","affected_files":["src/calc.py"],"evidence":"прогнал юнит-тесты, все зелёные"}')"
+assert_empty "11. logic + evidence-строка -> тихо" "$OUT"
+# 12. M-фича с runtime (logic-lane ok), но БЕЗ negative-gate -> BLOCK
+OUT="$(write_fl '{"id":"f12","state":"passing","surface":"logic","size_estimate":"M","affected_files":["src/calc.py"],"evidence":{"layer_2_runtime_at":"2026-07-10"}}')"
+assert_contains "12a. M passing без negative-gate -> deny (L5-F2)" "$OUT" '"permissionDecision":"deny"'
+assert_contains "12b. причина — negative-gate" "$OUT" "negative-gate"
+# 13. M-фича с runtime + negative_test_at -> тихо
+OUT="$(write_fl '{"id":"f13","state":"passing","surface":"logic","size_estimate":"M","affected_files":["src/calc.py"],"evidence":{"layer_2_runtime_at":"2026-07-10"},"verification_self_check":{"negative_test_at":"2026-07-10"}}')"
+assert_empty "13. M + runtime + negative_test -> тихо" "$OUT"
+
 rm -rf "$PROJ"
 echo ""
 echo "Итог: PASS=$PASS FAIL=$FAIL"

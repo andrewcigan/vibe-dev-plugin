@@ -84,6 +84,17 @@ for role in $READONLY_ROLES; do
     fi
 done
 [ "$RO_OK" -gt 0 ] && echo "✓ read-only роли с disallowedTools Write/Edit: $RO_OK/6 (L5-F4)"
+# L4-F4: читающие агенты (researcher) обязаны нести контракт возврата «дайджест ≤X КБ + путь»
+# (c7 — сужаем ТОЛЬКО объём сырья в главном потоке). Критики/reviewer НЕ трогаем (whitelist —
+# их стороннее мнение сохраняем полностью).
+READER_ROLES="github-researcher best-practices-researcher test-researcher market-researcher"
+RD_OK=0
+for role in $READER_ROLES; do
+    f="agents/$role.md"
+    if [ -f "$f" ] && grep -q "L4-F4" "$f"; then RD_OK=$((RD_OK + 1))
+    else echo "❌ читающий агент $role без контракта возврата L4-F4 (дайджест+путь, c7)"; ERRORS=$((ERRORS + 1)); fi
+done
+[ "$RD_OK" -gt 0 ] && echo "✓ читатели с контрактом возврата дайджест+путь: $RD_OK/4 (L4-F4)"
 # L1-F2: реестр docs/agent-registry.md — источник истины роль↔тир. Модель во фронтматтере
 # обязана совпадать с колонкой «Модель» таблицы. Расхождение = self-check red (реестр правит
 # тир «одним движением», фронтматтер обязан следовать).

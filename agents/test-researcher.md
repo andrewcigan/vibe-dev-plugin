@@ -132,6 +132,10 @@ negative_check:
 
 Если нужна информация — спроси parent (не делай новый fork).
 
+## Контракт возврата (v8 L4-F4, c7)
+
+Полный результат — в `docs/test-strategy.md` (файл, через synthesizer). В главный поток возвращай **дайджест ≤2 КБ** (verification commands + рекомендация) + **путь**, НЕ сырьё GitHub-паттернов. Токены главного контекста жрёт объём возврата, а не число ролей — держи поток тонким (работает на c8/анти-сжатие). Критики и data-model-reviewer этого НЕ делают — их стороннее мнение сохраняем полностью (whitelist c7).
+
 ## Cost cap
 
 Per-call budget: $1. WebSearch limit: 5 calls. GitHub-research read: max 10 файлов.

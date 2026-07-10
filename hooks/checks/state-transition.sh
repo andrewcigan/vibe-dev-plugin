@@ -327,6 +327,38 @@ for feat_id, state, f in all_features:
             "Архитектура держит АБСТРАКЦИЮ (интерфейс), конкретный поставщик выбирается отдельной "
             "research-фазой (5-7 вариантов + матрица сравнения) ПЕРЕД реализацией. Закрывает vendor-lock (~/CLAUDE.md)." % feat_id)
 
+    # --- Стадия детализации (v8 L2-F2/F3, OpenSpec change + spec-kit US). ---
+    # M/L-фича (или явный detail_required) не входит в active без детального плана
+    # docs/changes/<id>/{proposal|design|spec}.md, содержащего хотя бы одну приоритизированную
+    # P1 user story в Given/When/Then (основа verification_command). S — light path (без детали),
+    # пока не помечена detail_required. Крупную фичу нельзя протаскивать без разложенного плана (c2).
+    detail_required = bool(f.get('detail_required')) or size in ('M', 'L')
+    if detail_required:
+        change_dir = os.path.join(proj_root, 'docs', 'changes', str(feat_id))
+        detail_txt = ''
+        for cand in ('proposal.md', 'design.md', 'spec.md'):
+            dp = os.path.join(change_dir, cand)
+            if os.path.exists(dp):
+                try:
+                    detail_txt += open(dp).read() + '\n'
+                except Exception:
+                    pass
+        if not detail_txt.strip():
+            errors_soft.append(
+                "%s: фича размера %s в active без детализации — нет docs/changes/%s/proposal.md. "
+                "Стадия детализации (OpenSpec): разложи proposal + tasks + user stories ПЕРЕД работой. "
+                "Крупную фичу нельзя протаскивать без плана (c2). S-фича — освобождена (light path); "
+                "чтобы форсить деталь на S, ставь detail_required: true. (L2-F2)" % (feat_id, size or '?', feat_id))
+        else:
+            has_p1 = re.search(r'\bP1\b', detail_txt) is not None
+            has_given = re.search(r'(given|дано)', detail_txt, re.I) is not None
+            has_then = re.search(r'(then|тогда)', detail_txt, re.I) is not None
+            if not (has_p1 and has_given and has_then):
+                errors_soft.append(
+                    "%s: детализация есть, но без приоритизированной P1 user story в Given/When/Then. "
+                    "Нужна ≥1 independently-testable P1-US с Acceptance (Given/When/Then) — это основа "
+                    "verification_command и «готово=проверенное поведение». (L2-F3)" % feat_id)
+
 # --- Провенанс-захват (v8 L3-F1). Backstop против ручных Write без provenance. Клапан честности:
 # origin=inference / source_ref.kind=unknown — легитимны (не заставляем выдумывать источник —
 # иначе лог наполнится необнаружимой ложью, отказ высшего порядка). ---

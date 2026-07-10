@@ -204,10 +204,11 @@ ACTIVE_S='{"features":{"active_list":[{"id":"feat-51","state":"active","category
 rm -rf "$PROJ/docs"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_L")")"
 assert_contains "21. L active без критики -> deny (H7)" "$OUT" '"permissionDecision":"deny"'
-# 22. Та же L-фича + docs/test-strategy.md с её id -> pass
-mkdir -p "$PROJ/docs"; echo "# Test Strategy для feat-50" > "$PROJ/docs/test-strategy.md"
+# 22. Та же L-фича + test-strategy + детализация docs/changes/<id>/ (L2-F2/F3) -> pass
+mkdir -p "$PROJ/docs/changes/feat-50"; echo "# Test Strategy для feat-50" > "$PROJ/docs/test-strategy.md"
+printf '## User Stories\n### P1 — экспорт\n- Given данные есть\n- When жму «экспорт»\n- Then получаю файл\n' > "$PROJ/docs/changes/feat-50/proposal.md"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_L")")"
-assert_empty "22. L active + test-strategy с id -> pass" "$OUT"
+assert_empty "22. L active + test-strategy + детализация P1-US -> pass" "$OUT"
 rm -rf "$PROJ/docs"
 # 23. S-фича в active без критики -> pass (light path)
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_S")")"
@@ -240,6 +241,33 @@ assert_contains "26. integration-фича active без research -> deny (vendor
 mkdir -p "$PROJ/docs/research"; echo "# Research insta-провайдеров для feat-70" > "$PROJ/docs/research/insta.md"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_INTEG")")"
 assert_empty "27. integration-фича + research с id -> pass" "$OUT"
+rm -rf "$PROJ/docs"
+
+# --- стадия детализации (v8 L2-F2/F3): M/L-фича в active требует docs/changes/<id>/proposal.md с P1-US ---
+ACTIVE_M='{"features":{"active_list":[{"id":"feat-52","state":"active","category":"api","size_estimate":"M","affected_files":["src/api/m.ts"]}]}}'
+# H7 удовлетворяем всегда (изолируем причину — детализацию, не критику)
+prep_ts() { mkdir -p "$PROJ/docs"; echo "# Test Strategy для feat-52" > "$PROJ/docs/test-strategy.md"; }
+# 27a. M-фича с критикой, но БЕЗ детализации -> BLOCK (L2-F2)
+rm -rf "$PROJ/docs"; prep_ts
+OUT="$(run "$(write_payload "$FL" "$ACTIVE_M")")"
+assert_contains "27a. M active без детализации -> deny (L2-F2)" "$OUT" '"permissionDecision":"deny"'
+# 27b. + docs/changes/feat-52/proposal.md с P1-US G/W/T -> pass
+mkdir -p "$PROJ/docs/changes/feat-52"
+printf '## US\n### P1 — импорт\n- Given файл CSV\n- When загружаю\n- Then строки в базе\n' > "$PROJ/docs/changes/feat-52/proposal.md"
+OUT="$(run "$(write_payload "$FL" "$ACTIVE_M")")"
+assert_empty "27b. M + детализация с P1-US -> pass" "$OUT"
+# 27c. детализация есть, но БЕЗ P1-US в Given/When/Then -> BLOCK (L2-F3)
+printf '# Просто текст без историй и приоритетов\nописание фичи\n' > "$PROJ/docs/changes/feat-52/proposal.md"
+OUT="$(run "$(write_payload "$FL" "$ACTIVE_M")")"
+assert_contains "27c. детализация без P1-US G/W/T -> deny (L2-F3)" "$OUT" '"permissionDecision":"deny"'
+rm -rf "$PROJ/docs"
+# 27d. S-фича с detail_required:true без детализации -> BLOCK (форс детали на S)
+ACTIVE_S_DR='{"features":{"active_list":[{"id":"feat-53","state":"active","category":"api","size_estimate":"S","detail_required":true,"affected_files":["src/api/s.ts"]}]}}'
+OUT="$(run "$(write_payload "$FL" "$ACTIVE_S_DR")")"
+assert_contains "27d. S + detail_required без детализации -> deny (L2-F2)" "$OUT" '"permissionDecision":"deny"'
+# 27e. S-фича обычная (без detail_required) без детализации -> pass (light path не задет)
+OUT="$(run "$(write_payload "$FL" "$ACTIVE_S")")"
+assert_empty "27e. S без detail_required -> pass (детализация не форсится)" "$OUT"
 rm -rf "$PROJ/docs"
 
 # --- регрессия: поле verification/evidence как СТРОКА или СПИСОК не должно ронять хук ---

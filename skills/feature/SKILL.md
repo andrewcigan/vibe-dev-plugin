@@ -105,6 +105,14 @@ if active is not None and active != '<this-feature-id>':
 
 Если `affected_files` содержит `*/schema/*`, `*/migrations/*`, `prisma/`, `drizzle/`, `supabase/migrations/` ИЛИ `category=data` — **ОБЯЗАТЕЛЬНО** запусти агента `data-model-reviewer` (Opus, fresh context) ПЕРЕД реализацией. Он пишет `docs/data-model-review.md` (недостающие/лишние сущности, упущенные поля, спорные решения, UX-фичи которые врут о связях). Утверждение пользователя по вердикту — gate для старта. Это глобальное правило `~/CLAUDE.md` (модель данных застывает — переделка дороже ревью).
 
+### Шаг 2-ter: Стадия детализации (v8 L2-F2/F3 — обязательна на M/L)
+
+Для **M/L-фичи** (и любой с `detail_required: true`) разложи детальный план в `docs/changes/<feat-id>/` по образцу OpenSpec (шаблон — `templates/change-proposal.md`):
+- `proposal.md` — что/зачем + **User Stories с приоритетом P1..Pn**, каждая independently testable, с Acceptance в **Given/When/Then** (это основа `verification_command`). **Минимум одна P1-US с G/W/T** — иначе хук заблокирует переход в active (L2-F3).
+- `tasks.md` — чек-лист задач (`- [ ]`); незакрытые блокируют архивацию при `/ship` (L3-F6).
+
+Крупную фичу нельзя протаскивать без разложенного плана (c2). **S-фича** освобождена (light path) — детализация не форсится, пока не помечена `detail_required: true`. Backlog-фичи детали НЕ несут — она ленивая, рождается здесь при взятии в работу (L2-F4).
+
 ### Шаг 3: Перевести feature в active (хук теперь пропустит)
 
 ```python
@@ -114,7 +122,7 @@ d['features'][f]['state'] = 'active'
 d['features'][f]['started_at'] = today
 ```
 
-Хук пропустит запись, т.к. `docs/test-strategy.md` с id фичи уже существует (Шаг 2). Если хук заблокировал — критика не пройдена, вернись к Шагу 1.
+Хук пропустит запись, т.к. для M/L существуют И `docs/test-strategy.md` (Шаг 2), И `docs/changes/<id>/proposal.md` с P1-US (Шаг 2-ter). Если хук заблокировал — не пройдена критика (Шаг 1) ИЛИ детализация (Шаг 2-ter); вернись и доделай.
 
 ### Шаг 3-bis (опционально): Workflow-оркестрация критиков
 

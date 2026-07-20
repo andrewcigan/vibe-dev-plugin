@@ -29,3 +29,10 @@ secrets/
 _internal/
 _archive/
 research/
+# Рабочие заметки сессий: несут личные пути и имена клиентских проектов (gate обезличенности
+# их не видит — он проверяет только shipped-набор). Наружу не отправляем.
+.session-state/T1-*
+.session-state/next-*
+.session-state/*-progress.md
+restart-here.sh
+Журналы сессий/

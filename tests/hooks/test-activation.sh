@@ -71,7 +71,7 @@ assert_contains "4d. block-текст: диагностика активации
 
 echo "strict" > "$REPO/.harness/profile"; rm -f "$REPO/.harness/hooks-heartbeat"
 OUT="$(run_precommit)"; RC=$?
-assert_eq "4e. strict без heartbeat -> блок" "$RC" "1"
+assert_eq "4e. strict без метки активации -> коммит проходит (снесено в v9 F1.1)" "$RC" "0"
 
 printf '%s plugin=test\n' "$(date +%s)" > "$REPO/.harness/hooks-heartbeat"
 OUT="$(run_precommit)"; RC=$?
@@ -79,8 +79,15 @@ assert_eq "4f. strict + свежий heartbeat -> коммит разрешён"
 
 printf '%s plugin=test\n' "$(( $(date +%s) - 3600 ))" > "$REPO/.harness/hooks-heartbeat"
 OUT="$(run_precommit)"; RC=$?
-assert_eq       "4g. strict + heartbeat 1ч -> блок (TTL 30 мин)" "$RC" "1"
-assert_contains "4h. block-текст: про устаревший heartbeat" "$OUT" "устарел"
+assert_eq "4g. strict + протухшая метка -> коммит проходит (снесено в v9 F1.1)" "$RC" "0"
+
+# 4h. Защита, ради которой backstop существует, обязана остаться: неподтверждённый профиль
+# по-прежнему останавливает коммит. Снесена только проверка свежести метки.
+echo "pending-strict" > "$REPO/.harness/profile"
+OUT="$(run_precommit)"; RC=$?
+assert_eq       "4h. неподтверждённый профиль по-прежнему блокирует" "$RC" "1"
+assert_contains "4h2. block-текст остался понятным" "$OUT" "не активен"
+echo "strict" > "$REPO/.harness/profile"
 
 : > "$REPO/.harness/hooks-disabled"
 OUT="$(run_precommit)"; RC=$?

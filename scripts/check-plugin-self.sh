@@ -484,6 +484,13 @@ for t in test-born-passing test-receipt-gate; do
     fi
 done
 
+echo "=== 50. v9 F1.1: снос блокировки по свежести датчика (защита профиля сохранена) ==="
+if python3 tests/hooks/test-precommit-no-heartbeat-block.py > /tmp/vibe-hb.out 2>&1; then
+    echo "✓ протухшая метка не блокирует, неподтверждённый профиль — блокирует"
+else
+    echo "❌ снос сломал защиту или блокировка вернулась:"; cat /tmp/vibe-hb.out; ERRORS=$((ERRORS + 1))
+fi
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

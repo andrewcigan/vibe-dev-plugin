@@ -7,25 +7,28 @@
 # не block: раннее предупреждение о риске гонки. Настоящая защита — дизайн (раздельные файлы
 # на воркер + merge). Закрывает инвариант «параллельная запись в shared-файл» предупреждением, честно (warn, не фиктивный block).
 #
-# Печатает "WARN<TAB>msg" / пусто. Всегда exit 0. Активен в standard,strict.
+# Печатает "WARN<TAB>msg" / пусто. Всегда guard_done. Активен в standard,strict.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 FILE="${1:-}"
 CWD="${2:-$PWD}"
 TAB="$(printf '\t')"
-[ -z "$FILE" ] && exit 0
+[ -z "$FILE" ] && guard_done
 
 # Только shared-форматы, где параллельная запись реально затирает данные
 case "$FILE" in
   *.json|*.csv|*.jsonl|*.yaml|*.yml) : ;;
-  *) exit 0 ;;
+  *) guard_done ;;
 esac
 
 SID="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.session_id // empty' 2>/dev/null)"
 [ -z "$SID" ] && SID="unknown"
 
 LOCK_DIR="$CWD/.harness/locks"
-mkdir -p "$LOCK_DIR" 2>/dev/null || exit 0
+mkdir -p "$LOCK_DIR" 2>/dev/null || guard_done
 SAN="$(printf '%s' "$FILE" | tr '/ ' '__' | tr -cd 'A-Za-z0-9_.-')"
 MARK="$LOCK_DIR/${SAN}.writer"
 TTL=120
@@ -43,4 +46,4 @@ fi
 
 # Обновить маркер своей сессией (advisory, без гарантии взаимного исключения)
 printf '%s%s%s\n' "$SID" "$TAB" "$NOW" > "$MARK" 2>/dev/null
-exit 0
+guard_done

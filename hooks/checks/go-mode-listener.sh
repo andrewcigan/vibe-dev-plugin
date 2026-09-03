@@ -6,12 +6,15 @@
 # Ставит ХУК (не агент): агенту запись в locks/ запрещена (locks-protect) — «изобразить
 # go-режим» он не может. Cyrillic лоуэркейс через python (grep-классы ломки на multibyte).
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.prompt). exit 0 (текст не печатает — тихий маркер).
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.prompt). guard_done (текст не печатает — тихий маркер).
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq python3
+
 CWD="${1:-$PWD}"
 
 PROMPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null)"
-[ -z "$PROMPT" ] && exit 0
+[ -z "$PROMPT" ] && guard_done
 PROMPT_LC="$(printf '%s' "$PROMPT" | python3 -c 'import sys; sys.stdout.write(sys.stdin.read().lower())' 2>/dev/null)"
 [ -z "$PROMPT_LC" ] && PROMPT_LC="$PROMPT"
 
@@ -25,4 +28,4 @@ elif printf '%s' "$PROMPT_LC" | grep -qE "$GO_RE" 2>/dev/null; then
   printf 'when: %s\nquote: %s\n' "$(date '+%Y-%m-%d %H:%M' 2>/dev/null || echo '?')" \
     "$(printf '%s' "$PROMPT" | head -c 160 | tr '\n' ' ')" > "$CWD/.harness/locks/go-mode" 2>/dev/null
 fi
-exit 0
+guard_done

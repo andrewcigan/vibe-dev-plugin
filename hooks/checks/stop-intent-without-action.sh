@@ -12,16 +12,19 @@
 #   - было действие = в ходе есть assistant с tool_use ИЛИ user с toolUseResult;
 #   - текст намерения = конкатенация text-блоков assistant в этом ходе.
 #
-# Печатает на stdout "BLOCK<TAB>msg". Пусто = OK. Всегда exit 0.
+# Печатает на stdout "BLOCK<TAB>msg". Пусто = OK. Всегда guard_done.
 # Fail-safe: нет транскрипта/не парсится → пусто (не блокируем вслепую).
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 TAB="$(printf '\t')"
 
 TRANSCRIPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.transcript_path // empty' 2>/dev/null)"
-[ -z "$TRANSCRIPT" ] && exit 0
-[ ! -f "$TRANSCRIPT" ] && exit 0
+[ -z "$TRANSCRIPT" ] && guard_done
+[ ! -f "$TRANSCRIPT" ] && guard_done
 
 # Текущий ход: had (было ли действие) + text (текст намерения ассистента).
 META="$(jq -s '
@@ -36,13 +39,13 @@ META="$(jq -s '
       text: ( [ $turn[] | select(.type=="assistant")
                 | (.message.content // [])[] | select(.type=="text") | .text ] | join("\n") ) }
 ' "$TRANSCRIPT" 2>/dev/null)"
-[ -z "$META" ] && exit 0
+[ -z "$META" ] && guard_done
 
 HAD="$(printf '%s' "$META" | jq -r '.had' 2>/dev/null)"
-[ "$HAD" = "true" ] && exit 0   # действие было — не collapse
+[ "$HAD" = "true" ] && guard_done   # действие было — не collapse
 
 TEXT="$(printf '%s' "$META" | jq -r '.text' 2>/dev/null)"
-[ -z "$TEXT" ] && exit 0
+[ -z "$TEXT" ] && guard_done
 
 # Словарь маркеров-намерения (обещание НЕМЕДЛЕННОГО действия 1-м лицом).
 # Явные классы регистра вместо -i (надёжнее для кириллицы на macOS grep).
@@ -51,4 +54,4 @@ INTENT='[Зз]апущу|[Зз]апускаю|[Сс]тартую|[Пп]рист�
 if printf '%s' "$TEXT" | grep -qE "$INTENT"; then
   printf 'BLOCK%sТы завершаешь ход заявленным намерением действия, но в этом ходе не было ни одного tool_use. Выполни обещанное действие сейчас, либо (если это был ответ/вопрос/варианты) переформулируй без обещания. [H19]\n' "$TAB"
 fi
-exit 0
+guard_done

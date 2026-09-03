@@ -8,13 +8,16 @@
 # Пока маркер стоит — деградация прав (паттерн auto mode «вход в режим выкидывает опасные
 # права»): запись только в state-файлы, Bash — только git/read-only/скрипты плагина.
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 TAB="$(printf '\t')"
 
-[ -f "$CWD/.harness/locks/closing-mode" ] || exit 0
+[ -f "$CWD/.harness/locks/closing-mode" ] || guard_done
 
 TOOL="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_name // empty' 2>/dev/null)"
 
@@ -39,12 +42,12 @@ case "$TOOL" in
     ;;
   Bash)
     CMD="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.command // empty' 2>/dev/null)"
-    [ -z "$CMD" ] && exit 0
+    [ -z "$CMD" ] && guard_done
     # Разрешено: git, read-only, скрипты плагина (end-session.sh и пр.).
     if printf '%s' "$CMD" | grep -qE '(^|[;&|][[:space:]]*)(git|ls|cat|head|tail|grep|find|wc|pwd|date|echo[[:space:]][^>]*$|bash[[:space:]][^;&|]*scripts/(end-session|install-precommit|upgrade-project)\.sh)' 2>/dev/null \
        && ! printf '%s' "$CMD" | grep -qE '(npm|pnpm|yarn|pip3?|cargo|make|pytest|tsc|node[[:space:]]|python3?[[:space:]])' 2>/dev/null \
        && ! printf '%s' "$CMD" | grep -qE '>>?[[:space:]]*[^[:space:]]*(src/|app/|lib/|components/)' 2>/dev/null; then
-      exit 0
+      guard_done
     fi
     # Явная разработка/сборка/тесты или запись в код -> block.
     if printf '%s' "$CMD" | grep -qE '(npm|pnpm|yarn|pip3?|cargo|make|pytest|tsc)([[:space:]]|$)|>>?[[:space:]]*[^[:space:]]*(src/|app/|lib/|components/)|node[[:space:]]+[^-]|python3?[[:space:]]+[^-]' 2>/dev/null; then
@@ -52,4 +55,4 @@ case "$TOOL" in
     fi
     ;;
 esac
-exit 0
+guard_done

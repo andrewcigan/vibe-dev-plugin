@@ -56,9 +56,12 @@ probe() { # $1=скрипт $2=сценарий -> "rc|вывод_есть"
     nojq|nopy) path="$SANDBOX/fake:$PATH" ;;
   esac
   IFS=$'\t' read -r -a ARGS <<< "$(argv_for "$name")"
-  out="$(HOOK_PAYLOAD="$payload" PATH="$path" run_capped 5 bash "$script" "${ARGS[@]}" 2>/dev/null </dev/null)"
+  local errf; errf="$(mktemp)"
+  out="$(HOOK_PAYLOAD="$payload" PATH="$path" run_capped 5 bash "$script" "${ARGS[@]}" 2>"$errf" </dev/null)"
   rc=$?
-  printf '%s|%s' "$rc" "$([ -n "$out" ] && echo yes || echo no)"
+  local mark=no; grep -q "__VIBE_GUARD_DONE__" "$errf" 2>/dev/null && mark=yes
+  rm -f "$errf"
+  printf '%s|%s|%s' "$rc" "$([ -n "$out" ] && echo yes || echo no)" "$mark"
 }
 
 # --- Положительные контроли: вход с НАСТОЯЩИМ нарушением, вердикт обязателен. ---
@@ -92,7 +95,9 @@ for f in "$ROOT"/hooks/checks/*.sh; do
   nojq="$(probe "$f" nojq)"; nopy="$(probe "$f" nopy)"
   pos="$(positive_control "$name")"
   health=fail-open
-  if [ "${nojq%%|*}" != "0" ] || [ "${nopy%%|*}" != "0" ]; then health=fail-loud; else fail_open=$((fail_open+1)); fi
+  if [ "${nojq%%|*}" != "0" ] || [ "${nopy%%|*}" != "0" ]; then health=fail-loud
+  elif [ "${nojq##*|}" = "yes" ] && [ "${nopy##*|}" = "yes" ]; then health=tool-independent
+  else fail_open=$((fail_open+1)); fi
   [ $first -eq 1 ] && first=0 || printf ',\n' >> "$OUT"
   printf '    "%s": {"ok":"%s","broken_input":"%s","jq_broken":"%s","python_broken":"%s","positive_control":"%s","health":"%s"}' \
     "$name" "$ok" "$broken" "$nojq" "$nopy" "$pos" "$health" >> "$OUT"

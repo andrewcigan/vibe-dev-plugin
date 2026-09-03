@@ -17,8 +17,11 @@
 # warn/inject, НЕ block: «лишний вопрос vs развилка» механически неразрешим — не подавляем вопрос,
 # а напоминаем судить по существу. Честный предел (см. workflow/enforcement-philosophy.md, класс 2).
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.transcript_path). Печатает "WARN\t<msg>" или пусто. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.transcript_path). Печатает "WARN\t<msg>" или пусто. guard_done.
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq python3
+
 CWD="${1:-$PWD}"; TAB="$(printf '\t')"
 CHECKPOINT_NUDGE_EVERY=50   # ходов между нуджами (прокси длины сессии; discipline-порог)
 
@@ -35,22 +38,22 @@ if [ "$HAVE_TP" = "1" ]; then
   if [ "$NTURNS" -ge "$CHECKPOINT_NUDGE_EVERY" ] && [ "$((NTURNS - LAST))" -ge "$CHECKPOINT_NUDGE_EVERY" ]; then
     mkdir -p "$CWD/.harness" 2>/dev/null && printf '%s\n' "$NTURNS" > "$NUDGE_AT" 2>/dev/null
     printf 'WARN%sСессия длинная (%s ходов) — контекст тяжелеет. Сделай /checkpoint: зафиксируй состояние в файлы (SESSION.md → Current State, статусы+evidence в feature_list, ротация завершённого в архив) ДО того как движок сам сожмёт контекст. Управляемое сжатие надёжнее авто-порога («рулетки»); состояние останется под контролем в файлах.\n' "$TAB" "$NTURNS"
-    exit 0
+    guard_done
   fi
 fi
 
 # --- (B) go-режим + последний ход кончился вопросом ---
-[ -f "$CWD/.harness/locks/go-mode" ] || exit 0
-[ "$HAVE_TP" = "1" ] || exit 0
+[ -f "$CWD/.harness/locks/go-mode" ] || guard_done
+[ "$HAVE_TP" = "1" ] || guard_done
 
 # Текст ПОСЛЕДНЕГО ассистентского хода (склейка text-блоков) кончается на "?" после трима?
 LAST_TURN="$(jq -rs '
   [ .[] | select(.type=="assistant") ] | last
   | (.message.content // []) | map(select(.type=="text") | .text) | join("\n")
 ' "$TP" 2>/dev/null)"
-[ -n "$LAST_TURN" ] || exit 0
+[ -n "$LAST_TURN" ] || guard_done
 ENDQ="$(printf '%s' "$LAST_TURN" | python3 -c 'import sys; t=sys.stdin.read().strip(); print("Y" if t.endswith("?") else "N")' 2>/dev/null)"
-[ "$ENDQ" = "Y" ] || exit 0
+[ "$ENDQ" = "Y" ] || guard_done
 
 printf 'WARN%sПользователь просил не тормозить (режим «до конца»), а ход завершился вопросом. Если это ТЕХНИЧЕСКИЙ переспрос («продолжать ли?», «правильно ли иду?», «делать дальше?») — не спрашивай, продолжай следующий шаг сам. Если это БИЗНЕС-развилка (модель / цена / ICP / доступ / данные / удаление) — вопрос оставь, его давить нельзя.\n' "$TAB"
-exit 0
+guard_done

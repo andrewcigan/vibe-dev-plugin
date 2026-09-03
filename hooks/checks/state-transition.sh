@@ -15,16 +15,19 @@
 # (критичный инвариант B2/feat-204, не понижается ни legacy, ни learn). Живые проекты
 # переводятся на strict командой /upgrade-project (ставит engine-version + strict).
 #
-# Печатает на stdout строки "<VERDICT><TAB><msg>": BLOCK или WARN. Пусто = OK. Всегда exit 0.
+# Печатает на stdout строки "<VERDICT><TAB><msg>": BLOCK или WARN. Пусто = OK. Всегда guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools python3
+
 FILE="${1:-}"
 CWD="${2:-$PWD}"
 ROOT="${3:-}"
 TOOL="${4:-Write}"
 
 SCHEMA_FILE="$ROOT/schemas/feature-state-transitions.yaml"
-[ -f "$SCHEMA_FILE" ] || exit 0   # нет схемы — fail-open
+[ -f "$SCHEMA_FILE" ] || guard_done   # нет схемы — fail-open
 
 # Уровень для СТРУКТУРНЫХ ошибок: BLOCK, понижается до WARN в learn-mode ИЛИ legacy-проекте.
 SOFT_LEVEL="BLOCK"
@@ -423,4 +426,4 @@ for e in errors_soft:
 for w in warnings:
     emit("WARN", w)
 PYEOF
-exit 0
+guard_done

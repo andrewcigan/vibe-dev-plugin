@@ -10,14 +10,17 @@
 # Уровень строгости — из портрета (~/.vibe-dev/portrait.md, jargon_tolerance: low|medium|high);
 # нет портрета -> medium. high: жаргон и краткие развилки не ловятся, человеко-дни — всегда.
 #
-# Вход — HOOK_PAYLOAD (env), поле .message_text. Печатает строку нарушений или пусто. exit 0.
+# Вход — HOOK_PAYLOAD (env), поле .message_text. Печатает строку нарушений или пусто. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/../lib/clarity-lexicon.sh"
 
 MSG="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.message_text // empty' 2>/dev/null)"
-[ -z "$MSG" ] && exit 0
+[ -z "$MSG" ] && guard_done
 
 TOL="$(clarity_tolerance)"
 
@@ -48,4 +51,4 @@ if [ "$TOL" != "high" ] \
 fi
 
 [ -n "$issues" ] && printf '%s' "$issues"
-exit 0
+guard_done

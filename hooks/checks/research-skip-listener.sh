@@ -6,13 +6,16 @@
 # (не агент): детект фразы пропуска в промпте -> .harness/locks/research-skipped
 # (дата + цитата). Агенту писать в locks/ нельзя (locks-protect.sh).
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.prompt). Печатает текст-inject или пусто. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD (.prompt). Печатает текст-inject или пусто. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq python3
+
 CWD="${1:-$PWD}"
 
 PROMPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.prompt // .user_prompt // .message // empty' 2>/dev/null)"
-[ -z "$PROMPT" ] && exit 0
+[ -z "$PROMPT" ] && guard_done
 
 # Кириллические [классы] в grep ломки на multibyte (байтовый режим) — нормализуем регистр
 # python-ом (UTF-8-корректно) и матчим явными альтернативами в нижнем регистре.
@@ -29,4 +32,4 @@ if printf '%s' "$PROMPT_LC" | grep -qE "$SKIP_RE" 2>/dev/null; then
   } > "$CWD/.harness/locks/research-skipped" 2>/dev/null
   printf 'Зафиксировано хуком: рисёрч перед архитектурой ПРОПУЩЕН по явной фразе пользователя (маркер .harness/locks/research-skipped с цитатой). Маркер одноразовый: /architecture потребит его (rm) при использовании.'
 fi
-exit 0
+guard_done

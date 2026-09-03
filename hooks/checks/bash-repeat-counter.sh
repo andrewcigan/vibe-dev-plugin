@@ -19,9 +19,12 @@
 # goal-substitution (для него — прокси №1, стоп-сигнал пользователя).
 #
 # Вход — HOOK_PAYLOAD (env, ставит диспетчер; PreToolUse: .tool_input.command, tool_response
-# ещё НЕТ). Печатает "WARN\t<подсказка>" на пороге или пусто. exit 0.
+# ещё НЕТ). Печатает "WARN\t<подсказка>" на пороге или пусто. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 STATE="$CWD/.harness/bash-repeat-state"
 THRESH="${VIBE_BASH_REPEAT_THRESHOLD:-3}"
@@ -31,7 +34,7 @@ CIRCUIT="${VIBE_BASH_CIRCUIT:-$((THRESH * 2))}"
 TAB="$(printf '\t')"
 
 cmd="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.command // empty' 2>/dev/null)"
-[ -z "$cmd" ] && exit 0
+[ -z "$cmd" ] && guard_done
 
 # Класс команды: нижний регистр, без цифр, схлоп пробелов -> хеш (cksum, портативно).
 norm="$(printf '%s' "$cmd" | tr 'A-Z' 'a-z' | tr -d '0-9' | tr -s '[:space:]' ' ' | sed 's/^ *//;s/ *$//')"
@@ -54,4 +57,4 @@ if [ "$count" -eq "$THRESH" ]; then
 elif [ "$count" -eq "$CIRCUIT" ]; then
   printf 'WARN%s🛑 Circuit breaker: команда идёт %s-й раз подряд без успеха — цикл НЕ сходится, ещё один retry ничего не изменит. Разомкни по порядку: (0) ЭСКАЛИРУЙ ТИР, не ретрай тот же: если работа шла на дешёвом тире (Sonnet-исполнитель) и провалилась дважды — подними тир до Opus или возьми в main-session (pilotfish N=2), запрещён 3-й ретрай того же тира; (1) если и высший тир (Opus) не смог — причина в подходе, а не в модели: запусти /stuck (сформулирует тупик, LLM-кворум Claude+Gemini+Codex, 3 подхода A/B/C) ИЛИ параллельного субагента на структурное решение; (2) если сам не двигаешься — эскалируй пользователю с 3 вариантами. Повтор той же команды дальше — это залипание, не работа.\n' "$TAB" "$count"
 fi
-exit 0
+guard_done

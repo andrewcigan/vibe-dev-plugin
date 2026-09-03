@@ -34,6 +34,8 @@ STUBS="$(mktemp -d)"   # фейковые проверки для юнита hoo
 cat > "$STUBS/ok.sh" <<'EOF'
 #!/bin/bash
 printf 'WARN\tобычное предупреждение проверки\n'
+# Контракт v9 F1.2: штатное завершение подтверждается маркером в stderr.
+echo "__VIBE_GUARD_DONE__" >&2
 exit 0
 EOF
 cat > "$STUBS/crash.sh" <<'EOF'
@@ -49,6 +51,8 @@ exit 1
 EOF
 cat > "$STUBS/silent-ok.sh" <<'EOF'
 #!/bin/bash
+# Контракт v9 F1.2: штатное завершение подтверждается маркером в stderr.
+echo "__VIBE_GUARD_DONE__" >&2
 exit 0
 EOF
 

@@ -87,7 +87,9 @@ hook_upgrade_nudge() {
 # Пишет ФАКТЫ + «перепроверь по живому», НЕ статус «готово» (иначе размножит ложь о готовности).
 # Пусто, если возвращать нечего (чистый старт). Fail-safe: любая ошибка → меньше текста.
 hook_cold_start_brief() {
-  local cwd="${1:-}" fl active errj ckpt body=""
+  # active/errj/ckpt инициализируются пустыми: без этого при строгом режиме оболочки бриф
+  # возврата падал на «unbound variable», когда файла feature_list.json нет (дефект до v9).
+  local cwd="${1:-}" fl="" active="" errj="" ckpt="" body=""
   [ -n "$cwd" ] || return 0
   fl="$(vibe_path_feature_list "$cwd")"
   if [ -f "$fl" ]; then
@@ -227,6 +229,12 @@ hook_run_check() {
   local _out _rc _errfile _err
   _errfile="$(mktemp 2>/dev/null || printf '/tmp/vibe-hook-err.%s' "$$")"
   _out="$(bash "$@" 2>"$_errfile")"; _rc=$?
+  # Второй признак краха (v9 F1.2): сторож завершается через guard_done, который печатает
+  # маркер в stderr. Нулевой код БЕЗ маркера означает, что сторож не дошёл до конца своей
+  # логики — раньше это выглядело как «возражений нет» и действие проходило непроверенным.
+  if [ "$_rc" -eq 0 ] && ! grep -q "__VIBE_GUARD_DONE__" "$_errfile" 2>/dev/null; then
+    _rc=91
+  fi
   if [ "$_rc" -ne 0 ]; then
     _err="$(head -c 300 "$_errfile" 2>/dev/null | tr '\n\t' '  ')"
     if [ -n "$_cwd" ] && [ -d "$_cwd" ]; then

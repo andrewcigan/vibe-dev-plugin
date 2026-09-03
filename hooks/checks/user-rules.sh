@@ -12,16 +12,19 @@
 # (скилл hookify пишет правило из «не делай X»). Честная граница: ловит ДЕЙСТВИЯ (команды/файлы),
 # НЕ контент сообщений агента — контент display-only, хуком не enforce'ится (см. H5 отложен).
 #
-# Вход — HOOK_PAYLOAD (env, ставит диспетчер). exit 0 всегда (печатает вердикты или ничего).
+# Вход — HOOK_PAYLOAD (env, ставит диспетчер). guard_done всегда (печатает вердикты или ничего).
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 RULES="$CWD/.harness/user-rules.json"
-[ -f "$RULES" ] || exit 0
+[ -f "$RULES" ] || guard_done
 TAB="$(printf '\t')"
 
 tool="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_name // empty' 2>/dev/null)"
-[ -z "$tool" ] && exit 0
+[ -z "$tool" ] && guard_done
 cmd="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.command // empty' 2>/dev/null)"
 file="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.file_path // empty' 2>/dev/null)"
 
@@ -30,7 +33,7 @@ case "$tool" in
   Write|Edit|MultiEdit) subject="$file" ;;
   *)                    subject="$cmd$file" ;;
 esac
-[ -z "$subject" ] && exit 0
+[ -z "$subject" ] && guard_done
 
 # Перебор правил. Только печать (pipe-subshell безопасен — переменные не аккумулируем).
 jq -c '.[]?' "$RULES" 2>/dev/null | while IFS= read -r rule; do
@@ -50,4 +53,4 @@ jq -c '.[]?' "$RULES" 2>/dev/null | while IFS= read -r rule; do
     *)     printf 'WARN%s%s (правило пользователя hookify)\n'  "$TAB" "$rmsg" ;;
   esac
 done
-exit 0
+guard_done

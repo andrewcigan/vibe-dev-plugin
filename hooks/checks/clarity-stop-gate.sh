@@ -20,9 +20,12 @@
 # Свой лимит: <=2 BLOCK на цепочку хода (.harness/clarity-stop-count, сброс на UserPromptSubmit);
 # дальше — демоция в WARN + .harness/clarity-cap-log. Поверх работает общий cap диспетчера (3).
 #
-# Аргументы: $1 = cwd, $2 = профиль. Печатает "BLOCK\tmsg" / "WARN\tmsg", пусто = ОК. exit 0.
+# Аргументы: $1 = cwd, $2 = профиль. Печатает "BLOCK\tmsg" / "WARN\tmsg", пусто = ОК. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 PROFILE="${2:-standard}"
 TAB="$(printf '\t')"
@@ -30,7 +33,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/../lib/clarity-lexicon.sh"
 
 MSG="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.last_assistant_message // empty' 2>/dev/null)"
-[ -z "$MSG" ] && exit 0
+[ -z "$MSG" ] && guard_done
 
 TOL="$(clarity_tolerance)"
 PORTRAIT_FILE="${VIBE_DEV_PORTRAIT:-$HOME/.vibe-dev/portrait.md}"
@@ -98,4 +101,4 @@ fi
 if [ -n "$warn_issues" ]; then
   printf 'WARN%s%s. %s\n' "$TAB" "$warn_issues" "$REMEDIATION"
 fi
-exit 0
+guard_done

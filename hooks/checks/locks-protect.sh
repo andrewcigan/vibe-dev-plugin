@@ -10,9 +10,12 @@
 # Честная граница: экзотический Bash-обход (printf | dd ...) не ловим — threat model
 # «агент ошибается пассивно», не «активная ложь».
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 TAB="$(printf '\t')"
 
@@ -36,4 +39,4 @@ case "$TOOL" in
     fi
     ;;
 esac
-exit 0
+guard_done

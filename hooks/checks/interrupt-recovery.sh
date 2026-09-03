@@ -24,21 +24,24 @@
 # («doesn't want to proceed/take this action») + toolUseResult="User rejected tool use";
 # interrupt-маркер = text-блок "[Request interrupted by user…]".
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает текст inject или пусто. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает текст inject или пусто. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 
 PROMPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.prompt // .user_prompt // .message // .content // empty' 2>/dev/null)"
-[ -z "$PROMPT" ] && exit 0
+[ -z "$PROMPT" ] && guard_done
 
 # Стоп-слова = сознательная остановка/смена курса: пользователь главнее — молчим.
 STOPWORDS='[Сс]топ([!.,:; ]|$)|[Оо]станов|[Нн]е продолжа|[Нн]е надо|[Нн]е дела[йт]|[Оо]тмен[иа]|[Пп]одожд[иё]|[Пп]огоди|[Хх]ватит|[Дд]руг(ая|ую) задач|[Нн]е то (делаем|делаешь)|[Нн]е туда'
-printf '%s' "$PROMPT" | grep -qE "$STOPWORDS" && exit 0
+printf '%s' "$PROMPT" | grep -qE "$STOPWORDS" && guard_done
 
 TRANSCRIPT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.transcript_path // empty' 2>/dev/null)"
-[ -z "$TRANSCRIPT" ] && exit 0
-[ -f "$TRANSCRIPT" ] || exit 0
+[ -z "$TRANSCRIPT" ] && guard_done
+[ -f "$TRANSCRIPT" ] || guard_done
 
 # Хвост последнего хода: всё после последнего НАСТОЯЩЕГО промпта (type=user, без
 # toolUseResult, content-СТРОКА — interrupt-маркеры и tool_result'ы идут массивом блоков).
@@ -69,9 +72,9 @@ VERDICT="$(jq -s '
     end
 ' "$TRANSCRIPT" 2>/dev/null | tr -d '"')"
 
-[ "$VERDICT" = "interrupted" ] || exit 0
+[ "$VERDICT" = "interrupted" ] || guard_done
 
 cat <<'TXT'
 ⚠️ Перед этим сообщением ход был оборван ТЕХНИЧЕСКИМ прерыванием (обрыв связи с клиентом — например, закрытая крышка ноутбука — или доставка входящего сообщения убила выполнявшийся инструмент). Пометка «The user doesn't want to proceed…» в последнем ходе — артефакт обрыва, НЕ запрет пользователя: он ничего не отклонял. Если текущее сообщение не задаёт другую задачу — немедленно продолжай прерванный план: перезапусти убитый вызов и доведи работу до конца, не спрашивая «продолжать ли». [interrupt-recovery]
 TXT
-exit 0
+guard_done

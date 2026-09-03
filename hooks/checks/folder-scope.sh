@@ -10,10 +10,12 @@
 #
 # Whitelist: корень проекта; ВСЕ git-worktree проекта; системный scratchpad/tmp; ~/.vibe-dev; ~/.claude.
 # Аргументы: $1=cwd, $2=file_path. WARN по умолчанию при записи вне корня/whitelist + лог в
-# .harness/folder-scope.log (корпус для будущего промоушна до block). Всегда exit 0.
+# .harness/folder-scope.log (корпус для будущего промоушна до block). Всегда guard_done.
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+
 CWD="${1:-$PWD}"; FILE="${2:-}"; TAB="$(printf '\t')"
-[ -n "$FILE" ] || exit 0
+[ -n "$FILE" ] || guard_done
 
 case "$FILE" in
   /*) ABS="$FILE" ;;
@@ -22,13 +24,13 @@ esac
 
 # Быстрый путь: внутри корня проекта — ок (самый частый случай, дешёвый выход).
 case "$ABS" in
-  "$CWD"/*|"$CWD") exit 0 ;;
+  "$CWD"/*|"$CWD") guard_done ;;
 esac
 
 # Whitelist системных зон записи.
 case "$ABS" in
-  /tmp/*|/private/tmp/*|/var/folders/*) exit 0 ;;
-  "$HOME"/.vibe-dev/*|"$HOME"/.claude/*) exit 0 ;;
+  /tmp/*|/private/tmp/*|/var/folders/*) guard_done ;;
+  "$HOME"/.vibe-dev/*|"$HOME"/.claude/*) guard_done ;;
 esac
 
 # Whitelist ВСЕХ git-worktree проекта (не только основного).
@@ -37,7 +39,7 @@ if command -v git >/dev/null 2>&1; then
   if [ -n "$WT" ]; then
     while IFS= read -r w; do
       [ -n "$w" ] || continue
-      case "$ABS" in "$w"/*|"$w") exit 0 ;; esac
+      case "$ABS" in "$w"/*|"$w") guard_done ;; esac
     done <<EOF
 $WT
 EOF
@@ -50,4 +52,4 @@ fi
 mkdir -p "$CWD/.harness" 2>/dev/null
 printf '%s\t%s\n' "$(date '+%Y-%m-%d %H:%M' 2>/dev/null || echo '?')" "$ABS" >> "$CWD/.harness/folder-scope.log" 2>/dev/null || true
 printf 'WARN%sЗапись ВНЕ корня проекта: %s. Прототипы/выгрузки/отчёты держи в корне проекта (git-worktree и системный /tmp — исключения). Если намеренно — продолжай (это предупреждение, не блок).\n' "$TAB" "$ABS"
-exit 0
+guard_done

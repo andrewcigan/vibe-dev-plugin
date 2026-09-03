@@ -10,14 +10,17 @@
 # эвристичен (как L4-F5). warn один раз на пересечение порога (не спамим каждый вызов),
 # НИКОГДА не block. Смена active-фичи сбрасывает счётчик.
 #
-# Аргумент: $1=cwd. Печатает "WARN\t<msg>" или пусто. exit 0.
+# Аргумент: $1=cwd. Печатает "WARN\t<msg>" или пусто. guard_done.
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"; TAB="$(printf '\t')"
 FL="$CWD/feature_list.json"
-[ -f "$FL" ] || exit 0
+[ -f "$FL" ] || guard_done
 
 ACTIVE="$(jq -r '.active // empty' "$FL" 2>/dev/null)"
-[ -n "$ACTIVE" ] || exit 0   # нет активной фичи — нечего бюджетировать
+[ -n "$ACTIVE" ] || guard_done   # нет активной фичи — нечего бюджетировать
 
 BUDGET="$(jq -r --arg id "$ACTIVE" '[.features[]?[]? | select(.id==$id) | .tool_call_budget] | map(select(type=="number")) | .[0] // empty' "$FL" 2>/dev/null)"
 case "$BUDGET" in ''|*[!0-9]*) BUDGET=150 ;; esac   # дефолт — крупная фича; фича может задать свой
@@ -41,4 +44,4 @@ fi
 
 mkdir -p "$CWD/.harness" 2>/dev/null && printf '%s %d %d\n' "$ACTIVE" "$COUNT" "$WARNED" > "$STATE" 2>/dev/null
 [ -n "$OUT" ] && printf '%s\n' "$OUT"
-exit 0
+guard_done

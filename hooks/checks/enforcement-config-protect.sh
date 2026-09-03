@@ -21,9 +21,12 @@
 # по расширенному набору глаголов. Threat model — пассивные ошибки / побег под давлением, не
 # изощрённый обход (python-open/eval/here-doc не ловим — как locks-protect; честная граница).
 #
-# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. exit 0.
+# Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает "BLOCK\tmsg", пусто = ОК. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq
+
 CWD="${1:-$PWD}"
 TAB="$(printf '\t')"
 
@@ -57,7 +60,7 @@ case "$TOOL" in
     ;;
   Bash)
     CMD="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.command // empty' 2>/dev/null)"
-    [ -z "$CMD" ] && exit 0
+    [ -z "$CMD" ] && guard_done
     # profile: запись НЕ-pending значением = ослабление (pending-* легитимен — bootstrap).
     if writes_to "$CMD" '\.harness/profile'; then
       if ! printf '%s' "$CMD" | grep -q 'pending-' 2>/dev/null; then
@@ -86,4 +89,4 @@ case "$TOOL" in
     fi
     ;;
 esac
-exit 0
+guard_done

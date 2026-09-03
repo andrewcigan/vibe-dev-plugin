@@ -13,17 +13,20 @@
 # как было до F8). Живой тест — при рестарте (см. SESSION).
 #
 # Аргументы: $1=cwd. Payload в HOOK_PAYLOAD. Печатает ЗАМЕНЁННЫЙ вывод (raw) или пусто
-# (= менять нечего). Диспетчер сам оборачивает в JSON updatedToolOutput. exit 0.
+# (= менять нечего). Диспетчер сам оборачивает в JSON updatedToolOutput. guard_done.
 
 set -u
+. "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
+guard_require_tools jq python3
+
 CWD="${1:-$PWD}"
 
 OUT="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '(.tool_response.stdout // .tool_response.output // empty)' 2>/dev/null | head -c 65536)"
-[ -z "$OUT" ] && exit 0
+[ -z "$OUT" ] && guard_done
 
 SECRET_RE='sk-ant-[A-Za-z0-9_-]{10,}|sk-proj-[A-Za-z0-9_-]{10,}|sk-or-v1-[A-Za-z0-9_-]{10,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[A-Z0-9]{16}|xox[bp]-[A-Za-z0-9-]{10,}'
 
-printf '%s' "$OUT" | grep -qE "$SECRET_RE" 2>/dev/null || exit 0
+printf '%s' "$OUT" | grep -qE "$SECRET_RE" 2>/dev/null || guard_done
 
 # Маска: первые 8 символов + «…MASKED» (python — надёжная группа-замена на multibyte-тексте).
 MASKED="$(printf '%s' "$OUT" | python3 -c '
@@ -32,7 +35,7 @@ pat = re.compile(r"(sk-ant-|sk-proj-|sk-or-v1-|ghp_|github_pat_|AKIA|xoxb-|xoxp-
 text = sys.stdin.read()
 sys.stdout.write(pat.sub(lambda m: m.group(0)[:8] + "…MASKED-by-vibe-dev", text))
 ' 2>/dev/null)"
-[ -z "$MASKED" ] && exit 0
+[ -z "$MASKED" ] && guard_done
 
 printf '%s\n\n[Vibe Dev: в выводе был живой токен — замаскирован. Не печатай секреты литералом: используй $ИМЯ_ПЕРЕМЕННОЙ из .env; если токен засветился раньше — предложи пользователю ротацию.]' "$MASKED"
-exit 0
+guard_done

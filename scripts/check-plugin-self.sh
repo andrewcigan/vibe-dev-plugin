@@ -491,6 +491,13 @@ else
     echo "❌ снос сломал защиту или блокировка вернулась:"; cat /tmp/vibe-hb.out; ERRORS=$((ERRORS + 1))
 fi
 
+echo "=== 51. v9 волна 6: эстафета по направлениям (волна режется на сессии) ==="
+if python3 tests/hooks/test-wave-relay.py > /tmp/vibe-relay.out 2>&1; then
+    tail -1 /tmp/vibe-relay.out
+else
+    echo "❌ эстафета не держит:"; cat /tmp/vibe-relay.out; ERRORS=$((ERRORS + 1))
+fi
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

@@ -2,6 +2,7 @@
 name: marketing-launch
 description: FULL финальный этап 17. Пакет запуска через marketing-launch-preparer (Sonnet) — позиционирование, ICP, messaging, pricing (с confirm), landing-brief, email-sequences, launch-plan. 14 артефактов. Триггеры — "/marketing-launch", "запуск маркетинг", "продакт-маркетинг".
 when_to_use: Только при mode=FULL и /ship validation passed ≥90%. До этого — рано. Без этого FULL pipeline не завершён.
+disable-model-invocation: true
 ---
 
 # /marketing-launch

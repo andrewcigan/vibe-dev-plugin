@@ -63,6 +63,17 @@ if [ -n "$CRASHES" ]; then
   OUT="${OUT}${CRASHES}"
 fi
 
+# v9 F5.3: разросшиеся журналы — счёт, который иначе не виден. Замер по живым проектам:
+# журнал фич доходил до 1,16 МБ (≈290 тысяч токенов на каждое чтение), потому что ротация
+# искала состояние, которого нет в графе переходов, и не срабатывала ни разу.
+JOURNALS="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "journal-size" text "$ROOT/hooks/checks/journal-size-probe.sh" "$CWD")"
+if [ -n "$(printf '%s' "$JOURNALS" | tr -d '[:space:]')" ]; then
+  [ -n "$OUT" ] && OUT="$OUT
+
+"
+  OUT="${OUT}${JOURNALS}"
+fi
+
 # Канал доставки правок (v7): установлен новый мажор плагина, а проект закреплён ниже.
 UPGRADE="$(hook_upgrade_nudge "$CWD")"
 if [ -n "$UPGRADE" ]; then

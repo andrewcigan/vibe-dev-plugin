@@ -25,7 +25,13 @@ FL="$FL" ARCH="$ARCH" python3 <<'PYEOF'
 import json, os, hashlib, re
 
 FL = os.environ["FL"]; ARCH = os.environ["ARCH"]
-ARCHIVE_STATES = {"done", "superseded", "rejected"}
+# v9: терминальное состояние в графе переходов называется "passing" — состояния "done" в
+# schemas/feature-state-transitions.yaml нет вовсе. Архивация искала несуществующее состояние
+# и потому не срабатывала ни разу: в живом проекте журнал фич дорос до 1,16 МБ (≈290 тысяч
+# токенов на каждое чтение) при 270 завершённых записях из 304. "done" оставлен для файлов,
+# созданных до появления графа.
+ARCHIVE_STATES = {"passing", "done", "superseded", "rejected"}
+EVIDENCE_REQUIRED = {"passing", "done"}
 
 def body_hash(f):
     return "sha256:" + hashlib.sha256(
@@ -57,7 +63,7 @@ for bucket, feats in (data.get("features") or {}).items():
         # c10: done архивируем ТОЛЬКО с evidence-доказательством; superseded/rejected — свободно
         ev = f.get("evidence")
         has_ev = isinstance(ev, dict) and len(ev) > 0
-        if state == "done" and not has_ev:
+        if state in EVIDENCE_REQUIRED and not has_ev:
             keep.append(f); skipped += 1     # без доказательства не прячем — оставляем на виду
             continue
         # L3-F6 (OpenSpec archive_tasks_incomplete): незакрытые tasks детализации → не архивируем

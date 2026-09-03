@@ -444,6 +444,13 @@ else
     echo "❌ тест dogfooding-fixes упал:"; cat /tmp/vibe-dftest.out; ERRORS=$((ERRORS + 1))
 fi
 
+echo "=== 46. v9 волна 0: журнал срабатываний + честный корпус + рабочий слой классом ==="
+if bash tests/hooks/test-v9-wave0.sh > /tmp/vibe-v9w0.out 2>&1; then
+    tail -1 /tmp/vibe-v9w0.out
+else
+    echo "❌ тест волны 0 упал:"; cat /tmp/vibe-v9w0.out; ERRORS=$((ERRORS + 1))
+fi
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

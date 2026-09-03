@@ -475,6 +475,15 @@ else
     echo "❌ замок ролей не держит:"; cat /tmp/vibe-role.out; ERRORS=$((ERRORS + 1))
 fi
 
+echo "=== 49. v9 волна 4: против «готово на бумаге» (рождение готовым + квитанция прогона) ==="
+for t in test-born-passing test-receipt-gate; do
+    if python3 "tests/hooks/$t.py" > "/tmp/vibe-$t.out" 2>&1; then
+        tail -1 "/tmp/vibe-$t.out"
+    else
+        echo "❌ $t не держит:"; cat "/tmp/vibe-$t.out"; ERRORS=$((ERRORS + 1))
+    fi
+done
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

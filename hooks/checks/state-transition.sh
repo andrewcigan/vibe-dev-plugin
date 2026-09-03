@@ -189,6 +189,74 @@ for state_bucket, feats in features.items():
                 warnings.append("%s: bucket=%s но state=%s — рассогласование" % (feat_id, state_bucket, feat_state))
         all_features.append((feat_id, feat_state, f))
 
+# --- Рождение сразу в готовом статусе (v9 F4.2). ---
+# Гейт ловил ПЕРЕХОДЫ между состояниями, а появление новой записи уже в терминальном
+# состоянии переходом не является — и проходило молча. Именно так прошёл инцидент с
+# дублями в CRM: фича появилась в статусе «проверено» при переносе харнеса, доказательства
+# не было, и месяц никто не знал, что механизм не работает. В том же проекте нашлось
+# 156 записей, помеченных завершёнными без доказательства.
+#
+# Появление сразу готовым допустимо (перенос харнеса на живой проект), но должно быть
+# ПРИЗНАНО явно: origin=inference в провенансе. Молча — нельзя.
+TERMINAL_BORN = {"passing", "done"}
+prev_ids = set()
+prev_states = {}
+try:
+    _prev_raw = read_disk(target)
+    if _prev_raw:
+        _prev = json.loads(_prev_raw)
+        _pf = _prev.get("features", {})
+        if isinstance(_pf, dict):
+            for _b, _lst in _pf.items():
+                if isinstance(_lst, list):
+                    for _x in _lst:
+                        if isinstance(_x, dict) and _x.get("id"):
+                            prev_ids.add(str(_x["id"]))
+                            prev_states[str(_x["id"])] = str(_x.get("state") or _b)
+except Exception:
+    prev_ids = None   # прошлое состояние прочитать не удалось — правило не применяем
+
+if prev_ids is not None and prev_ids:
+    for feat_id, feat_state, f in all_features:
+        if str(feat_id) in prev_ids or feat_state not in TERMINAL_BORN:
+            continue
+        ev = f.get("evidence")
+        has_ev = bool(ev) and str(ev).strip().lower() not in ("", "none", "null")
+        origin = str(((f.get("provenance") or {}).get("origin") or "")).strip().lower()
+        if has_ev or origin == "inference":
+            continue
+        errors_soft.append(
+            "%s: запись появилась сразу в состоянии «%s», без доказательства и без явной "
+            "пометки происхождения. Появление готовым переходом не является, поэтому раньше "
+            "проходило молча — так прошёл инцидент с дублями. Либо приложи evidence, либо "
+            "признай перенос честно: provenance.origin=inference. (v9 F4.2)" % (feat_id, feat_state))
+
+# --- Доказательство порождено запуском, а не написано прозой (v9 F4.1). ---
+# Проверяем ТОЛЬКО момент перехода в готовое состояние: у давно лежащих записей доказательство
+# могло появиться до этого механизма, и заваливать проект сотнями замечаний бессмысленно.
+if prev_ids is not None:
+    _rec_dir = os.path.join(os.path.dirname(os.path.abspath(target)), '.harness', 'receipts')
+    for feat_id, feat_state, f in all_features:
+        if feat_state not in ('passing', 'done'):
+            continue
+        was = prev_states.get(str(feat_id))
+        if was is None or was in ('passing', 'done'):
+            continue          # не переход: либо новая запись (её ловит F4.2), либо уже была готова
+        if not str(f.get('verification_command') or '').strip():
+            continue          # нечего запускать — это ловит гейт спуска в код
+        has_receipt = False
+        try:
+            has_receipt = any(n.startswith(str(feat_id) + '-') and n.endswith('.json')
+                              for n in os.listdir(_rec_dir))
+        except Exception:
+            has_receipt = False
+        if not has_receipt:
+            errors_soft.append(
+                "%s: переход в «%s» без квитанции прогона. Текст в evidence ничем не отличается от "
+                "текста, написанного не глядя — именно так проходило «готово на бумаге». Запусти "
+                "bash scripts/verify-receipt.sh %s: квитанцию нельзя написать прозой, её содержимое "
+                "порождается запуском. (v9 F4.1)" % (feat_id, feat_state, feat_id))
+
 # ЧЕСТНОСТЬ ДЕКЛАРАЦИЙ (v8.0.2 dogfooding LinX): валидируем ИМЯ состояния (∈ valid_states) и
 # согласованность bucket↔state (выше). Граф schema["allowed_transitions"] загружается
 # load_schema_simple, но переход old→new НАМЕРЕННО НЕ enforced — он неполон для ретрофита

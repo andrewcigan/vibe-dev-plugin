@@ -124,27 +124,24 @@ fi
 #     sub/.gitignore / app.gitignore проскочил бы мимо гейта, критик v8.0.2). ---
 if [ -d "$PROJ/.git" ]; then
   GI="$PROJ/.gitignore"
-  if ! { [ -f "$GI" ] && grep -qF "Vibe Dev — рантайм-состояние хуков" "$GI" 2>/dev/null; }; then
+  if ! { [ -f "$GI" ] && grep -qF "Vibe Dev — рабочий слой харнеса" "$GI" 2>/dev/null; }; then
     { [ -f "$GI" ] && [ -s "$GI" ] && echo ""; cat <<'IGN'
-# Vibe Dev — рантайм-состояние хуков (счётчики/логи/heartbeat/маркеры, НЕ коммитить)
-.harness/hooks-heartbeat
-.harness/bash-repeat-state
-.harness/feature-budget-state
-.harness/checkpoint-nudge-at
-.harness/stop-chain-count
-.harness/stop-cap-log
-.harness/clarity-stop-count
-.harness/clarity-cap-log
-.harness/handoff-pending
-.harness/stuck-watcher.pid
-.harness/*.log
+# Vibe Dev — рабочий слой харнеса. Правило КЛАССОМ, а не поимённым списком (v9): прежний
+# список из 15 строк не покрывал файлы, заведённые позже, — дерево «грязнилось», а перевод
+# на новый движок требует чистого дерева и упирался в мусор, который создал сам харнес.
+# Ниже игнорируется весь слой, а то, что обязано жить в истории, перечислено исключениями.
+.harness/*
 .harness/hook-crashes/
-.harness/cost-log.json
-.harness/tools-audit.jsonl
 .harness/locks/
+.harness/receipts/
+!.harness/engine-version
+!.harness/provenance-log.jsonl
+!.harness/tools-allowlist.yaml
+!.harness/pre-launch-checklist.yaml
+!.harness/hooks/
 IGN
     } >> "$GI"
-    echo "→ .gitignore: добавлен игнор рантайм-файлов харнеса (чтобы дерево не «грязнилось» от хуков)"
+    echo "→ .gitignore: рабочий слой харнеса игнорируется классом (новые служебные файлы больше не грязнят дерево)"
   fi
   # H5: чистое дерево. Свою правку .gitignore исключаем pathspec'ом ровно корневого файла
   # (':!.gitignore' относительно корня репо — НЕ трогает sub/.gitignore и прочие *.gitignore).

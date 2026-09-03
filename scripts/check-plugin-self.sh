@@ -464,6 +464,11 @@ else
 fi
 
 echo "=== 48. v9 волна 3: роль верхнего уровня не пишет код + сверка пина модели ==="
+if python3 tests/hooks/test-code-descent-gate.py > /tmp/vibe-gate.out 2>&1; then
+    tail -1 /tmp/vibe-gate.out
+else
+    echo "❌ гейт спуска в код не держит:"; cat /tmp/vibe-gate.out; ERRORS=$((ERRORS + 1))
+fi
 if python3 tests/hooks/test-role-scope.py > /tmp/vibe-role.out 2>&1; then
     tail -1 /tmp/vibe-role.out
 else

@@ -165,6 +165,14 @@ except Exception as e:
 
 errors_hard, errors_soft, warnings = [], [], []
 features = data.get('features', {})
+# v9: форма файла проверяется явно. Раньше неожиданная форма (список вместо корзин) роняла
+# разбор с невнятной ошибкой языка, и проверка перехода молча не выполнялась — запись проходила
+# как чистая. Теперь это внятный отказ с указанием, что именно не так.
+if not isinstance(features, dict):
+    emit("BLOCK", "раздел features имеет форму «%s», а ожидаются корзины (captured / up_next / "
+                  "active_list). Проверка перехода состояния на такой форме невозможна — приведи "
+                  "файл к схеме из каталога schemas." % type(features).__name__)
+    sys.exit(0)
 
 all_features = []
 for state_bucket, feats in features.items():
@@ -366,6 +374,21 @@ for feat_id, state, f in all_features:
     # docs/changes/<id>/{proposal|design|spec}.md, содержащего хотя бы одну приоритизированную
     # P1 user story в Given/When/Then (основа verification_command). S — light path (без детали),
     # пока не помечена detail_required. Крупную фичу нельзя протаскивать без разложенного плана (c2).
+    # --- Гейт спуска в код (v9 F3.4). ---
+    # Решение владельца: код пишется, когда всё расписано детально. Для крупных фич это
+    # разложенный план (ниже), для мелких — минимум: сказано, ЧЕМ проверять результат.
+    # Опора: Opus 5 «performs best when given the complete task specification up front».
+    # Без этого фича с кодом уходит в работу с пустым «готово»: доказывать нечем, и статус
+    # ставится по ощущению — это и есть класс «потёмкинская деревня».
+    code_ext = ('.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java', '.rb', '.php',
+                '.c', '.cpp', '.cs', '.sql', '.sh', '.vue', '.svelte', '.kt', '.swift')
+    has_code = any(str(a).endswith(code_ext) for a in (f.get('affected_files') or []))
+    if has_code and not str(f.get('verification_command') or '').strip():
+        errors_soft.append(
+            "%s: фича трогает код и входит в работу без verification_command — нечем будет "
+            "доказать результат, статус «работает» придётся ставить по ощущению. Впиши команду, "
+            "которая краснеет, пока фича не сделана, и зеленеет, когда сделана. (v9 F3.4)" % feat_id)
+
     detail_required = bool(f.get('detail_required')) or size in ('M', 'L')
     if detail_required:
         change_dir = os.path.join(proj_root, 'docs', 'changes', str(feat_id))
@@ -426,4 +449,13 @@ for e in errors_soft:
 for w in warnings:
     emit("WARN", w)
 PYEOF
+PY_RC=$?
+# v9: разбор упал внутри — это НЕ «возражений нет». Раньше такой случай выглядел как чистая
+# проверка: python падал с ошибкой, скрипт доходил до конца и отвечал молчанием, а запись
+# в журнал фич проходила непроверенной. Ровно так тихо ломался разбор при неожиданной форме
+# файла. Теперь падение разбора поднимает тревогу через обвязку.
+if [ "$PY_RC" -ne 0 ]; then
+  printf 'разбор состояния фич упал (код %s) — проверка перехода НЕ выполнена\n' "$PY_RC" >&2
+  exit 92
+fi
 guard_done

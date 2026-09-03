@@ -21,10 +21,12 @@ cmd_writes_to() {
   printf '%s' "$cmd" | grep -qE "(cp|mv|install|ln|dd|touch)[[:space:]][^|;&]*[[:space:]][\"']?[^[:space:]|;&\"']*${f}" 2>/dev/null && return 0
   printf '%s' "$cmd" | grep -qE "sed[^|;&]*-i[^|;&]*${f}" 2>/dev/null && return 0
   # Интерпретатор: точка с запятой и труба живут ВНУТРИ кавычек кода, поэтому ограничивать
-  # сегмент нельзя. Смотрим на связку «интерпретатор + файл + признак записи».
+  # сегмент нельзя. Смотрим на связку «интерпретатор + файл + признак записи в коде».
+  # Перенаправление в признаки НЕ входит: оно относится к команде целиком и может вести
+  # в совсем другой файл — на этом детектор дважды ложно срабатывал на обычной работе.
   if printf '%s' "$cmd" | grep -qE "(python3?|node|perl|ruby)" 2>/dev/null \
      && printf '%s' "$cmd" | grep -qE "$f" 2>/dev/null \
-     && printf '%s' "$cmd" | grep -qE "(open[^)]*[\"']w[\"']|dump|write|truncate|writeFile|>>?)" 2>/dev/null; then
+     && printf '%s' "$cmd" | grep -qE "(open[^)]*[\"']w[\"']|dump|write|truncate|writeFile)" 2>/dev/null; then
     return 0
   fi
   printf '%s' "$cmd" | grep -qE "(jq|yq)[^|;&]*${f}" 2>/dev/null && return 0

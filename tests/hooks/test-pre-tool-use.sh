@@ -64,7 +64,7 @@ write_payload_sid() {  # write_payload_sid <file_path> <content> <session_id>
 BAD_UI='{"features":{"passing_list":[{"id":"feat-204","state":"passing","category":"ui","affected_files":["src/components/Demo.tsx"],"evidence":{}}]}}'
 GOOD_UI='{"features":{"passing_list":[{"id":"feat-204","state":"passing","category":"ui","affected_files":["src/components/Demo.tsx"],"evidence":{"layer_4_user_at":"2026-06-03"}}]}}'
 GOOD_API='{"features":{"passing_list":[{"id":"feat-101","state":"passing","category":"api","affected_files":["src/api/x.ts"],"evidence":{"layer_1_syntax_at":"2026-06-03"},"verification":{"layer_1_syntax":true}}]}}'
-ACTIVE_UI='{"features":{"active_list":[{"id":"feat-204","state":"active","category":"ui","affected_files":["src/components/Demo.tsx"]}]}}'
+ACTIVE_UI='{"features":{"active_list":[{"id":"feat-204","state":"active","category":"ui","verification_command":"npm test","affected_files":["src/components/Demo.tsx"]}]}}'
 BAD_STATE='{"features":{"up_next_list":[{"id":"feat-9","state":"banana","category":"infra","affected_files":["x"]}]}}'
 
 echo "PreToolUse dispatcher — сценарии:"
@@ -198,8 +198,8 @@ assert_contains "20c. legacy: UI-evidence всё равно -> deny (hard, ин�
 echo "7.0" > "$PROJ/.harness/engine-version"
 
 # --- active-gate (H7): M/L-фича в active требует артефакт критики ---
-ACTIVE_L='{"features":{"active_list":[{"id":"feat-50","state":"active","category":"api","size_estimate":"L","affected_files":["src/api/y.ts"]}]}}'
-ACTIVE_S='{"features":{"active_list":[{"id":"feat-51","state":"active","category":"api","size_estimate":"S","affected_files":["src/api/z.ts"]}]}}'
+ACTIVE_L='{"features":{"active_list":[{"id":"feat-50","state":"active","category":"api","size_estimate":"L","verification_command":"npm test","affected_files":["src/api/y.ts"]}]}}'
+ACTIVE_S='{"features":{"active_list":[{"id":"feat-51","state":"active","category":"api","size_estimate":"S","verification_command":"npm test","affected_files":["src/api/z.ts"]}]}}'
 # 21. L-фича в active без docs/test-strategy.md -> BLOCK
 rm -rf "$PROJ/docs"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_L")")"
@@ -215,7 +215,7 @@ OUT="$(run "$(write_payload "$FL" "$ACTIVE_S")")"
 assert_empty "23. S active без критики -> pass (light path)" "$OUT"
 
 # --- data-model gate: data-фича в active требует docs/data-model-review.md ---
-ACTIVE_DATA='{"features":{"active_list":[{"id":"feat-60","state":"active","category":"data","size_estimate":"S","affected_files":["src/db/schema/x.ts"]}]}}'
+ACTIVE_DATA='{"features":{"active_list":[{"id":"feat-60","state":"active","category":"data","size_estimate":"S","verification_command":"npm test","affected_files":["src/db/schema/x.ts"]}]}}'
 # 24. data-фича в active без ревью модели -> BLOCK
 rm -rf "$PROJ/docs"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_DATA")")"
@@ -226,13 +226,13 @@ OUT="$(run "$(write_payload "$FL" "$ACTIVE_DATA")")"
 assert_empty "25. data-фича + review с id -> pass" "$OUT"
 rm -rf "$PROJ/docs"
 # 25b. v7 P7: путь со словом "schema" в имени (не определение схемы), category != data -> НЕ ложный deny
-FP_SCHEMA='{"features":{"active_list":[{"id":"feat-61","state":"active","category":"lib","size_estimate":"S","affected_files":["src/registry/json-schema-loader.ts"]}]}}'
+FP_SCHEMA='{"features":{"active_list":[{"id":"feat-61","state":"active","category":"lib","size_estimate":"S","verification_command":"npm test","affected_files":["src/registry/json-schema-loader.ts"]}]}}'
 rm -rf "$PROJ/docs"
 OUT="$(run "$(write_payload "$FL" "$FP_SCHEMA")")"
 assert_empty "25b. P7: 'schema' в имени файла, не data-фича -> pass (нет ложного deny)" "$OUT"
 
 # --- vendor-research gate: integration-фича в active требует docs/research/*.md (дыра аудита) ---
-ACTIVE_INTEG='{"features":{"active_list":[{"id":"feat-70","state":"active","category":"integration","size_estimate":"S","affected_files":["src/providers/insta.ts"]}]}}'
+ACTIVE_INTEG='{"features":{"active_list":[{"id":"feat-70","state":"active","category":"integration","size_estimate":"S","verification_command":"npm test","affected_files":["src/providers/insta.ts"]}]}}'
 # 26. integration-фича в active без research поставщика -> BLOCK (vendor-lock)
 rm -rf "$PROJ/docs"
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_INTEG")")"
@@ -244,7 +244,7 @@ assert_empty "27. integration-фича + research с id -> pass" "$OUT"
 rm -rf "$PROJ/docs"
 
 # --- стадия детализации (v8 L2-F2/F3): M/L-фича в active требует docs/changes/<id>/proposal.md с P1-US ---
-ACTIVE_M='{"features":{"active_list":[{"id":"feat-52","state":"active","category":"api","size_estimate":"M","affected_files":["src/api/m.ts"]}]}}'
+ACTIVE_M='{"features":{"active_list":[{"id":"feat-52","state":"active","category":"api","size_estimate":"M","verification_command":"npm test","affected_files":["src/api/m.ts"]}]}}'
 # H7 удовлетворяем всегда (изолируем причину — детализацию, не критику)
 prep_ts() { mkdir -p "$PROJ/docs"; echo "# Test Strategy для feat-52" > "$PROJ/docs/test-strategy.md"; }
 # 27a. M-фича с критикой, но БЕЗ детализации -> BLOCK (L2-F2)
@@ -262,7 +262,7 @@ OUT="$(run "$(write_payload "$FL" "$ACTIVE_M")")"
 assert_contains "27c. детализация без P1-US G/W/T -> deny (L2-F3)" "$OUT" '"permissionDecision":"deny"'
 rm -rf "$PROJ/docs"
 # 27d. S-фича с detail_required:true без детализации -> BLOCK (форс детали на S)
-ACTIVE_S_DR='{"features":{"active_list":[{"id":"feat-53","state":"active","category":"api","size_estimate":"S","detail_required":true,"affected_files":["src/api/s.ts"]}]}}'
+ACTIVE_S_DR='{"features":{"active_list":[{"id":"feat-53","state":"active","category":"api","size_estimate":"S","detail_required":true,"verification_command":"npm test","affected_files":["src/api/s.ts"]}]}}'
 OUT="$(run "$(write_payload "$FL" "$ACTIVE_S_DR")")"
 assert_contains "27d. S + detail_required без детализации -> deny (L2-F2)" "$OUT" '"permissionDecision":"deny"'
 # 27e. S-фича обычная (без detail_required) без детализации -> pass (light path не задет)

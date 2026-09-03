@@ -451,6 +451,18 @@ else
     echo "❌ тест волны 0 упал:"; cat /tmp/vibe-v9w0.out; ERRORS=$((ERRORS + 1))
 fi
 
+echo "=== 47. v9 F1.3: журнал фич не правится в обход record-change (bash-каналы) ==="
+if python3 tests/hooks/test-feature-list-bash.py > /tmp/vibe-flb.out 2>&1; then
+    tail -1 /tmp/vibe-flb.out
+else
+    echo "❌ обход через bash не закрыт:"; cat /tmp/vibe-flb.out; ERRORS=$((ERRORS + 1))
+fi
+if python3 tests/hooks/test-feature-list-no-false-block.py > /tmp/vibe-flnf.out 2>&1 && ! grep -q "ЛОЖНЫЙ БЛОК" /tmp/vibe-flnf.out; then
+    tail -1 /tmp/vibe-flnf.out
+else
+    echo "❌ сторож журнала фич мешает обычной работе:"; cat /tmp/vibe-flnf.out; ERRORS=$((ERRORS + 1))
+fi
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

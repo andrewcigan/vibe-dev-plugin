@@ -85,6 +85,12 @@ case "$TOOL" in
     if profile_in "standard,strict" "$PROFILE"; then
       add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "bash-repeat" verdict "$ROOT/hooks/checks/bash-repeat-counter.sh" "$CWD")"
     fi
+    # v9 F1.3, первый рубеж: журнал фич правится только через record-change. Сторож переходов
+    # видит вносимое содержимое при Write/Edit и НЕ видит записи командой оболочки — дыра
+    # подтверждалась дважды независимыми проверками.
+    add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "feature-list-bash" verdict "$ROOT/hooks/checks/feature-list-bash-guard.sh" "$CWD")"
+    # Второй рубеж, фаза «до»: снимок состояния журнала фич. Не зависит от формы команды.
+    HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "feature-list-drift" verdict "$ROOT/hooks/checks/feature-list-drift.sh" "$CWD" before >/dev/null
     ;;
 esac
 

@@ -32,13 +32,19 @@ echo '{"version":"7.0","features":{"passing":[{"id":"f1","state":"passing","surf
 printf 'node_modules/\n' > "$PROJ/.gitignore"; ( cd "$PROJ"; git add -A; git commit -q -m base )
 bash "$UPG" --soft "$PROJ" >/dev/null 2>&1
 [ $? = 0 ] && ok "2a. --soft прошёл несмотря на правку .gitignore" || bad "2a. soft прошёл" "exit≠0"
-grep -qF "Vibe Dev — рантайм-состояние хуков" "$PROJ/.gitignore" && ok "2b. .gitignore получил секцию рантайма" || bad "2b. секция" "нет"
-grep -qF ".harness/hooks-heartbeat" "$PROJ/.gitignore" && ok "2c. рантайм-файлы перечислены" || bad "2c. файлы" "нет"
+grep -qF "Vibe Dev — рабочий слой харнеса" "$PROJ/.gitignore" && ok "2b. .gitignore получил секцию рабочего слоя" || bad "2b. секция" "нет"
+# v9: игнорируется КЛАССОМ, а не поимённым списком — прежний список не покрывал файлы,
+# заведённые позже, и дерево «грязнилось» от служебных файлов самого харнеса.
+grep -qE '^\.harness/\*$' "$PROJ/.gitignore" && ok "2c. рабочий слой скрыт классом" || bad "2c. класс" "нет"
 echo strict > "$PROJ/.harness/profile"; rm -f "$PROJ/.harness/hook-mode"; echo 7.0 > "$PROJ/.harness/engine-version"
 ( cd "$PROJ"; git add -A; git commit -q -m reset 2>/dev/null )
 bash "$UPG" --soft "$PROJ" >/dev/null 2>&1
-[ "$(grep -c "Vibe Dev — рантайм" "$PROJ/.gitignore")" = "1" ] && ok "2d. секция идемпотентна (не дублируется)" || bad "2d. идемпотентность" "дубль"
-grep -qF ".harness/clarity-cap-log" "$PROJ/.gitignore" && grep -qF ".harness/stuck-watcher.pid" "$PROJ/.gitignore" && ok "2e. новые рантайм-файлы (clarity-cap-log/handoff-pending/stuck-watcher.pid) в игноре" || bad "2e. новые файлы" "нет"
+[ "$(grep -c "Vibe Dev — рабочий слой" "$PROJ/.gitignore")" = "1" ] && ok "2d. секция идемпотентна (не дублируется)" || bad "2d. идемпотентность" "дубль"
+# Смысл 2e изменился: раньше проверяли, что новые служебные файлы ДОПИСАНЫ в список.
+# Теперь список не нужен — проверяем, что то, что обязано жить в истории, НЕ скрыто.
+grep -qF '!.harness/provenance-log.jsonl' "$PROJ/.gitignore" \
+  && grep -qF '!.harness/engine-version' "$PROJ/.gitignore" \
+  && ok "2e. история проекта (провенанс, версия движка) остаётся видимой" || bad "2e. исключения" "нет"
 # 2f (критик v8.0.2): H5-дыра закрыта — грязный файл с суффиксом .gitignore всё равно ловится
 echo strict > "$PROJ/.harness/profile"; rm -f "$PROJ/.harness/hook-mode"; echo 7.0 > "$PROJ/.harness/engine-version"
 ( cd "$PROJ"; git add -A; git commit -q -m clean 2>/dev/null; echo dirt > app.gitignore )

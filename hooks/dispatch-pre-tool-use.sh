@@ -94,6 +94,11 @@ case "$TOOL" in
     ;;
 esac
 
+# v9 F3.2: роль верхнего уровня (архитектура/план/критика/аудит) не пишет код — решение
+# владельца «Fable рассуждает, код не пишет». Действует и на правку файлов, и на запись
+# командой оболочки: иначе замок обходится одной строкой, как это уже случалось.
+add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "role-scope" verdict "$ROOT/hooks/checks/role-scope-guard.sh" "$CWD")"
+
 # lock-protect (F6, lock-паттерн): .harness/locks/* пишут только хуки — запись агентом
 # (Write/Edit/Bash-redirect) блокируется во ВСЕХ профилях (это инфраструктура согласий).
 add_verdict "$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "locks-protect" verdict "$ROOT/hooks/checks/locks-protect.sh" "$CWD")"

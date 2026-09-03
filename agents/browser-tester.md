@@ -2,7 +2,7 @@
 name: browser-tester
 description: Браузерные e2e-тесты через Playwright (запуск из Bash) — основной путь. Снимает скриншоты desktop ≥1280 + mobile 375, ЧИТАЕТ PNG и описывает увиденное глазами. Layer 3 в three-layer verification, запускается из /verify для UI-фичей.
 tools: Read, Bash, Glob
-model: opus
+model: fable
 effort: max
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---

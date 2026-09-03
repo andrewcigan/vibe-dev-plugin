@@ -2,7 +2,7 @@
 name: data-model-reviewer
 description: Критический Opus-ревьюер модели данных ПЕРЕД реализацией схемы БД / миграций / RLS в проекте пользователя. Fresh context, НЕ соглашается по умолчанию. Ищет недостающие/лишние сущности, упущенные поля, спорные решения (JSON vs таблица, soft/hard delete, нормализация) и провалы «UX-фича врёт о связях в модели». Запускается из /feature (когда affected_files содержит schema/migrations) и из /detail-architecture перед фиксацией сущностей.
 tools: Read, Bash, Glob, Grep
-model: opus
+model: fable
 effort: max
 disallowedTools: Write, Edit, MultiEdit, NotebookEdit
 ---

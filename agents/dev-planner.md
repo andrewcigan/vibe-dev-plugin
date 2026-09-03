@@ -2,7 +2,7 @@
 name: dev-planner
 description: Wave-план разработки. Использует reordering-agent для DAG. Каждая секция = feature в feature_list.json с явными affected_files, verification_command, business_invariant. Готовит план для /feature loop.
 tools: Read, Write, Edit
-model: opus
+model: fable
 effort: max
 ---
 

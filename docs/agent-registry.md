@@ -12,52 +12,51 @@
 
 ## Дефолты плагина
 
-- **Усилие: `max` у всех ролей.** Качество приоритетно, лимитов хватает (решение владельца).
-  Экономия достигается разделением МОДЕЛЕЙ по роли, не понижением усилия.
-- **Модель — алиасы** `opus`/`sonnet` (не полные id): резолвятся в актуальные версии
-  (`opus`→Opus 4.8, `sonnet`→Sonnet 5), поэтому обновление модели не требует правок реестра.
-- **Fan-out задаёт `model` явно** — субагент в Workflow/Task никогда не наследует модель
-  главной сессии молча (pilotfish-правило).
-
-## Контракт тиров (L1-F2)
-
-- **Opus** — планирование / детализация / архитектура / критика / проверка / оценка. Дорогой
-  reasoning там, где цена ошибки высока (плохой план, пропущенный дефект, ложная приёмка).
-- **Sonnet** — написание кода / исполнение / чтение сырья / механические merge/сортировки.
-  Дешёвый исполнитель по детальному плану: главную ошибку («додумал размытый план») ловят
-  механизмы harness (4-слойная проверка, границы правок, evidence-гейт, circuit breaker),
-  а не ум модели. CLEAR-замер: цена фичи ↓ ~3–4× при той же точности.
+- **Три уровня, а не два (решение владельца 2026-09-03).** Верхний уровень работы —
+  архитектура, план, детализация, критика, аудит — идёт на **Fable 5.1**; она рассуждает,
+  но кода не пишет. Написание кода — **Opus 5**, и только когда всё расписано детально.
+  Сбор сырья, сортировка, слияние — **Sonnet 5**.
+- **Почему так.** Это не догадка: Anthropic измерила связку «исполнитель Opus 5 с советником
+  Fable 5.1» как самую точную из проверенных конфигураций, и отдельно описала образец
+  «крупные модели планируют, мелкие исполняют». Источники и цитаты —
+  `_internal/plans/v9-research-digest.md`.
+- **Усилие: max у ключевых ролей** (архитектор, кодер, аудитор, критики), **ступень ниже —
+  у рутинных** (сбор источников, сортировка, слияние). Решение владельца: экономить надо,
+  но не в ущерб тому, где цена ошибки высока.
+- **Модель — алиасы** `fable`/`opus`/`sonnet`, не полные идентификаторы: обновление модели
+  не требует правок реестра. Алиас `opus` с версии движка 2.1.219 указывает на Opus 5.
+- **Веер задаёт `model` явно** — субагент никогда не наследует модель главной сессии молча.
 
 ## Таблица (источник истины — сверяется self-check)
 
 | Агент | Что делает | Модель | Усилие | read-only |
 |---|---|---|---|---|
-| architect | V0/детальная архитектура, TOC-bottleneck | opus | max | — |
-| business-interviewer | бизнес-интервью → CLAUDE.md/domain-rules | opus | max | — |
-| dev-planner | wave-план, feature_list | opus | max | — |
-| stack-advisor | выбор стека под bottleneck | opus | max | — |
-| idea-generator | генерация идей (2 раунда) | opus | max | — |
-| design-handoff-builder | бриф для Claude Design (C.R.O.P.) | opus | max | — |
-| data-model-reviewer | критик модели данных (fresh, не соглашается) | opus | max | да |
-| idea-critic | long-list идей → critique → отсев | opus | max | — |
-| user-perspective-critic | top-down критика глазами пользователя | opus | max | да |
-| stage-verifier | верификация перехода этапов | opus | max | да |
-| evaluator-agent | внешний оценщик харнеса (7-tuple) | opus | max | да |
-| browser-tester | e2e через Playwright, читает PNG глазами | opus | max | да |
-| implementer | реализация фичи (TDD) — кодовая роль | sonnet | max | — |
-| synthesizer | merge параллельных субагентов | sonnet | max | — |
-| reordering-agent | DAG-пересортировка секций | sonnet | max | — |
-| test-researcher | инженерная перспектива тестов | sonnet | max | да |
-| github-researcher | поиск/разбор GitHub-репозиториев | sonnet | max | — |
-| market-researcher | анализ рынка и конкурентов | sonnet | max | — |
-| best-practices-researcher | лучшие практики проблемных классов | sonnet | max | — |
-| prototype-builder | HTML/CSS-прототип под user stories | sonnet | max | — |
-| validation-sample-builder | валидационная выборка 50-100 + ground truth | sonnet | max | — |
-| idea-validator | валидация бизнес-модели Top-3 | sonnet | max | — |
-| stuck-protocol-handler | stuck-протокол (LLM-кворум) | sonnet | max | — |
-| marketing-launch-preparer | пакет запуска (FULL) | sonnet | max | — |
+| architect | V0/детальная архитектура, TOC-bottleneck | fable | max | — |
+| business-interviewer | бизнес-интервью → CLAUDE.md/domain-rules | fable | max | — |
+| dev-planner | wave-план, feature_list | fable | max | — |
+| stack-advisor | выбор стека под bottleneck | fable | max | — |
+| idea-generator | генерация идей (2 раунда) | fable | max | — |
+| design-handoff-builder | бриф для Claude Design (C.R.O.P.) | fable | max | — |
+| data-model-reviewer | критик модели данных (fresh, не соглашается) | fable | max | да |
+| idea-critic | long-list идей → critique → отсев | fable | max | — |
+| user-perspective-critic | top-down критика глазами пользователя | fable | max | да |
+| stage-verifier | верификация перехода этапов | fable | max | да |
+| evaluator-agent | внешний оценщик харнеса (7-tuple) | fable | max | да |
+| browser-tester | e2e через Playwright, читает PNG глазами | fable | max | да |
+| implementer | реализация фичи (TDD) — кодовая роль | opus | max | — |
+| synthesizer | merge параллельных субагентов | sonnet | high | — |
+| reordering-agent | DAG-пересортировка секций | sonnet | high | — |
+| test-researcher | инженерная перспектива тестов | sonnet | high | да |
+| github-researcher | поиск/разбор GitHub-репозиториев | sonnet | high | — |
+| market-researcher | анализ рынка и конкурентов | sonnet | high | — |
+| best-practices-researcher | лучшие практики проблемных классов | sonnet | high | — |
+| prototype-builder | HTML/CSS-прототип под user stories | sonnet | high | — |
+| validation-sample-builder | валидационная выборка 50-100 + ground truth | sonnet | high | — |
+| idea-validator | валидация бизнес-модели Top-3 | sonnet | high | — |
+| stuck-protocol-handler | stuck-протокол (LLM-кворум) | sonnet | high | — |
+| marketing-launch-preparer | пакет запуска (FULL) | sonnet | high | — |
 
-Итог: **12 opus** (план/критика/проверка) + **12 sonnet** (код/чтение/рутина).
+Итог: **12 fable** (архитектура / план / критика / аудит) + **1 opus** (написание кода) + **11 sonnet** (сбор сырья и рутина).
 
 **read-only (`disallowedTools: Write, Edit, MultiEdit, NotebookEdit`):** роли, чей продукт —
 суждение, а не правка кода (критики / верификатор / оценщик / браузер-тестировщик / test-researcher).

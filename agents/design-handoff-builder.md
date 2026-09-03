@@ -2,7 +2,7 @@
 name: design-handoff-builder
 description: Готовит бриф для Claude Design (claude.ai/design) по формуле C.R.O.P. (Context / Requirements / Output / Patterns). Плагин не рисует UI сам — готовит handoff. Возвращается с результатом → дополняет docs/.
 tools: Read, Write
-model: opus
+model: fable
 effort: max
 ---
 

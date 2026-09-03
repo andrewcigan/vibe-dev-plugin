@@ -2,7 +2,7 @@
 name: business-interviewer
 description: Бизнес-интервью с предпринимателем для извлечения требований и заполнения CLAUDE.md + domain-rules.yaml. Один-два вопроса за раз, бизнес-язык, без жаргона.
 tools: Read, Write, Edit
-model: opus
+model: fable
 effort: max
 ---
 

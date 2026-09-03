@@ -2,7 +2,7 @@
 name: architect
 description: Системный архитектор. Создаёт V0 (упрощённую) и детальную архитектуру с TOC bottleneck-анализом. Применяет Карпати Simplicity First (≤10 компонентов). Готовит docs/ARCHITECTURE.md.
 tools: Read, Write, Edit, Glob, Grep, WebSearch
-model: opus
+model: fable
 effort: max
 ---
 

@@ -35,6 +35,15 @@ ROOT="$(hook_plugin_root)"
 profile_in "standard,strict" "$PROFILE" || hook_emit_pass
 
 TOOL="$(hook_field '.tool_name')"
+
+# v9 F3.3: пин модели субагента — сверка с реестром по факту старта, а не по фронтматтеру.
+if [ "$TOOL" = "Agent" ]; then
+  PIN="$(HOOK_PAYLOAD="$HOOK_INPUT" hook_run_check "$CWD" "model-pin" text "$ROOT/hooks/checks/model-pin-verify.sh" "$CWD" "$ROOT")"
+  if [ -n "$(printf '%s' "$PIN" | tr -d '[:space:]')" ]; then
+    hook_emit_context "PostToolUse" "$(printf '%s' "$PIN" | sed 's/^WARN\t//')"
+  fi
+fi
+
 case "$TOOL" in
   Bash)
     # Чистый успех = нет interrupted (^C) и нет returnCodeInterpretation (тихое падение

@@ -20,6 +20,7 @@
 set -u
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib/hook-io.sh" 2>/dev/null || true
+export VIBE_HOOK_EVENT="PreCompact"   # для журнала срабатываний (v9 F0.1)
 
 IN="$(cat)"
 CWD="$(printf '%s' "$IN" | jq -r '.cwd // empty' 2>/dev/null)"

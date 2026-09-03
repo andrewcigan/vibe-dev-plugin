@@ -10,6 +10,7 @@
 set -u
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/lib/hook-io.sh"
+export VIBE_HOOK_EVENT="SessionStart"   # для журнала срабатываний (v9 F0.1)
 
 hook_read_stdin
 CWD="$(hook_field '.cwd')"

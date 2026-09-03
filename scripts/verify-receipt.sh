@@ -17,8 +17,20 @@ set -u
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/../hooks/lib/resolve-paths.sh" 2>/dev/null || true
 
+# --live — прогон против НАСТОЯЩЕЙ внешней системы, а не против подмены (v9 F4.3).
+# Зачем отдельный признак: в прошлом инциденте команда проверки была формально валидна, но
+# юнит-тесты подменяли ровно ту границу, которую доказывали — поиск в чужой системе. Тест
+# был зелёным месяц, а механизм не срабатывал ни разу. Обычная квитанция доказывает, что
+# команда отработала; живая — что она разговаривала с внешней системой.
+LIVE=no
+ARGS=()
+for a in "$@"; do
+  case "$a" in --live) LIVE=yes ;; *) ARGS+=("$a") ;; esac
+done
+set -- "${ARGS[@]:-}"
+
 FEAT="${1:-}"
-[ -n "$FEAT" ] || { echo "Нужен id фичи: bash scripts/verify-receipt.sh <feature-id> [путь]" >&2; exit 2; }
+[ -n "$FEAT" ] || { echo "Нужен id фичи: bash scripts/verify-receipt.sh <feature-id> [путь] [--live]" >&2; exit 2; }
 ROOT="${2:-$PWD}"
 if command -v vibe_resolve_root >/dev/null 2>&1; then
   ROOT="$(vibe_resolve_root "$ROOT" strict)" || exit 1
@@ -55,9 +67,9 @@ DUR=$(( $(date +%s) - START ))
 TREE="$( (cd "$ROOT" && git rev-parse HEAD 2>/dev/null && git status --porcelain 2>/dev/null | shasum -a 256 | awk '{print $1}') | tr '\n' ' ')"
 RECEIPT="$ROOT/.harness/receipts/${FEAT}-${STAMP}.json"
 
-python3 - "$RECEIPT" "$FEAT" "$CMD" "$RC" "$DUR" "$OUTF" "$TREE" <<'PYEOF'
+python3 - "$RECEIPT" "$FEAT" "$CMD" "$RC" "$DUR" "$OUTF" "$TREE" "$LIVE" <<'PYEOF'
 import json,sys,hashlib,subprocess
-receipt,feat,cmd,rc,dur,outf,tree=sys.argv[1:8]
+receipt,feat,cmd,rc,dur,outf,tree,live=sys.argv[1:9]
 raw=open(outf,encoding='utf-8',errors='replace').read()
 lines=raw.splitlines()
 try: engine=subprocess.run(['claude','--version'],capture_output=True,text=True).stdout.strip()
@@ -74,6 +86,7 @@ json.dump({
  "output_tail": lines[-8:] if len(lines)>12 else [],
  "tree_state": tree.strip(),
  "engine": engine,
+ "live": live == "yes",
 }, open(receipt,'w',encoding='utf-8'), ensure_ascii=False, indent=1)
 PYEOF
 

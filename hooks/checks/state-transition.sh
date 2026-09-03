@@ -257,6 +257,32 @@ if prev_ids is not None:
                 "bash scripts/verify-receipt.sh %s: квитанцию нельзя написать прозой, её содержимое "
                 "порождается запуском. (v9 F4.1)" % (feat_id, feat_state, feat_id))
 
+        # --- Фича с внешней связью требует ЖИВОГО прогона (v9 F4.3). ---
+        # В прошлом инциденте команда проверки была формально валидна, но тесты подменяли ровно
+        # ту границу, которую доказывали — поиск в чужой системе. Зелёный месяц, механизм не
+        # сработал ни разу, вскрыли живые люди. Обычная квитанция доказывает, что команда
+        # отработала; живая — что она разговаривала с настоящей внешней системой.
+        if str(f.get('surface') or f.get('category') or '').strip().lower() in ('integration', 'external'):
+            live_ok = False
+            try:
+                for n in os.listdir(_rec_dir):
+                    if n.startswith(str(feat_id) + '-') and n.endswith('.json'):
+                        try:
+                            if json.load(open(os.path.join(_rec_dir, n), encoding='utf-8')).get('live'):
+                                live_ok = True
+                                break
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+            if not live_ok:
+                errors_soft.append(
+                    "%s: фича работает с внешней системой и переходит в «%s» без живого прогона. "
+                    "Подменённая в тестах граница — это ровно та, которую надо было доказать: так "
+                    "месяц выглядел закрытым механизм, не сработавший ни разу. Прогони против "
+                    "настоящей системы: bash scripts/verify-receipt.sh %s --live (v9 F4.3)"
+                    % (feat_id, feat_state, feat_id))
+
 # ЧЕСТНОСТЬ ДЕКЛАРАЦИЙ (v8.0.2 dogfooding LinX): валидируем ИМЯ состояния (∈ valid_states) и
 # согласованность bucket↔state (выше). Граф schema["allowed_transitions"] загружается
 # load_schema_simple, но переход old→new НАМЕРЕННО НЕ enforced — он неполон для ретрофита

@@ -476,7 +476,7 @@ else
 fi
 
 echo "=== 49. v9 волна 4: против «готово на бумаге» (рождение готовым + квитанция прогона) ==="
-for t in test-born-passing test-receipt-gate; do
+for t in test-born-passing test-receipt-gate test-live-run-gate; do
     if python3 "tests/hooks/$t.py" > "/tmp/vibe-$t.out" 2>&1; then
         tail -1 "/tmp/vibe-$t.out"
     else

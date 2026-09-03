@@ -34,7 +34,9 @@ echo "Патч-механизм v8.0.1 — сценарии:"
 P="$(mkproj 7.0 strict)"
 [ -n "$(sim "$P" strict)" ] && ok "1. строгий v8 на этих фичах → deny (база)" || bad "1. база deny" "нет deny"
 bash "$UPG" --soft "$P" >/dev/null 2>&1
-[ "$(cat "$P/.harness/engine-version")" = "8.0" ] && ok "2. --soft → движок 8.0" || bad "2. движок" "$(cat "$P/.harness/engine-version")"
+# Ожидание производное от версии плагина: жёсткая «8.0» устаревала при каждом мажоре.
+MAJ="$(python3 -c "import json;print(json.load(open('.claude-plugin/plugin.json'))['version'].split('.')[0])" 2>/dev/null)"
+[ "$(cat "$P/.harness/engine-version")" = "${MAJ}.0" ] && ok "2. --soft → движок ${MAJ}.0" || bad "2. движок" "$(cat "$P/.harness/engine-version")"
 [ "$(cat "$P/.harness/hook-mode" 2>/dev/null)" = "learn" ] && ok "3. --soft → hook-mode=learn (C1)" || bad "3. hook-mode" "нет"
 [ "$(cat "$P/.harness/profile")" = "strict" ] && ok "4. --soft → profile сохранён strict (C1)" || bad "4. profile" "$(cat "$P/.harness/profile")"
 [ ! -f "$P/.git/hooks/pre-commit" ] && ok "5. --soft НЕ ставит git pre-commit (C2)" || bad "5. pre-commit" "поставлен"
@@ -59,7 +61,7 @@ printf '%s' "$OUT" | grep -q BLOCK && ok "10. H1: обход hook-mode комм�
 
 # 11: бэкап-тег создан
 P="$(mkproj 7.0 strict)"; bash "$UPG" --soft "$P" >/dev/null 2>&1
-git -C "$P" tag 2>/dev/null | grep -q "pre-v8" && ok "11. бэкап-тег pre-v8-* создан (H5)" || bad "11. бэкап" "нет"
+git -C "$P" tag 2>/dev/null | grep -q "pre-v${MAJ}" && ok "11. бэкап-тег pre-v${MAJ}-* создан (H5)" || bad "11. бэкап" "нет"
 rm -rf "$P"
 
 echo ""

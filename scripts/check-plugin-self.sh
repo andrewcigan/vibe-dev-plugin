@@ -498,6 +498,27 @@ else
     echo "❌ эстафета не держит:"; cat /tmp/vibe-relay.out; ERRORS=$((ERRORS + 1))
 fi
 
+echo "=== 52. СОГЛАСОВАННОСТЬ ВИТРИНЫ: версия одинакова везде, где её видит человек ==="
+# Витрина уже отставала на два мажора, потому что версию нигде не сверяли: она живёт в
+# манифесте, в файле маркетплейса и в описаниях для человека.
+PV="$(python3 -c "import json;print(json.load(open('.claude-plugin/plugin.json'))['version'])" 2>/dev/null)"
+MV="$(python3 -c "
+import json
+d=json.load(open('.claude-plugin/marketplace.json'))
+print(next((e.get('version','') for e in d.get('plugins',[]) if e.get('name')=='vibe-dev'),''))" 2>/dev/null)"
+if [ "$PV" != "$MV" ]; then
+    echo "❌ версия расходится: манифест=$PV, витрина маркетплейса=$MV"; ERRORS=$((ERRORS + 1))
+else
+    echo "✓ версия согласована: $PV (манифест = витрина)"
+fi
+MAJOR="${PV%%.*}"
+for f in README.md README.ru.md CLAUDE.md AGENTS.md; do
+    [ -f "$f" ] || continue
+    if ! grep -qE "v${MAJOR}(\.|[^0-9])" "$f"; then
+        echo "❌ $f не упоминает актуальный мажор v${MAJOR} — витрина отстала от кода"; ERRORS=$((ERRORS + 1))
+    fi
+done
+
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="

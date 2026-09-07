@@ -1,6 +1,6 @@
 ---
 name: choose-stack
-description: Выбор стека под bottleneck архитектуры. Запускает stack-advisor (Opus). Использует 2026 tech-updates (opendataloader-pdf, VoxCPM2, chrome-devtools-mcp). Выбирает один стек, объясняет последствия. Триггеры — "/choose-stack", "выбери стек", "tech stack".
+description: Выбор стека под bottleneck архитектуры. Запускает stack-advisor (Fable 5.1). Использует 2026 tech-updates (opendataloader-pdf, VoxCPM2, chrome-devtools-mcp). Выбирает один стек, объясняет последствия. Триггеры — "/choose-stack", "выбери стек", "tech stack".
 when_to_use: После /architecture (FAST) или /prototype (FULL). Перед /detail-architecture. Решает технологические вопросы за пользователя.
 ---
 

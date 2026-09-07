@@ -86,7 +86,7 @@ stack:
     rationale: "..."
 
   llm:
-    primary: Claude через подписку Claude Code (Opus для критичных, Sonnet для routine)
+    primary: Claude через подписку Claude Code (Opus 5 для критичного, Sonnet 5 для рутины)
     forbidden: Anthropic Direct API (см. anti-pattern AP-22)
     embedding: gemini-embedding-001 task_type RETRIEVAL_DOCUMENT output_dim=768
     image_gen: higgsfield через MCP (если нужно)
@@ -138,7 +138,7 @@ stack:
 Frontend: Next.js + shadcn/ui (UX-скорость + знакомо тебе)
 Backend: Next.js API routes (без отдельного сервиса — простота)
 DB: Supabase + pgvector (одна БД для всего — экономия)
-LLM: Claude через подписку (Opus критичное, Sonnet routine)
+LLM: Claude через подписку (Opus 5 — критичное, Sonnet 5 — рутина)
 Парсинг: opendataloader-pdf (точность 0.907)
 Tests: chrome-devtools-mcp + vitest
 
@@ -161,4 +161,4 @@ Cost ~$X/мес (в твоём бюджете $Y).
 
 ## Cost cap
 
-$2 (Opus). WebSearch до 5 для проверки текущих цен.
+$2 (Fable 5.1). WebSearch до 5 для проверки текущих цен.

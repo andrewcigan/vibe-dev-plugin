@@ -16,15 +16,21 @@ decisions and does the work. The point of the plugin is to make the agent *relia
 > checkpoints that are actually enforced.
 
 The number of mechanisms and their live status live in [`docs/traceability.md`](docs/traceability.md)
-— the single source of truth (**67 tracked** today; some rows are honestly marked as discipline
+— the single source of truth (**87 tracked** today; some rows are honestly marked as discipline
 or a display-only layer — the on-screen jargon catcher, the secret-output mask, the `/checkpoint`
 nudge — and are **not** counted as enforcement). Each mechanism carries three attributes:
 *where it's defined / what enforces it / what happens if you try to bypass it*. The plugin's
 self-check verifies completeness — a claim without a live mechanism doesn't pass.
 
-**New in v9:** feature history became append-only (provenance as an event log), context unloading
-became a deliberate `/checkpoint` instead of the roulette of auto-compaction, and the verifying
-agent is *physically* denied the right to write code. **v7** added auto-memory (a snapshot before
+**New in v9:** the work is split across three models by stage — the top level (architecture,
+planning, critique, audit) runs on Fable 5.1 and **writes no code**; code is written by Opus 5,
+and only once there is a spec and a command that proves the result. Guards stopped lying when
+they break: 26 of 26 used to answer "no objections" when a helper utility was broken — now zero.
+Evidence of completion is **produced by running**: a receipt carrying the exit code and a
+fingerprint of the output, which cannot be written in prose. **v8** made feature history
+append-only (provenance as an event log), turned context unloading into a deliberate
+`/checkpoint` instead of the roulette of auto-compaction, and *physically* denied the verifying
+agent the right to write code. **v7** added auto-memory (a snapshot before
 compaction + a return brief), a browser tester that looks at the page with its own eyes, and
 secret locks. Every new guard was verified with live runs on the Claude Code 2.1.x engine — the
 verification date is recorded in each mechanism's row.
@@ -69,10 +75,10 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 |---|---|---|
 | **UI-evidence gate** | a UI feature is marked "done" on typecheck/tests, but a real click shows nothing | **block** (a screenshot / live run is required) |
 | **Surface-aware evidence** (v6.2) | a "no-UI" feature (API / scheduled job / CLI) is closed with no trace of a real call; a UI feature hides as a "library" | the surface is inferred from files and can only tighten: ui → **block**, others → **warn** with an acceptance recipe |
-| **Runtime evidence on logic + negative gate** (v9) | green tests lie: a logic feature is closed on typecheck alone; a medium/large one ships with no "what if we break it" check | passing with no trace of a real run → **block**; M/L without a mutation or leak check → **block** |
-| **Adversarial fresh-context verifier** (v9) | the same agent both writes the code and "confirms" it works | the verifier runs in *assume broken until proven* mode and is **physically denied write access** (the engine forbids it Write/Edit) |
+| **Runtime evidence on logic + negative gate** (v8) | green tests lie: a logic feature is closed on typecheck alone; a medium/large one ships with no "what if we break it" check | passing with no trace of a real run → **block**; M/L without a mutation or leak check → **block** |
+| **Adversarial fresh-context verifier** (v8) | the same agent both writes the code and "confirms" it works | the verifier runs in *assume broken until proven* mode and is **physically denied write access** (the engine forbids it Write/Edit) |
 | **Test-strategy before build** | a medium/large feature goes into work without a thought-through verification plan | **block** (no `docs/test-strategy.md` → it can't enter `active`) |
-| **Detailing stage** (v9) | a large feature is dragged into work "verbally," with no broken-down plan | an M/L feature can't enter work without `docs/changes/<id>/proposal.md` carrying a prioritized user story in Given/When/Then → **block** |
+| **Detailing stage** (v8) | a large feature is dragged into work "verbally," with no broken-down plan | an M/L feature can't enter work without `docs/changes/<id>/proposal.md` carrying a prioritized user story in Given/When/Then → **block** |
 | **Data-model review gate** | a DB schema is written without a separate critical review (the model "freezes," reworks are expensive) | **block** (no `docs/data-model-review.md` → it can't enter `active`) |
 | **State-machine transitions** | a feature jumps to an invalid state / a corrupted state file | **block** (current project) / warn (legacy) |
 
@@ -86,7 +92,7 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Real-shape fixture corpus** | a gate green on synthetic data, broken on real files | self-check runs gates against 6 anonymized real `feature_list` files |
 | **`/doctor`** | "why are the guards silent?" | self-diagnosis: profile / heartbeat / crashes / install + a fix table |
 
-### A3. Feature history can't be rewritten (provenance, v9)
+### A3. Feature history can't be rewritten (provenance, v8)
 | Mechanism | What it catches | What it does |
 |---|---|---|
 | **Append-only event log** | history is edited or erased after the fact | an edited/removed log line → **reject** the commit |
@@ -95,7 +101,7 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Archive by reference + evidence hash** | finished features bloat the hot file, and the "done" evidence can be swapped | the body moves to an archive, a one-line reference stays in the working file; the hash is verified at commit time **without loading the body into context** |
 | **Open-tasks gate at ship** | a feature is archived with unfinished items inside | archiving → **block** until the tasks are closed |
 
-### A4. Context under control, not up to luck (v9)
+### A4. Context under control, not up to luck (v8)
 | Mechanism | What it catches | What it does |
 |---|---|---|
 | **Deliberate `/checkpoint`** | state lives only in the conversation — auto-compaction eats it at a random moment | checkpoint on command: provenance recovery → archive what's finished → **cold-start gate**: a templated or stale `SESSION.md` / incoherent history → **block** completion |
@@ -112,7 +118,7 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Hardcoded live key** (v7) | a production key is written straight into source and rides into git | writing a file with a live key → **block**; lifted only by an explicit user phrase |
 | **Secret-in-prompt** (v6.2) | the user pasted a live key into a message | **warn**: the key is compromised → rotate + move to `.env` |
 | **Secret-in-output** (v6.2) | a CLI printed a token — it lingers in the session context | **warn** to the model: don't reuse the literal, suggest rotation (+ output masking on engines that support it) |
-| **Writes outside the project root** (v7→v9) | the agent writes a file past the project, into someone else's folder | **warn** + a log entry; the corpus accumulates toward a future block |
+| **Writes outside the project root** (v7→v8) | the agent writes a file past the project, into someone else's folder | **warn** + a log entry; the corpus accumulates toward a future block |
 | **Concurrent-write advisory** | two sessions write to one file (real case: data loss) | **warn** (advisory) |
 
 ### C. Anti-stall
@@ -122,7 +128,7 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Interrupt-recovery** (v6.2.1) | a dropped connection (closed laptop lid) or an inbound message kills the running tool — the system falsely logs "user rejected," and the agent stalls for hours | the next message without a stop-word → **inject** "that was a disconnect, not a veto — continue the plan"; a real "stop" keeps its force |
 | **Repeated-failure detector** | the same command is launched a 3rd time in a row with no success and no structural change | **warn** before running: prompt for a diagnostic subagent |
 | **Circuit breaker** (v7) | even at double the repeat threshold the agent keeps grinding the same thing | a hard escalation into `/stuck` — stalling stopped being a matter of discipline |
-| **Tier escalation** (v9) | the cheaper model failed twice and is asked a third time | the order: 2 failures → raise the tier, don't retry; an LLM quorum only if the top tier failed too |
+| **Tier escalation** (v8) | the cheaper model failed twice and is asked a third time | the order: 2 failures → raise the tier, don't retry; an LLM quorum only if the top tier failed too |
 
 ### D. Plain language (the non-engineer's biggest pain)
 | Mechanism | What it catches | What it does |
@@ -140,7 +146,7 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Architecture research gate** (v6.2) | architecture is written without studying best practices and existing solutions | **block** writing `ARCHITECTURE*.md` without `docs/research/*`; the skip is allowed ONLY by an explicit user phrase |
 | **Closing mode** (v6.2) | "let's close the session" → the agent suddenly starts coding | rights degrade: writes only to state files; new work → backlog; lifted by a normal next message |
 | **Lock pattern** (v6.2) | the agent fakes "user consent" markers (skip / closing) | `.harness/locks/*` markers are written ONLY by hooks on an explicit phrase — an agent write is **block** |
-| **Config-protect** (v6.2, hardened in v9) | the agent weakens its own gates (profile, heartbeat, "learn" mode, disabling) | **block** in all profiles, including bypasses via copy/move/rename; loosening strictness is the user's manual action only |
+| **Config-protect** (v6.2, hardened in v8) | the agent weakens its own gates (profile, heartbeat, "learn" mode, disabling) | **block** in all profiles, including bypasses via copy/move/rename; loosening strictness is the user's manual action only |
 | **Wave-continue** (v7) | you said "don't stall, go to the end" and the turn ends with yet another technical question | **inject** "don't ask the technical question, continue; leave the business fork" |
 | **Handoff loop** | at session close the plan stays in the chat (the next session won't see it) | **inject** a cold-start checklist + detect a missed handoff at startup |
 | **User rules (`/hookify`)** | "never do X again" is forgotten and repeated | the human freezes a correction into a permanent **block/warn** rule, no code needed |
@@ -151,9 +157,9 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 | **Hooks out of the box** | `hooks.json` auto-loads on install; with no file you can't "forget to turn it on" |
 | **Warnings reach the model** | warnings travel on the correct channel (otherwise they'd be silently lost) |
 | **Profiles + version lifecycle** | minimal/standard/strict; legacy projects aren't forced, they migrate on command (`/upgrade-project`, soft mode `--soft`, preview `--dry-run`) |
-| **Single path resolver** (v9) | one source for state-file names + root lookup up the tree; an ambiguous root → refuse instead of quietly writing to the wrong place |
-| **Model pins per stage** (v9) | the role registry is the source of truth: the top tier for planning/critique/verification, the working tier for code/reading; drift from the registry fails the self-check |
-| **One readiness number in `/audit`** (v9) | project health = the MINIMUM across the bottleneck (not an average), with deterministic history-integrity metrics |
+| **Single path resolver** (v8) | one source for state-file names + root lookup up the tree; an ambiguous root → refuse instead of quietly writing to the wrong place |
+| **Model pins per stage** (v8) | the role registry is the source of truth: the top tier for planning/critique/verification, the working tier for code/reading; drift from the registry fails the self-check |
+| **One readiness number in `/audit`** (v8) | project health = the MINIMUM across the bottleneck (not an average), with deterministic history-integrity metrics |
 | **Traceability table + self-check** | every mechanism is described by 3 attributes; a row without a live mechanism fails the self-check |
 | **Personal-data gate** | if anything personal slips into the public build (email / client project / private path) — **block** the self-check |
 
@@ -166,9 +172,9 @@ they're migrated with `/upgrade-project`, softly if needed: `--soft`).
 
 Built **after auditing all ~20 real projects** from earlier versions (12 retrospectives + ~150
 memory notes + 6 bug journals); v6.2 followed an **audit of 54 live sessions**; v7 an **audit of
-9 live session journals**; v9 was built from the owner's decisions (12 cards) + donor patterns
+9 live session journals**; v8 was built from the owner's decisions (12 cards) + donor patterns
 (pilotfish / OpenSpec / spec-kit) + the **first rollout of the harness onto a live production
-project**, which produced 4 targeted fixes (v9.0.0).
+project**, which produced 4 targeted fixes (v8.0.2).
 
 ---
 
@@ -243,16 +249,33 @@ instructions.
 
 ## Version
 
-**v9.0.0** — four fixes from the first rollout of the harness onto a live production project:
+**v9.0.0** — Three models by stage, and guards that stop lying. **87 mechanisms** (up from 71).
+The top level of work — architecture, planning, critique, audit — runs on **Fable 5.1**, and the
+ban on writing code sits on the role itself, covering shell redirection too (six "read-only"
+roles could previously write around it). Code goes to **Opus 5**, and only once the feature says
+how it will be proven. Routine gathering stays on **Sonnet 5**. The model a subagent actually
+started on is checked against the role registry. **Guards**: 26 of 26 silently passed actions
+through when a helper utility was broken — now zero (shell strict mode was deliberately *not*
+used: it turns a block into a warning). A verdict log finally shows how many times each mechanism
+prevented trouble and how many times it got in the way. **Against "done on paper"**: a run
+receipt instead of prose, a record born already-done became an event, and a feature touching an
+external system now requires a live run. **Demolished** under the two-fixes rule: the commit
+block based on activation-sensor freshness — 111 false blocks against zero real catches.
+**Context**: journal rotation started working for the first time since v8 (it had been looking
+for a state that does not exist in the transition graph) — a live project's journal went from
+1.16 MB to 707 KB.
+
+
+**v8.0.2** — four fixes from the first rollout of the harness onto a live production project:
 the migration skill caught up with its code, harness runtime files no longer dirty git, the
 model-swap guard stopped firing on prose, and the reference-only transition graph is now
 honestly labeled as reference-only.
 
-**v9.0.0** — a core defect fix (ordinary work progress was mistaken for a requirement edit and
+**v8.0.1** — a core defect fix (ordinary work progress was mistaken for a requirement edit and
 rejected the very first commit after verification) + a safe migration path for live projects:
 soft mode `--soft`, an honest `--dry-run` preview, and the `/patch-projects` orchestrator.
 
-**v9.0.0** — nine waves, 26 features, **67 mechanisms**. Five lines: feature provenance as an
+**v8.0.0** — nine waves, 26 features, **67 mechanisms**. Five lines: feature provenance as an
 event log (append-only history + archive by reference with an evidence hash); a detailing stage
 for large features; a deliberate `/checkpoint` instead of the auto-compaction roulette + a
 three-tier context model; model pins per stage and an independent verifier with no write access;

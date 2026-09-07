@@ -1,6 +1,6 @@
 ---
 name: dev-plan
-description: Wave-план разработки через dev-planner (Opus) + reordering-agent (Sonnet). Каждая секция → feature в feature_list.json с affected_files, verification, business_invariant, size_estimate. ROADMAP.md + waves. Триггеры — "/dev-plan", "wave план", "план разработки".
+description: Wave-план разработки через dev-planner (Fable 5.1) + reordering-agent (Sonnet 5). Каждая секция → feature в feature_list.json с affected_files, verification, business_invariant, size_estimate. ROADMAP.md + waves. Триггеры — "/dev-plan", "wave план", "план разработки".
 when_to_use: FAST после /detail-architecture / /choose-stack. FULL после /design-handoff. Превращает архитектуру в выполнимый план через feature_list.json.
 ---
 

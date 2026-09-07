@@ -124,4 +124,4 @@ LLM-cost оценочно: ~$X на all features.
 
 ## Cost cap
 
-$2 (Opus).
+$2 (Fable 5.1).

@@ -155,4 +155,4 @@ Format (Quality Gate):
 
 ## Cost cap
 
-Per-call budget: $3 (Opus). WebSearch limit: 3.
+Per-call budget: $3 (Fable 5.1). WebSearch limit: 3.

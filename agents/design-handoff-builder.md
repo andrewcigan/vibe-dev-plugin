@@ -173,4 +173,4 @@ Language: ru (или en/ru bilingual).
 
 ## Cost cap
 
-$1 (Opus). Read-only до Write.
+$1 (Fable 5.1). Read-only до Write.

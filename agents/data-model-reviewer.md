@@ -1,6 +1,6 @@
 ---
 name: data-model-reviewer
-description: Критический Opus-ревьюер модели данных ПЕРЕД реализацией схемы БД / миграций / RLS в проекте пользователя. Fresh context, НЕ соглашается по умолчанию. Ищет недостающие/лишние сущности, упущенные поля, спорные решения (JSON vs таблица, soft/hard delete, нормализация) и провалы «UX-фича врёт о связях в модели». Запускается из /feature (когда affected_files содержит schema/migrations) и из /detail-architecture перед фиксацией сущностей.
+description: Критический ревьюер (Fable 5.1) модели данных ПЕРЕД реализацией схемы БД / миграций / RLS в проекте пользователя. Fresh context, НЕ соглашается по умолчанию. Ищет недостающие/лишние сущности, упущенные поля, спорные решения (JSON vs таблица, soft/hard delete, нормализация) и провалы «UX-фича врёт о связях в модели». Запускается из /feature (когда affected_files содержит schema/migrations) и из /detail-architecture перед фиксацией сущностей.
 tools: Read, Bash, Glob, Grep
 model: fable
 effort: max
@@ -116,7 +116,7 @@ Fresh fork, zero-context. Видишь только: schema-файлы, доме
 
 ## Cost cap
 
-Per-call budget: $1.50 (Opus, read-only, без external calls). Глубокий reasoning оправдан — цена пропущенной сущности выше (переделка застывшей модели).
+Per-call budget: $1.50 (Fable 5.1, read-only, без external calls). Глубокий reasoning оправдан — цена пропущенной сущности выше (переделка застывшей модели).
 
 ## Fact-forcing вместо «уверен?» (v6.2 F9; паттерн ECC gateguard)
 

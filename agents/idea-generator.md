@@ -93,4 +93,4 @@ Fork с zero-context. Видишь только PRODUCT.md, CLAUDE.md, domain-ru
 
 ## Cost cap
 
-Per-call budget: $3 (Opus). WebSearch: до 5 вызовов для inspiration.
+Per-call budget: $3 (Fable 5.1). WebSearch: до 5 вызовов для inspiration.

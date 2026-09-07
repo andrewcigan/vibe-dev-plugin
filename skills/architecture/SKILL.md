@@ -1,6 +1,6 @@
 ---
 name: architecture
-description: V0 архитектура с TOC bottleneck-анализом. Запускает architect (Opus). ≤10 компонентов, Mermaid диаграмма, invariants как constraints, top-3 риска. FAST + FULL обе используют. Триггеры — "/architecture", "архитектура", "spроектируй систему".
+description: V0 архитектура с TOC bottleneck-анализом. Запускает architect (Fable 5.1). ≤10 компонентов, Mermaid диаграмма, invariants как constraints, top-3 риска. FAST + FULL обе используют. Триггеры — "/architecture", "архитектура", "spроектируй систему".
 when_to_use: После интервью (FAST) или после /research (FULL). Создаёт docs/ARCHITECTURE.md как основу для choose-stack.
 ---
 

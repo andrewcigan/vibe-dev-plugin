@@ -18,8 +18,19 @@ if [ ! -f "$LOG" ]; then
   echo "Он появится после первого запуска сторожей в этом проекте (нужен движок с плагином v9)."
   exit 0
 fi
-python3 - "$LOG" <<'PY'
+python3 - "$LOG" "$PROJ/.harness/guard-stats-summary.json" <<'PY'
 import json,sys,collections,datetime
+# Свёрнутые итоги (см. hooks/lib/fold-guard-log.py) складываем с живым хвостом: иначе после
+# свёртки счётчики обнулялись бы, и правило «двух починок» опять осталось бы без чисел.
+folded, folded_meta = {}, {}
+try:
+    _s = json.load(open(sys.argv[2], encoding='utf-8'))
+    folded = _s.get("totals", {})
+    folded_meta = {"records": _s.get("folded_records", 0),
+                   "since": _s.get("folded_since"), "until": _s.get("folded_until")}
+except Exception:
+    pass
+
 rows=[]
 for line in open(sys.argv[1], encoding='utf-8'):
     line=line.strip()
@@ -29,11 +40,17 @@ for line in open(sys.argv[1], encoding='utf-8'):
 if not rows:
     print("Журнал пуст."); raise SystemExit
 c=collections.defaultdict(lambda: collections.Counter())
+for g, v in folded.items():
+    c[g].update({k: int(n) for k, n in v.items()})
 for r in rows: c[r.get("guard","?")][r.get("verdict","?")]+=1
 first=min(r.get("t","") for r in rows); last=max(r.get("t","") for r in rows)
 tot=collections.Counter()
 for g,v in c.items(): tot.update(v)
-print(f'Журнал сторожей: {len(rows)} записей, с {first} по {last}')
+if folded_meta.get("records"):
+    print(f'Журнал сторожей: {len(rows)} свежих записей (с {first} по {last}) '
+          f'+ {folded_meta["records"]} свёрнутых в итоги (с {folded_meta.get("since","?")})')
+else:
+    print(f'Журнал сторожей: {len(rows)} записей, с {first} по {last}')
 print(f'Итого: запретов {tot["BLOCK"]}, предупреждений {tot["WARN"]}, пропусков {tot["pass"]}, ПАДЕНИЙ {tot["CRASH"]}')
 print()
 print(f'{"сторож":34}{"запретил":>10}{"предупредил":>13}{"пропустил":>11}{"УПАЛ":>7}')

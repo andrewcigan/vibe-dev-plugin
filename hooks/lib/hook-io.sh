@@ -283,6 +283,11 @@ hook_log_verdict() {
     printf '{"t":"%s","guard":"%s","verdict":"%s","rc":%s,"event":"%s","gist":"%s"}\n' \
       "$(date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null)" "$_label" "$_v" "$_rc" \
       "${VIBE_HOOK_EVENT:-?}" "$_gist" >> "$_cwd/.harness/guard-stats.jsonl"
+    # Свёртка (v9): наблюдение без предела роста само становится тем, за чем надо наблюдать —
+    # за четыре дня журнал дорос до 2,1 МБ. Итоги за прошлое остаются числами в сводке.
+    if [ "$(wc -c < "$_cwd/.harness/guard-stats.jsonl" 2>/dev/null || echo 0)" -gt 1048576 ]; then
+      python3 "$(dirname "${BASH_SOURCE[0]}")/fold-guard-log.py" "$_cwd/.harness/guard-stats.jsonl"
+    fi
   ) 2>/dev/null || true
   return 0
 }

@@ -24,6 +24,21 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 ROOT="$(vibe_resolve_root "${1:-$PWD}" strict)" || exit 1
 SESSION="$(vibe_path_session "$ROOT")"
+
+# Резервная копия перед любой перезаписью состояния (v9). Файл состояния у плагина лежит вне git
+# (_internal/ в .gitignore), поэтому ошибка правки необратима: 2026-09-07 так были стёрты рабочие
+# заметки двух сессий — заменялся диапазон «от заголовка до заголовка», и они попали внутрь.
+# Для файла вне истории версий копия рядом — единственная сеть.
+if [ -f "$SESSION" ]; then
+  BAK_DIR="$(dirname "$SESSION")/archive"
+  mkdir -p "$BAK_DIR" 2>/dev/null
+  BAK="$BAK_DIR/SESSION.bak-$(date '+%Y%m%d-%H%M%S').md"
+  cp "$SESSION" "$BAK" 2>/dev/null && echo "→ резервная копия состояния: ${BAK#$ROOT/}"
+  # Держим последние 5 копий: сеть нужна, склад — нет.
+  ls -1t "$BAK_DIR"/SESSION.bak-*.md 2>/dev/null | tail -n +6 | while IFS= read -r old; do
+    rm -f "$old" 2>/dev/null
+  done
+fi
 FL="$(vibe_path_feature_list "$ROOT")"
 LOG="$(vibe_path_provenance_log "$ROOT")"
 

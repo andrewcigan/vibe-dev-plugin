@@ -15,6 +15,10 @@ set -u
 . "$(dirname "${BASH_SOURCE[0]}")/../lib/guard-prelude.sh"
 CWD="${1:-$PWD}"
 THRESHOLD=204800   # 200 КБ ≈ 50 тысяч токенов на одно чтение
+# Скрипт ротации живёт в плагине, а не в проекте: подсказка «bash scripts/archive-features.sh»
+# давала в проекте «нет такого файла» (v9.0.1). Корень плагина — от расположения самого
+# пробника (hooks/checks → два уровня вверх), как в hooks/lib/hook-io.sh.
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 size_of() { [ -f "$1" ] && wc -c < "$1" 2>/dev/null | tr -d ' ' || echo 0; }
 human() { python3 -c "
@@ -23,7 +27,7 @@ n=int(sys.argv[1])
 print(f'{n/1048576:.2f} МБ' if n>=1048576 else f'{n//1024} КБ')" "$1" 2>/dev/null || echo "$1 б"; }
 
 REPORT=""
-for pair in "feature_list.json|журнал фич|bash scripts/archive-features.sh" \
+for pair in "feature_list.json|журнал фич|bash \"$PLUGIN_ROOT/scripts/archive-features.sh\" \"$CWD\"" \
             "SESSION.md|журнал сессии|/checkpoint (ротация завершённого в архив)" \
             "error-journal.md|журнал ошибок|/lessons (свод повторов, остальное в архив)"; do
   f="${pair%%|*}"; rest="${pair#*|}"; label="${rest%%|*}"; fix="${rest##*|}"

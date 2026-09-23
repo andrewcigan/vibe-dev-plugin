@@ -152,15 +152,18 @@ fi
 MUNGED_CWD="$(printf '%s' "$PWD" | sed 's/[^a-zA-Z0-9]/-/g')"
 PROJECT_MEM_DIR="$HOME/.claude/projects/$MUNGED_CWD/memory"
 if [ -d "$PROJECT_MEM_DIR" ]; then
-    PROJECT_MD=$(ls "$PROJECT_MEM_DIR"/project_*.md 2>/dev/null | head -1)
+    # Мерим САМЫЙ СВЕЖИЙ по времени изменения (ls -t), а не первый по алфавиту (v9.0.1): в каталоге
+    # памяти два десятка project_*.md, алфавитно первый мог не меняться месяцами — и не должен,
+    # он про другое. Проверка кричала «старше 1 часа (91979 мин)» на только что обновлённой памяти.
+    PROJECT_MD=$(ls -t "$PROJECT_MEM_DIR"/project_*.md 2>/dev/null | head -1)
     if [ -n "$PROJECT_MD" ]; then
         PMD_AGE_MIN=$(( ( $(date +%s) - $(stat -f %m "$PROJECT_MD" 2>/dev/null || stat -c %Y "$PROJECT_MD" 2>/dev/null || echo 0) ) / 60 ))
         if [ "$PMD_AGE_MIN" -gt 60 ]; then
-            echo "  ⚠️  project_*.md в memory старше 1 часа ($PMD_AGE_MIN мин)"
+            echo "  ⚠️  самый свежий project_*.md в memory старше 1 часа ($(basename "$PROJECT_MD"), $PMD_AGE_MIN мин)"
             echo "     Агент должен обновить ДО /end-session (E6 memory-stays-in-sync)"
             WARNINGS=$((WARNINGS+1))
         else
-            echo "  ✓ project_*.md sync ($PMD_AGE_MIN мин назад)"
+            echo "  ✓ project_*.md sync (самый свежий — $(basename "$PROJECT_MD"), $PMD_AGE_MIN мин назад)"
         fi
     fi
 fi

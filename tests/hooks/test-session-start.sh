@@ -78,6 +78,36 @@ if printf '%s' "$OUT" | jq empty 2>/dev/null; then PASS=$((PASS+1)); printf '  o
 else FAIL=$((FAIL+1)); printf '  FAIL 7. вывод — НЕ валидный JSON\n     получил: %s\n' "$OUT"; fi
 
 rm -rf "$PROJ"
+
+# 8. Разросшийся журнал фич: команда из подсказки «Чинится: …» исполнима из ЛЮБОГО каталога
+# (v9.0.1). Раньше подсказка была «bash scripts/archive-features.sh», а скрипт живёт в плагине,
+# не в проекте: выполнивший её получал «нет такого файла». Путь проекта — с пробелом и
+# кириллицей, как у живых проектов.
+JBASE="$(mktemp -d)"; JPROJ="$JBASE/проект с пробелом"; mkdir -p "$JPROJ/.harness"
+echo "9.0" > "$JPROJ/.harness/engine-version"
+python3 - "$JPROJ/feature_list.json" <<'PY'
+import json, sys
+f = {"id": "feat-001", "name": "Готовая", "state": "passing", "description": "x" * 210000,
+     "evidence": {"layer_2_runtime_at": "2026-09-23T00:00:00Z"},
+     "provenance": {"origin": "owner-msg", "source_ref": {"kind": "session", "ref": "s"},
+                    "captured_at": "2026-09-23T00:00:00Z", "by": "owner", "seq": 1}}
+json.dump({"version": "9.0", "features": {"done": [f]}}, open(sys.argv[1], "w"), ensure_ascii=False)
+PY
+CTX="$(run "$(ss_payload "$JPROJ")" | jq -r '.hookSpecificOutput.additionalContext // empty')"
+FIX="$(printf '%s\n' "$CTX" | grep 'журнал фич' | sed 's/.*Чинится: //')"
+assert_contains "8a. журнал фич > 200 КБ → подсказка с командой ротации" "$FIX" "archive-features.sh"
+if [ -n "$FIX" ] && (cd / && eval "$FIX") >/dev/null 2>&1; then
+  PASS=$((PASS+1)); printf '  ok   8b. команда из подсказки выполнилась из корня файловой системы\n'
+else
+  FAIL=$((FAIL+1)); printf '  FAIL 8b. команда из подсказки не выполнилась из чужого каталога\n     команда: %s\n' "$FIX"
+fi
+CTX2="$(run "$(ss_payload "$JPROJ")" | jq -r '.hookSpecificOutput.additionalContext // empty')"
+if printf '%s' "$CTX2" | grep -q 'журнал фич'; then
+  FAIL=$((FAIL+1)); printf '  FAIL 8c. после подсказки журнал фич всё ещё разросшийся\n'
+else
+  PASS=$((PASS+1)); printf '  ok   8c. после подсказки журнал разгружен — пробник молчит\n'
+fi
+rm -rf "$JBASE"
 echo ""
 echo "Итог: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

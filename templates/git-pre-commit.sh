@@ -155,10 +155,20 @@ fi
 # Ловит тихую правку требования в обход record-change.sh. git pre-commit — единственный, кто
 # видит и старую версию (HEAD), и новую, и добавленные строки лога. Технические поля
 # (affected_files/verification) — ВНЕ провенанса (не шумим).
+#
+# Ротация в архив (v9.0.1). scripts/archive-features.sh оставляет в горячем файле стаб
+# {id,name,state,evidence_ref,history_ref,evidence_hash}, а тело уносит в feature_list.archive.json.
+# Требование при этом не изменилось — оно ПЕРЕЕХАЛО. Раньше блок сравнивал прошлую запись со
+# стабом, где description/size_estimate/business_invariant нет, и останавливал каждый коммит
+# ротации: на живом проекте реестр не разгружался две недели и дорос до 596 КБ. Теперь, если
+# запись только что стала стабом, поля требования сверяются с её ТЕЛОМ в архиве (и с полями,
+# которые стаб несёт сам). Совпали — перенос, событие не нужно. Разошлись — это правка требования
+# под видом ротации, её фиксирует событие лога, как любую другую. Тела в архиве нет — это ловит
+# блок 6, здесь не дублируем. Обе записи — стабы: сверка как раньше.
 if git diff --cached --name-only 2>/dev/null | grep -qx "feature_list.json" && [ -f "$ROOT_DIR/feature_list.json" ]; then
   OLD_FL="$(git show HEAD:feature_list.json 2>/dev/null || echo '')"
   NEW_LOG_ADDED="$(git diff --cached --unified=0 -- "$HARNESS/provenance-log.jsonl" 2>/dev/null | grep -E '^\+[^+]' | sed 's/^+//' || true)"
-  if ! BIZ="$(OLD_FL="$OLD_FL" NEW_LOG_ADDED="$NEW_LOG_ADDED" python3 - "$ROOT_DIR/feature_list.json" 2>&1 <<'PY'
+  if ! BIZ="$(OLD_FL="$OLD_FL" NEW_LOG_ADDED="$NEW_LOG_ADDED" python3 - "$ROOT_DIR/feature_list.json" "$ROOT_DIR/feature_list.archive.json" 2>&1 <<'PY'
 import json, sys, os
 # Правки ТРЕБОВАНИЯ (что хотим / откуда пришло) требуют событие истории. Статус РЕАЛИЗАЦИИ
 # (lifecycle-state: up_next/active/passing/done/blocked/paused/rollback/…) — рабочий процесс,
@@ -205,12 +215,31 @@ for ln in os.environ.get("NEW_LOG_ADDED", "").splitlines():
         s.add(k)
     if e.get("op") in STATE_OPS:
         s.add(STATE_OPS[e["op"]])
+# Записи, ставшие стабом в этом коммите: их требование переехало в архив (путь — как в блоке 6).
+moved = {fid for fid, f in nf.items()
+         if "evidence_hash" in f and fid in ofs and "evidence_hash" not in ofs[fid]}
+archived = {}
+if moved and os.path.exists(sys.argv[2]):
+    try:
+        for a in json.load(open(sys.argv[2], encoding="utf-8")).get("archived", []):
+            if isinstance(a, dict):
+                archived[a.get("id")] = a
+    except Exception:
+        pass  # битый архив: у стабов не будет тела — это остановит блок 6
 bad = []
+disguised = False
 for fid, f in nf.items():
     of = ofs.get(fid)
     if not of:
         continue  # новая фича = захват (L3-F1), не правка
-    changed = {k for k in BIZ_REQ if of.get(k) != f.get(k)}
+    if fid in moved:
+        body = archived.get(fid)
+        if body is None:
+            continue  # тела в архиве нет — ловит блок 6, не дублируем
+        # стаб не несёт полей требования: их значение теперь в теле; поля стаба (name) сверяем тоже
+        changed = {k for k in BIZ_REQ if of.get(k) != body.get(k) or (k in f and of.get(k) != f.get(k))}
+    else:
+        changed = {k for k in BIZ_REQ if of.get(k) != f.get(k)}
     # state: событие требуется только на терминальной судьбе (rejected/superseded/reopened),
     # НЕ на обычном lifecycle-прогрессе (active→passing→done) — иначе /verify и /ship встают (C3).
     os_, ns = of.get("state"), f.get("state")
@@ -218,7 +247,13 @@ for fid, f in nf.items():
         changed.add("state")
     uncovered = changed - cover.get(fid, set())
     if uncovered:
-        bad.append("  %s: изменены %s без нового события лога" % (fid, ",".join(sorted(uncovered))))
+        if fid in moved:
+            disguised = True
+            bad.append("  %s: перенос в архив с правкой требования — изменены %s (тело в архиве не совпадает с прошлым коммитом) без нового события лога" % (fid, ",".join(sorted(uncovered))))
+        else:
+            bad.append("  %s: изменены %s без нового события лога" % (fid, ",".join(sorted(uncovered))))
+if disguised:
+    bad.append("  Сам перенос в архив события не требует: поля требования сверяются с телом в feature_list.archive.json. Здесь они разошлись с прошлым коммитом — требование правили перед ротацией.")
 if bad:
     print("\n".join(bad)); sys.exit(1)
 PY

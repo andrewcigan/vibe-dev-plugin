@@ -97,7 +97,7 @@
       "tool_call_budget": "число (опц., v8 L5-F6): ориентир tool-call на фичу (S~30-50, M~80-120, L~150-250); превышение → нудж /checkpoint|/stuck (discipline, warn, не блок). Не задано — дефолт 150.",
       "state": "captured | awaiting_research | up_next | awaiting_reviewer | awaiting_demo_milestone | active | awaiting_user_acceptance | blocked | paused | rollback | passing | rejected | superseded",
       "provenance": {
-        "_doc": "v8 провенанс-ГОЛОВА (event-sourcing). Обязательны origin+source_ref+captured_at+by. Пишется ТОЛЬКО через scripts/record-change.sh (не руками — иначе голова разойдётся с логом). Полная схема — schemas/feature_list.schema.json. Источник истины истории — .harness/provenance-log.jsonl.",
+        "_doc": "v8 провенанс-ГОЛОВА (event-sourcing). Обязательны origin+source_ref+captured_at+by. Пишется ТОЛЬКО писателем истории — scripts/record-change.sh в папке ПЛАГИНА vibe-dev, не проекта; полную команду печатают сторожа (не руками — иначе голова разойдётся с логом). Полная схема — schemas/feature_list.schema.json. Источник истины истории — .harness/provenance-log.jsonl.",
         "origin": "meeting|call|dialog|owner-msg|user-feedback|incident|competitor|regulatory|research|critic|inference — человеческое событие-источник (НЕ носитель)",
         "source_ref": "{kind: transcript|session|file|url|recording|unknown, ref, anchor?} — anchor=таймкод/стабильный replica-id, НЕ номер строки; kind=unknown — честный клапан «не помню откуда»",
         "captured_at": "ISO — когда требование ЗАНЕСЕНО (всегда)",

@@ -32,6 +32,9 @@ for a in "$@"; do
   esac
 done
 PROJ="${PROJ:-$PWD}"
+# Абсолютный путь: он попадает в подсказки «bash … --strict "<проект>"», а скилл зовёт скрипт с «.»,
+# и такая команда из другой папки уже не сработала бы (v9.0.3).
+PROJ="$(cd "$PROJ" 2>/dev/null && pwd || printf '%s' "$PROJ")"
 
 if [ ! -d "$PROJ/.harness" ] && [ ! -f "$PROJ/feature_list.json" ]; then
   echo "❌ Не похоже на vibe-проект (нет .harness/ и feature_list.json): $PROJ"; exit 1
@@ -94,7 +97,7 @@ EOF
     echo "     ✅ пройдёт (провенанс/logic/negative станут подсказками; миграция наклеит этикетки)"
   fi
   echo ""
-  echo "   Рекомендация: $([ "${DSO:-0}" -gt 0 ] && echo "СНАЧАЛА решить UI-долг ($UH шт), затем мягкий режим" || echo "мягкий режим безопасен — bash upgrade-project.sh --soft \"$PROJ\"")"
+  echo "   Рекомендация: $([ "${DSO:-0}" -gt 0 ] && echo "СНАЧАЛА решить UI-долг ($UH шт), затем мягкий режим" || echo "мягкий режим безопасен — bash \"$_SD/upgrade-project.sh\" --soft \"$PROJ\"")"
   exit 0
 fi
 
@@ -113,7 +116,7 @@ EOF
     MODE="strict"
   else
     echo "⚠️  $(basename "$PROJ") уже строгий (v$PREV_ENGINE), но имеет v8-долг (${_DS} блокировок). Мягкий режим ВРЕМЕННО понизит и ПРЕЖНИЕ строгие проверки до подсказок."
-    echo "    Верни полную строгость: bash upgrade-project.sh --strict \"$PROJ\" — когда приведёшь долг в порядок."
+    echo "    Верни полную строгость: bash \"$_SD/upgrade-project.sh\" --strict \"$PROJ\" — когда приведёшь долг в порядок."
   fi
 fi
 
@@ -218,7 +221,7 @@ fi
   echo "✅ $(basename "$PROJ") → v$ENGINE, МЯГКИЙ режим (было: $PREV_ENGINE/$PREV_MODE)."
   echo "   v8-проверки работают как ПОДСКАЗКИ (warn), не блокируют. Жёсткими остаются только"
   echo "   UI-скриншоты и массовый внешний API. git-гейты провенанса НЕ ставились (минимально)."
-  echo "   Готов к строгости? bash upgrade-project.sh --strict \"$PROJ\""
+  echo "   Готов к строгости? bash \"$_SD/upgrade-project.sh\" --strict \"$PROJ\""
 else
   echo "pending-strict" > "$PROJ/.harness/profile"
   rm -f "$PROJ/.harness/hook-mode"

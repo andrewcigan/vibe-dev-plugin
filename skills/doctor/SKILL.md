@@ -34,8 +34,18 @@ echo "— Краши сторожей: $(ls .harness/hook-crashes/ 2>/dev/null |
 # Аудит журнала (read-only, G5 + дешёвый дедуп): только отчёт, без правок.
 bash "${CLAUDE_PLUGIN_ROOT}/scripts/journal-audit.sh" "$(pwd)" 2>/dev/null
 [ -f .harness/hooks-disabled ] && echo "— ⚠️ hooks-disabled: backstop ОСОЗНАННО выключен"
-[ -f .git/hooks/pre-commit ] && grep -q "Vibe Dev" .git/hooks/pre-commit 2>/dev/null \
-  && echo "— pre-commit backstop: установлен" || echo "— pre-commit backstop: НЕ установлен"
+# Где git реально ищет pre-commit: в рабочей копии (worktree) .git — файл, хуки общие с основной
+# папкой; при перенаправленных хуках (core.hooksPath) — в их каталоге (v9.0.3).
+PC="$(git rev-parse --git-path hooks/pre-commit 2>/dev/null)"
+[ -n "$PC" ] && grep -q "Vibe Dev" "$PC" 2>/dev/null \
+  && echo "— pre-commit backstop: установлен ($PC)" || echo "— pre-commit backstop: НЕ установлен${PC:+ ($PC)}"
+# Подсказки сторожа коммитов называют скрипты плагина путём, вписанным при установке (v9.0.3).
+if [ -n "$PC" ] && grep -q "Vibe Dev" "$PC" 2>/dev/null && [ -n "${CLAUDE_PLUGIN_ROOT}" ]; then
+  BAKED="$(eval "$(grep -m1 '^VIBE_PLUGIN_ROOT=' "$PC")" 2>/dev/null; printf '%s' "${VIBE_PLUGIN_ROOT:-}")"
+  [ "$BAKED" = "${CLAUDE_PLUGIN_ROOT}" ] \
+    && echo "— pre-commit: подсказки ведут в этот плагин" \
+    || echo "— ⚠️ pre-commit поставлен старой версией или плагин переехал (путь в копии: ${BAKED:-не вписан}): его подсказки называют команды, которых нет"
+fi
 echo "— Claude Code: $(claude --version 2>/dev/null || echo '(CLI не найден)')"
 claude plugin list 2>/dev/null | grep -i vibe || echo "— Плагин: не виден в claude plugin list (или команда недоступна)"
 ```
@@ -48,6 +58,7 @@ claude plugin list 2>/dev/null | grep -i vibe || echo "— Плагин: не в
 | Профиль `strict/standard` + heartbeat старше 30 мин | В ТЕКУЩЕЙ сессии хуки не работают (плагин выключили? `--safe-mode`? сессия в другой папке?) | Перезапустить сессию в папке проекта; проверить, что плагин enabled |
 | Краши сторожей в `.harness/hook-crashes/` | Сторож падал — его проверки в те моменты НЕ выполнялись | Открыть лог, починить причину (или сообщить о баге плагина), удалить лог |
 | pre-commit backstop НЕ установлен | Независимого канала нет — «театр строгости» не ловится на коммитах | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-precommit.sh" "$(pwd)"` |
+| pre-commit поставлен старой версией или плагин переехал | Подсказки сторожа коммитов называют команды, которых в проекте нет; так проект однажды написал собственного писателя истории, который голову истории не ведёт | `bash "${CLAUDE_PLUGIN_ROOT}/scripts/install-precommit.sh" "$(pwd)"` — переустановка вписывает путь к этому плагину (работает и из рабочей копии: хуки общие), прежний файл сохраняет рядом (`pre-commit.vibe-prev-<время>`, три последних) |
 | `hooks-disabled` существует | Backstop выключен осознанно | Если работа в Claude Code возобновилась — удалить файл |
 | Проект в мягком режиме (нет пина движка / major<6) | Структурные проверки только предупреждают, не блокируют. Пин 6.x/7.x уже строгий — не нудим | `/upgrade-project` (dry-run → пин на текущий мажор + strict). Новые механизмы v7 работают независимо от пина |
 | Всё зелёное | Enforcement жив | Ничего не делать |

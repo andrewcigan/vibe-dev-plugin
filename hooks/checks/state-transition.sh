@@ -25,6 +25,9 @@ FILE="${1:-}"
 CWD="${2:-$PWD}"
 ROOT="${3:-}"
 TOOL="${4:-Write}"
+# Подсказки называют скрипты плагина (писатель истории, квитанция прогона) — полным путём: в проекте
+# их нет, и относительная подсказка не исполнялась (v9.0.3). Корень — от расположения сторожа.
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 SCHEMA_FILE="$ROOT/schemas/feature-state-transitions.yaml"
 [ -f "$SCHEMA_FILE" ] || guard_done   # нет схемы — fail-open
@@ -53,12 +56,18 @@ if [ -f "$CWD/.harness/engine-version" ]; then
 fi
 
 # HOOK_PAYLOAD наследуется из env (выставил dispatcher). python3 видит его через os.environ.
-python3 - "$FILE" "$SCHEMA_FILE" "$SOFT_LEVEL" "$TOOL" "$PROV_MODE" <<'PYEOF'
+VIBE_PLUGIN_DIR="$PLUGIN_ROOT" python3 - "$FILE" "$SCHEMA_FILE" "$SOFT_LEVEL" "$TOOL" "$PROV_MODE" <<'PYEOF'
 import json, sys, re, os
 
 target, schema_path, soft_level, tool = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 prov_mode = (len(sys.argv) > 5 and sys.argv[5] == '1')
 TAB = "\t"
+# Исполнимые команды для подсказок: полный путь к скрипту плагина и к проекту (v9.0.3).
+PROJ_DIR = os.path.dirname(os.path.abspath(target))
+PLUGIN_DIR = os.environ.get("VIBE_PLUGIN_DIR", "")
+def receipt_cmd(feat_id, live=False):
+    return 'bash "%s/scripts/verify-receipt.sh" %s "%s"%s' % (PLUGIN_DIR, feat_id, PROJ_DIR, " --live" if live else "")
+MIGRATE_CMD = 'bash "%s/scripts/migrate-provenance.sh" "%s"' % (PLUGIN_DIR, PROJ_DIR)
 
 def emit(verdict, msg):
     # одна строка на вердикт; переводы строк в msg схлопываем (формат "VERDICT\tmsg")
@@ -252,7 +261,7 @@ if prev_ids is not None and prev_ids:
 # Проверяем ТОЛЬКО момент перехода в готовое состояние: у давно лежащих записей доказательство
 # могло появиться до этого механизма, и заваливать проект сотнями замечаний бессмысленно.
 if prev_ids is not None:
-    _rec_dir = os.path.join(os.path.dirname(os.path.abspath(target)), '.harness', 'receipts')
+    _rec_dir = os.path.join(PROJ_DIR, '.harness', 'receipts')
     for feat_id, feat_state, f in all_features:
         if feat_state not in ('passing', 'done'):
             continue
@@ -270,9 +279,9 @@ if prev_ids is not None:
         if not has_receipt:
             errors_soft.append(
                 "%s: переход в «%s» без квитанции прогона. Текст в evidence ничем не отличается от "
-                "текста, написанного не глядя — именно так проходило «готово на бумаге». Запусти "
-                "bash scripts/verify-receipt.sh %s: квитанцию нельзя написать прозой, её содержимое "
-                "порождается запуском. (v9 F4.1)" % (feat_id, feat_state, feat_id))
+                "текста, написанного не глядя — именно так проходило «готово на бумаге». Квитанцию "
+                "нельзя написать прозой: её содержимое порождается запуском. (v9 F4.1) Команда: %s"
+                % (feat_id, feat_state, receipt_cmd(feat_id)))
 
         # --- Фича с внешней связью требует ЖИВОГО прогона (v9 F4.3). ---
         # В прошлом инциденте команда проверки была формально валидна, но тесты подменяли ровно
@@ -297,8 +306,8 @@ if prev_ids is not None:
                     "%s: фича работает с внешней системой и переходит в «%s» без живого прогона. "
                     "Подменённая в тестах граница — это ровно та, которую надо было доказать: так "
                     "месяц выглядел закрытым механизм, не сработавший ни разу. Прогони против "
-                    "настоящей системы: bash scripts/verify-receipt.sh %s --live (v9 F4.3)"
-                    % (feat_id, feat_state, feat_id))
+                    "настоящей системы. (v9 F4.3) Команда: %s"
+                    % (feat_id, feat_state, receipt_cmd(feat_id, live=True)))
 
 # ЧЕСТНОСТЬ ДЕКЛАРАЦИЙ (v8.0.2 dogfooding LinX): валидируем ИМЯ состояния (∈ valid_states) и
 # согласованность bucket↔state (выше). Граф schema["allowed_transitions"] загружается
@@ -535,10 +544,12 @@ if prov_mode:
     KIND_ENUM = {"transcript","session","file","url","recording","unknown"}
     BY_ENUM = {"owner","agent","critic"}
     NONLIVE = {"meeting","call","incident","competitor","regulatory","user-feedback"}
+    headless = 0
     for feat_id, state, f in all_features:
         prov = f.get('provenance')
         if not isinstance(prov, dict):
-            errors_soft.append("%s: нет provenance-головы (v8 обязательна: origin+source_ref+captured_at+by). Пиши через record-change.sh; честный клапан — origin=inference, source_ref.kind=unknown." % feat_id)
+            errors_soft.append("%s: нет provenance-головы (v8 обязательна: origin+source_ref+captured_at+by)." % feat_id)
+            headless += 1
             continue
         origin = prov.get('origin')
         if origin not in ORIGIN_ENUM:
@@ -552,6 +563,19 @@ if prov_mode:
             errors_soft.append("%s: provenance.by обязателен (owner/agent/critic)." % feat_id)
         if origin in NONLIVE and not str(prov.get('occurred_at') or '').strip():
             warnings.append("%s: origin=%s (не-live) без occurred_at — фиксируй, когда требование ВОЗНИКЛО, не только когда занесено." % (feat_id, origin))
+    # Как чинить — одной строкой на весь отказ, не в каждой: на реестре формы живого проекта
+    # (сотни стабов ротации без головы) повтор команды раздувал текст отказа в 3,6 раза (v9.0.3).
+    # Событие ADDED не советуем: журнал истории только дописывается, и ложное «происхождение
+    # неизвестно, занесено сегодня» у стаба или у записи с журналом из него уже не убрать.
+    if headless:
+        errors_soft.append(
+            "Записей без головы истории: %d. Новую запись заводи сразу с головой (честный клапан — "
+            "origin=inference, source_ref.kind=unknown). Уже лежащим в реестре — стабам ротации, "
+            "унаследованным, записям другого писателя — голову ставит миграция плагина: номер "
+            "учтённого события берёт по телу в архиве или по журналу, происхождение ставит "
+            "«восстановлено» (origin=inference; настоящее остаётся в архиве и в журнале), журнал "
+            "истории не трогает. Она правит все такие записи разом (откат — через git): при "
+            "десятках записей сначала покажи число владельцу. Команда: %s" % (headless, MIGRATE_CMD))
 
 for e in errors_hard:
     emit("BLOCK", e)

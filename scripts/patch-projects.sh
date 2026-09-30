@@ -17,6 +17,7 @@ PLUGIN_ROOT="$(cd "$_SD/.." && pwd)"
 UPG="$_SD/upgrade-project.sh"
 BASE="$HOME/Coding"; APPLY=0
 for a in "$@"; do case "$a" in --apply) APPLY=1 ;; *) BASE="$a" ;; esac; done
+BASE="$(cd "$BASE" 2>/dev/null && pwd || printf '%s' "$BASE")"   # абсолютный — он идёт в подсказку (v9.0.3)
 
 is_excluded() {
   local p="$1"
@@ -77,7 +78,7 @@ echo ""
 
 if [ "$APPLY" = "0" ]; then
   echo "Это предпросмотр (ничего не изменено). Применить мягкое включение к готовым (${#SAFE[@]}):"
-  echo "   bash patch-projects.sh --apply \"$BASE\""
+  echo "   bash \"$_SD/patch-projects.sh\" --apply \"$BASE\""
   [ ${#DIRTY[@]} -gt 0 ] && echo "Грязные проекты (${#DIRTY[@]}) сначала закоммить — иначе перевод их пропустит."
   exit 0
 fi

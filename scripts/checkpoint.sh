@@ -60,7 +60,11 @@ if [ -f "$FL" ] && [ -f "$DIR/archive-features.sh" ]; then
 fi
 
 # --- 3. COLD-START GATE (enforce — block завершения /checkpoint) ---
-GATE="$(SESSION="$SESSION" FL="$FL" LOG="$LOG" python3 - <<'PY' 2>&1
+# Подсказка гейта — исполнимая команда писателя истории: полный путь к скрипту плагина и к проекту
+# (v9.0.3; прежняя «почини record-change.sh --recover» не исполнялась в проекте и к тому же не
+# лечила: восстановление догоняет только отставшую голову и уже отработало на шаге 1).
+WRITER_CMD="printf '%s' '<событие JSON>' | bash \"$DIR/record-change.sh\" --project \"$ROOT\""
+GATE="$(SESSION="$SESSION" FL="$FL" LOG="$LOG" WRITER_CMD="$WRITER_CMD" python3 - <<'PY' 2>&1
 import json, os, re, sys
 
 session, fl, log = os.environ["SESSION"], os.environ["FL"], os.environ["LOG"]
@@ -109,8 +113,10 @@ if os.path.exists(fl):
                 if not isinstance(prov, dict): continue
                 hs = prov.get("seq", 0)
                 if not isinstance(hs, int): hs = 0
-                if hs >= 1 and logmax(f.get("id")) < hs:
-                    blocks.append("провенанс %s: голова seq=%d впереди лога — почини record-change.sh --recover" % (f.get("id"), hs))
+                lm = logmax(f.get("id"))
+                if hs >= 1 and lm < hs:
+                    seen = ("последнее событие в журнале — %d" % lm) if lm >= 0 else "событий этой записи в журнале нет"
+                    blocks.append("провенанс %s: голова seq=%d впереди лога (%s) — запись правили мимо писателя истории или журнал потерял строки; восстановление этого не чинит, оно догоняет только отставшую голову. Проведи правку писателем: событие встанет после головы (формат события — в начале его скрипта). Команда: %s" % (f.get("id"), hs, seen, os.environ["WRITER_CMD"]))
 
 if blocks:
     print("\n".join("  ✗ " + b for b in blocks))

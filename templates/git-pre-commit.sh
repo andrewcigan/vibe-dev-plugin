@@ -14,6 +14,41 @@ ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 HARNESS="$ROOT_DIR/.harness"
 TTL=1800  # 30 мин: heartbeat старше — сессия без живых хуков (или вне Claude Code)
 
+# --- Где лежат скрипты харнеса (v9.0.3) ---
+# Подсказки ниже называют писателя истории и его восстановление, а они живут в ПЛАГИНЕ, не в проекте:
+# прежняя подсказка «scripts/record-change.sh» в проекте давала «нет такого файла», и проект
+# написал собственного писателя, который голову истории не ведёт. Эта копия лежит в .git/hooks и
+# сама путь к плагину не знает — строку ниже при установке переписывает установщик сторожа
+# (install-precommit.sh плагина). Плагин обновился или переехал — подсказка говорит об этом прямо,
+# а не выдаёт мёртвый путь за команду.
+VIBE_PLUGIN_ROOT=__VIBE_PLUGIN_ROOT__
+# plugin_path <каталог> <файл> → полный путь к файлу плагина, если он есть.
+plugin_path() {
+  case "$VIBE_PLUGIN_ROOT" in /*) [ -f "$VIBE_PLUGIN_ROOT/$1/$2" ] && printf '%s' "$VIBE_PLUGIN_ROOT/$1/$2" ;; *) false ;; esac
+}
+# plugin_cmd <скрипт> [хвост] → «bash "<полный путь>" хвост» или честный отказ (код 1).
+plugin_cmd() {
+  local p
+  if p="$(plugin_path scripts "$1")"; then
+    printf 'bash "%s"%s' "$p" "${2:+ $2}"
+    return 0
+  fi
+  case "$VIBE_PLUGIN_ROOT" in
+    /*) printf '(скрипт плагина %s не найден в «%s» — плагин обновился или переехал после установки этого сторожа; переустанови сторожа коммитов: /doctor)' "$1" "$VIBE_PLUGIN_ROOT" ;;
+    *)  printf '(скрипт плагина %s: путь к плагину в этот сторож не вписан — его скопировали мимо установщика; переустанови сторожа коммитов: /doctor)' "$1" ;;
+  esac
+  return 1
+}
+# writer_cmd → команда писателя истории со слотом события (формат события — в начале его скрипта).
+writer_cmd() {
+  local c
+  if c="$(plugin_cmd record-change.sh "--project \"$ROOT_DIR\"")"; then
+    printf "printf '%%s' '<событие JSON>' | %s" "$c"
+  else
+    printf '%s' "$c"
+  fi
+}
+
 # --- 1. ACTIVATION BACKSTOP ---
 if [ -d "$HARNESS" ] && [ ! -f "$HARNESS/hooks-disabled" ]; then
   PROFILE=""
@@ -91,9 +126,11 @@ if [ ! -f "$HARNESS/locks/provenance-snapshot" ] \
     cat >&2 <<EOF
 🚨 КОММИТ ОСТАНОВЛЕН: .harness/provenance-log.jsonl — append-only (v8 L3-F2).
 В staged-диффе ${REMOVED} удалённых/изменённых строк лога. История требований не переписывается —
-только добавляется. Верни прошлые строки; новое состояние фиксируй НОВЫМ событием через
-scripts/record-change.sh. (Легитимная компакция старых событий — через снапшот-скрипт, он ставит
-маркер .harness/locks/provenance-snapshot.)
+только добавляется. Верни прошлые строки; новое состояние фиксируй НОВЫМ событием писателя истории
+(формат события — в начале его скрипта):
+  $(writer_cmd)
+(Легитимная компакция старых событий — через снапшот-скрипт, он ставит маркер
+.harness/locks/provenance-snapshot.)
 EOF
     exit 1
   fi
@@ -140,8 +177,10 @@ PY
   )"; then
     echo "🚨 КОММИТ ОСТАНОВЛЕН: провенанс — голова впереди лога (v8 L3-F3):" >&2
     echo "$COH" >&2
-    echo "Бизнес-правку требования делай через scripts/record-change.sh (лог+голова синхронно), не руками." >&2
-    echo "Расхождение «голова позади лога» после обрыва — почини: scripts/record-change.sh --recover." >&2
+    echo "Запись правили мимо писателя истории (или лог потерял строки). Проведи правку писателем — он пишет событие в лог и двигает голову синхронно (формат события — в начале его скрипта):" >&2
+    echo "  $(writer_cmd)" >&2
+    echo "Обратное расхождение — «голова позади лога» после обрыва — чинит восстановление:" >&2
+    echo "  $(plugin_cmd record-change.sh "--recover --project \"$ROOT_DIR\"")" >&2
     exit 1
   fi
 fi
@@ -260,7 +299,9 @@ PY
   )"; then
     echo "🚨 КОММИТ ОСТАНОВЛЕН: провенанс — правка требования без события истории (v8 L3-F4):" >&2
     echo "$BIZ" >&2
-    echo "Правку ТРЕБОВАНИЯ (name/description/size/invariant) и отмену/замену (rejected/superseded) делай через scripts/record-change.sh — оно фиксирует откуда/когда/факт. Статус реализации (active→passing→done) и технические поля (affected_files/verification) — свободно." >&2
+    echo "Правку ТРЕБОВАНИЯ (name/description/size/invariant) и отмену/замену (rejected/superseded) проводи писателем истории — он фиксирует откуда/когда/факт (формат события — в начале его скрипта):" >&2
+    echo "  $(writer_cmd)" >&2
+    echo "Статус реализации (active→passing→done) и технические поля (affected_files/verification) — свободно." >&2
     exit 1
   fi
 fi
@@ -305,7 +346,9 @@ PY
   )"; then
     echo "🚨 КОММИТ ОСТАНОВЛЕН: архив — доказательство фичи не сходится (v8 L3-F5):" >&2
     echo "$ARCHK" >&2
-    echo "Стаб в горячем должен ссылаться на реальное тело в feature_list.archive.json. Ротация — scripts/archive-features.sh." >&2
+    echo "Стаб в горячем ссылается на тело в feature_list.archive.json с тем же отпечатком; стаб и тело вместе создаёт только ротация, а готовый стаб она уже не трогает — повторная ротация здесь не поможет." >&2
+    echo "Тело потеряно или правлено — верни архив нужной версии из истории git; стаб написан или правлен руками — верни запись. История обоих файлов:" >&2
+    echo "  git -C \"$ROOT_DIR\" log --oneline -- feature_list.archive.json feature_list.json" >&2
     exit 1
   fi
 fi
@@ -375,7 +418,7 @@ PY
   if [ -n "$CTX_WARN" ]; then
     echo "⚠️  Горячий контекст раздут завершённым (v8 L4-F1) — коммит НЕ остановлен:" >&2
     echo "$CTX_WARN" >&2
-    echo "Завершённое → архив (тело в feature_list.archive.json), в CLAUDE.md/SESSION.md — одна строка-индекс. См. rules/context-tiers.md. Разгрузить: /checkpoint или scripts/archive-features.sh." >&2
+    echo "Завершённое → архив (тело в feature_list.archive.json), в CLAUDE.md/SESSION.md — одна строка-индекс: замени тело строкой-ссылкой правкой файла. Правило — $(plugin_path rules context-tiers.md || printf 'context-tiers.md в правилах плагина vibe-dev')." >&2
   fi
 fi
 

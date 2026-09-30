@@ -37,7 +37,9 @@
 
 - **`/checkpoint`** (L4-F2) на естественной границе (конец фичи/волны): ротация завершённых в
   архив через `scripts/archive-features.sh`, перезапись Current State, sync статусов. Управляемо.
-- Вручную: `bash scripts/archive-features.sh` — вынести done/superseded/rejected в архив по ссылке.
+- Вручную: ротация плагина — `bash "<папка плагина>/scripts/archive-features.sh" "<папка проекта>"` (в скилле —
+  `${CLAUDE_PLUGIN_ROOT}`; полную команду с путями печатает сторож размера журналов, когда журнал фич разросся) —
+  вынести done/superseded/rejected в архив по ссылке. В папке проекта этого скрипта нет.
 
 ## Связано
 

@@ -30,7 +30,7 @@ done
 set -- "${ARGS[@]:-}"
 
 FEAT="${1:-}"
-[ -n "$FEAT" ] || { echo "Нужен id фичи: bash scripts/verify-receipt.sh <feature-id> [путь] [--live]" >&2; exit 2; }
+[ -n "$FEAT" ] || { echo "Нужен id фичи: bash \"$DIR/verify-receipt.sh\" <feature-id> [путь-проекта] [--live]" >&2; exit 2; }
 ROOT="${2:-$PWD}"
 if command -v vibe_resolve_root >/dev/null 2>&1; then
   ROOT="$(vibe_resolve_root "$ROOT" strict)" || exit 1

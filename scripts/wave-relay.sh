@@ -22,6 +22,8 @@ QUEUE="$ROOT/.harness/relay.json"
 [ -f "$FL" ] || { echo "Нет журнала фич в $ROOT" >&2; exit 1; }
 mkdir -p "$ROOT/.harness"
 
+# Подсказка «что дальше» — исполнимая команда: полный путь к скрипту плагина и к проекту (v9.0.3).
+RELAY_CMD="bash \"$DIR/wave-relay.sh\"" RELAY_ROOT="$(cd "$ROOT" && pwd)" \
 python3 - "$FL" "$QUEUE" "$ACTION" <<'PYEOF'
 import json, sys, os, datetime
 
@@ -114,11 +116,11 @@ if action == 'plan':
             print(f"       · {t}")
         if len(d["titles"]) > 4:
             print(f"       · ещё {len(d['titles'])-4}")
-    print(f"\nОчередь записана. Начать первое: bash scripts/wave-relay.sh next")
+    print(f"\nОчередь записана. Начать первое: {os.environ['RELAY_CMD']} next \"{os.environ['RELAY_ROOT']}\"")
 
 elif action == 'next':
     q = load_queue()
-    if not q: print("Очереди нет — сначала: bash scripts/wave-relay.sh plan"); raise SystemExit
+    if not q: print(f"Очереди нет — сначала: {os.environ['RELAY_CMD']} plan \"{os.environ['RELAY_ROOT']}\""); raise SystemExit
     i = q.get("current", 0)
     ds = q.get("directions", [])
     if i >= len(ds):

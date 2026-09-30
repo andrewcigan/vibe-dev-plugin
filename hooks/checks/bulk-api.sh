@@ -15,6 +15,8 @@ guard_require_tools jq
 CWD="${1:-$PWD}"
 ROOT="${2:-}"
 TAB="$(printf '\t')"
+# Шаблон чек-листа живёт в плагине, не в проекте: подсказка — полным путём (v9.0.3).
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 CMD="$(printf '%s' "${HOOK_PAYLOAD:-}" | jq -r '.tool_input.command // empty' 2>/dev/null)"
 [ -z "$CMD" ] && guard_done
@@ -86,7 +88,7 @@ fi
 # --- Detected: проверяем pre-launch-checklist ---
 CHECKLIST="$CWD/.harness/pre-launch-checklist.yaml"
 if [ ! -f "$CHECKLIST" ]; then
-  printf 'BLOCK%sМассовый внешний API-вызов без pre-launch-checklist. Скопируй templates/pre-launch-checklist.yaml в .harness/, заполни (стоимость, Batch API, дневная квота, dedup, checkpoint) и выстави decision.status: approved.\n' "$TAB"
+  printf 'BLOCK%s%s\n' "$TAB" "Массовый внешний API-вызов без pre-launch-checklist. Скопируй шаблон чек-листа плагина в .harness/ проекта, заполни (стоимость, Batch API, дневная квота, dedup, checkpoint) и выстави decision.status: approved. Команда: cp \"$PLUGIN_ROOT/templates/pre-launch-checklist.yaml\" \"$CWD/.harness/\""
   guard_done
 fi
 

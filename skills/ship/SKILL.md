@@ -132,7 +132,7 @@ Features shipped: N (из N запланированных в Roadmap)
 
 ### Шаг 3: Ротация в архив (гейт)
 ```bash
-bash scripts/archive-features.sh   # done/superseded/rejected с evidence → архив + индекс-стаб
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/archive-features.sh" "$(pwd)"   # done/superseded/rejected с evidence → архив + индекс-стаб
 ```
 **Гейт (block-архивации):** фича с незакрытыми tasks (`docs/changes/<id>/tasks.md` содержит `- [ ]`) НЕ архивируется — доделай задачи (OpenSpec `archive_tasks_incomplete`). done без evidence тоже не архивируется (доказательство обязательно, c10). Горячий `feature_list.json` остаётся тонким (индекс-стабы), тела — в `feature_list.archive.json`. git pre-commit блок 6 сверяет `evidence_hash` стаба с телом архива.
 

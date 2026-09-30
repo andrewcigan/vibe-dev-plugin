@@ -520,6 +520,14 @@ for f in README.md README.ru.md CLAUDE.md AGENTS.md; do
 done
 
 echo ""
+echo "=== 53. Чекпоинт после ротации: стабы не переписываются, коммит проходит сторожа (v9.0.2) ==="
+if bash tests/hooks/test-checkpoint-stub-recover.sh > /tmp/vibe-csrtest.out 2>&1; then
+    tail -1 /tmp/vibe-csrtest.out
+else
+    echo "❌ чекпоинт после ротации ломает коммит:"; cat /tmp/vibe-csrtest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -37,6 +37,19 @@ fi
 ERRORS=0
 WARNINGS=0
 
+# Активные фичи — записи со state "active" (v9.0.4). Верхнее поле «active» журнала фич не вёл ни
+# один писатель состояния, и отчёт показывал «null» при фиче в работе. Нет ни одной — «null».
+active_features() {
+    python3 -c '
+import json
+d = json.load(open("feature_list.json", encoding="utf-8"))
+feats = d.get("features") or {}
+buckets = feats.items() if isinstance(feats, dict) else [("", feats)]
+ids = [str(f.get("id")) for b, lst in buckets if isinstance(lst, list) for f in lst
+       if isinstance(f, dict) and (f.get("state") or ("active" if b == "active_list" else "")) == "active"]
+print(" ".join(ids) or "null")'
+}
+
 # ========== 5-DIM CLEAN-EXIT CHECKS ==========
 
 echo ""
@@ -88,7 +101,7 @@ fi
 
 if [ -f "feature_list.json" ]; then
     if python3 -c "import json; json.load(open('feature_list.json'))" 2>/dev/null; then
-        ACTIVE=$(python3 -c "import json; d=json.load(open('feature_list.json')); print(d.get('active') or 'null')" 2>/dev/null)
+        ACTIVE=$(active_features 2>/dev/null)
         echo "  ✓ feature_list.json валиден (active: $ACTIVE)"
     else
         echo "  ❌ feature_list.json не валиден JSON"
@@ -184,7 +197,7 @@ cat > .session-state/last-session.md <<EOF
 - Errors: $ERRORS блокирующих, $WARNINGS warnings
 
 ## Active feature
-$([ -f feature_list.json ] && python3 -c "import json; d=json.load(open('feature_list.json')); print(d.get('active') or 'null')" 2>/dev/null || echo "n/a")
+$([ -f feature_list.json ] && active_features 2>/dev/null || echo "n/a")
 
 ## Что было сделано в этой сессии
 (агент должен заполнить через /end-session перед запуском этого скрипта)

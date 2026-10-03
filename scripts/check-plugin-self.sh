@@ -539,6 +539,16 @@ else
 fi
 
 echo ""
+echo "=== 55. Сторож рамок фичи находит активную фичу по state записи, а не по верхнему полю (v9.0.4) ==="
+# Верхнее поле «active» не вёл ни один писатель состояния: на живом проекте фича стояла в active,
+# поле было пустым, и сторож рамок не проверил ни одного коммита.
+if bash tests/hooks/test-scope-active-from-state.sh > /tmp/vibe-scopetest.out 2>&1; then
+    tail -1 /tmp/vibe-scopetest.out
+else
+    echo "❌ сторож рамок фичи не видит активную фичу:"; cat /tmp/vibe-scopetest.out; ERRORS=$((ERRORS + 1))
+fi
+
+echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo "==================================================="
     echo "❌ $ERRORS errors. Плагин нарушает свои же правила."

@@ -8,7 +8,7 @@
   "properties": {
     "version": { "type": "string" },
     "wip_limit": { "type": "integer" },
-    "active": { "type": ["string", "null"] },
+    "active": { "type": ["string", "null"], "description": "Устарело с v9.0.4, никем не читается. Активная фича — запись со state \"active\": её находят сторож рамок коммита, /feature и /end-session." },
     "features": {
       "type": "object",
       "description": "Бакеты по состояниям (captured/up_next/active_list/done/…). Каждый — массив фич.",

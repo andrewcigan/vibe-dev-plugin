@@ -26,13 +26,18 @@ ls .harness/hook-crashes/ 2>/dev/null && echo "⚠️ сторожа падал�
 ### Check 1: WIP=1
 
 ```bash
-# В feature_list.json должна быть ровно одна active или ноль
+# Активная фича = запись со state "active" (верхнее поле «active» не читается с v9.0.4 —
+# его не вёл ни один писатель состояния). Кроме этой фичи в active не должно быть никого.
 python3 -c "
 import json
 d = json.load(open('feature_list.json'))
-active = d.get('active')
-if active is not None and active != '<this-feature-id>':
-    print(f'❌ WIP=1 violated: feat \"{active}\" already active. Закрой её через /verify до passing или /handoff с paused.')
+feats = d.get('features') or {}
+buckets = feats.items() if isinstance(feats, dict) else [('', feats)]
+other = [f.get('id') for b, lst in buckets if isinstance(lst, list) for f in lst
+         if isinstance(f, dict) and (f.get('state') or ('active' if b == 'active_list' else '')) == 'active'
+         and f.get('id') != '<this-feature-id>']
+if other:
+    print(f'❌ WIP=1 violated: уже в active: {\", \".join(map(str, other))}. Закрой через /verify до passing или переведи в paused.')
     exit(1)
 "
 ```
@@ -116,8 +121,8 @@ if active is not None and active != '<this-feature-id>':
 ### Шаг 3: Перевести feature в active (хук теперь пропустит)
 
 ```python
-# feature_list.json
-d['active'] = '<feature-id>'
+# feature_list.json — активность задаёт ТОЛЬКО state записи; его читает сторож рамок коммита
+# (diff ⊆ affected_files). Верхнее поле «active» не ставить: его никто не читает (v9.0.4).
 d['features'][f]['state'] = 'active'
 d['features'][f]['started_at'] = today
 ```

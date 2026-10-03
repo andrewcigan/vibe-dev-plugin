@@ -141,10 +141,16 @@ if [ -d "$PROJ/.git" ]; then
 !.harness/provenance-log.jsonl
 !.harness/tools-allowlist.yaml
 !.harness/pre-launch-checklist.yaml
+!.harness/scope-allow
 !.harness/hooks/
 IGN
     } >> "$GI"
     echo "→ .gitignore: рабочий слой харнеса игнорируется классом (новые служебные файлы больше не грязнят дерево)"
+  elif ! grep -qxF '!.harness/scope-allow' "$GI" 2>/dev/null; then
+    # Список исключений сторожа рамок фичи (v9.0.4) читается сторожем коммитов и обязан жить в
+    # истории; проекты, переведённые раньше, его исключением не знают.
+    printf '%s\n' '!.harness/scope-allow' >> "$GI"
+    echo "→ .gitignore: .harness/scope-allow (исключения сторожа рамок фичи) хранится в истории"
   fi
 
   # Правило игнорирования НЕ действует на файлы, уже попавшие под наблюдение git раньше:
@@ -153,7 +159,7 @@ IGN
   # Исключения — то, что обязано жить в истории: версия движка, провенанс, разрешённые
   # инструменты, предполётный список, копии хуков проекта.
   TRACKED_JUNK="$(git -C "$PROJ" ls-files '.harness/' 2>/dev/null \
-    | grep -vE '^\.harness/(engine-version|provenance-log\.jsonl|tools-allowlist\.yaml|pre-launch-checklist\.yaml|hooks/)' || true)"
+    | grep -vE '^\.harness/(engine-version|provenance-log\.jsonl|tools-allowlist\.yaml|pre-launch-checklist\.yaml|scope-allow|hooks/)' || true)"
   if [ -n "$TRACKED_JUNK" ]; then
     N_JUNK="$(printf '%s\n' "$TRACKED_JUNK" | grep -c . || echo 0)"
     printf '%s\n' "$TRACKED_JUNK" | while IFS= read -r f; do
